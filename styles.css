@@ -1,0 +1,2560 @@
+/* ── Otherworld 2026 palette — gallery night edition ──────────────
+   Deep midnight-teal background like a moonlit lake, with neon
+   accents pulled straight from the cover's psychedelic mushrooms.
+   Each card is matted with a translucent wash of its type color, so
+   the whole grid feels like a curated wall of prints. Variable
+   names kept ("--night-N", "--cream") so the rest of the CSS just
+   picks up the new values. */
+:root {
+  /* Surfaces — deep teal-navy, rich and saturated */
+  --night-0: #04090c;
+  /* deepest void */
+  --night-1: #0a1620;
+  /* page bg */
+  --night-2: #122332;
+  /* card surface */
+  --night-3: #1a3045;
+  /* card hover */
+  --night-4: #244257;
+  /* deeper / focus */
+  --moss-1: rgba(120, 180, 200, 0.10);
+  /* soft divider */
+  --moss-2: rgba(120, 180, 200, 0.22);
+  /* strong border */
+  --moss-3: #6e8a9c;
+  /* dim ink */
+
+  /* Ink — bright warm cream against the navy for max contrast */
+  --cream: #f2ead0;
+  /* primary ink */
+  --cream-soft: #d4cea7;
+  --cream-dim: #95a3a9;
+
+  /* Accents — bright neon, full intensity, the cover's mushroom hues */
+  --lime: #cce84e;
+  /* camp neon */
+  --lime-soft: #e6f099;
+  /* highlight */
+  --lime-deep: #7ea529;
+  /* deep variant for filled buttons */
+
+  --pink: #ff86bd;
+  /* sound stage */
+  --pink-soft: #ffb5d4;
+  --pink-deep: #c44679;
+
+  --cyan: #74dce8;
+  /* art installation */
+  --cyan-soft: #a8ecf2;
+  --cyan-deep: #2a8c9a;
+
+  --amber: #ffae5a;
+  /* mutant vehicle */
+  --amber-soft: #ffcb8d;
+  --amber-deep: #b76a14;
+  --warn: #ffd24a;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 18px 50px rgba(0, 0, 0, 0.55), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+/* overflow-x lives on <html> (not <body>). Originally a workaround
+   for a position:sticky iOS Safari bug; the header is now
+   position:fixed so the bug no longer applies, but keeping
+   overflow-x on <html> still prevents horizontal jiggle from any
+   stray over-wide rows. */
+html {
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--night-1);
+  color: var(--cream);
+  line-height: 1.5;
+  font-feature-settings: "ss01", "cv11";
+  /* Reserve space below the fixed header. --header-h is updated
+     live by a ResizeObserver (see bindHeaderAutoHide). The fallback
+     keeps initial paint reasonable before JS runs. */
+  padding-top: var(--header-h, 116px);
+}
+
+/* Subtle viewport-fixed gradient backdrop. Sits behind the page so
+   that as you scroll long lists the glow stays put instead of
+   streaking weirdly with the content. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 50% at 12% -10%, rgba(204, 232, 78, 0.07), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 92% 10%, rgba(255, 134, 189, 0.05), transparent 60%);
+}
+
+::selection {
+  background: var(--lime);
+  color: var(--night-0);
+}
+
+/* ── Header ─────────────────────────────────────────────────
+   Mobile-first. The header row must fit comfortably on a 360px
+   viewport: tiny logo + tiny wordmark + 3 icon-only CTA buttons.
+   Labels on the CTAs only appear at >=640px where there's room.
+
+   position: fixed (not sticky) so when the auto-hide reveals the
+   header mid-scroll it floats *on top of* the content beneath it
+   instead of pushing layout. body reserves space via
+   padding-top: var(--header-h) (set live by a ResizeObserver). */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--night-1);
+  border-bottom: 1px solid var(--moss-1);
+  /* Top/side insets keep the logo and CTAs out from under the iOS
+     status bar when launched as a standalone PWA (the page uses
+     `apple-mobile-web-app-status-bar-style: black-translucent` +
+     `viewport-fit=cover`, so the webapp draws under the status bar).
+     env() values are 0 in regular browser tabs / on desktop. */
+  padding:
+    max(8px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    0
+    max(12px, env(safe-area-inset-left));
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+  will-change: transform;
+}
+
+/* Subtle drop shadow only when content is scrolled beneath the
+   header — keeps the natural top edge clean and gives the floating
+   state a clear visual lift. */
+body.is-scrolled header {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+header.header-hidden {
+  transform: translateY(-100%);
+}
+
+/* iOS PWA status-bar scrim — only active when launched standalone from
+   the home screen. Sits in the env(safe-area-inset-top) band so the OS
+   time/battery stays legible after bindHeaderAutoHide slides the header
+   away. z-index 15 = above content (and map controls at 5/10/12), below
+   the header (20) so the existing look is unchanged when the header is
+   visible, and below modals (50) so About/Filters still cover it. */
+.status-bar-scrim {
+  display: none;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  .status-bar-scrim {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    z-index: 15;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(10, 22, 32, 0.78) 0%,
+      rgba(10, 22, 32, 0.62) 100%
+    );
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    backdrop-filter: blur(14px) saturate(140%);
+    /* Soft 6px feather at the bottom so it doesn't look like a hard bar
+       — matches what Google/Twitter do in their iOS PWAs. */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black calc(100% - 6px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      black 0,
+      black calc(100% - 6px),
+      transparent 100%
+    );
+  }
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-bottom: 8px;
+  min-width: 0;
+}
+
+h1 {
+  margin: 0;
+  color: var(--cream);
+  min-width: 0;
+}
+
+h1.logo-h1 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  min-width: 0;
+}
+
+h1.logo-h1 a {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.logo {
+  height: 30px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+}
+
+.about-stats {
+  color: var(--moss-3);
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  background: var(--night-3);
+  border: 1px solid var(--moss-1);
+  border-radius: 8px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.about-settings {
+  margin: 0 0 14px;
+  padding: 14px;
+  background: var(--night-3);
+  border: 1px solid var(--moss-1);
+  border-radius: 8px;
+}
+
+.about-settings h3 {
+  margin: 0 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  font-weight: 600;
+}
+
+.setting-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--cream-dim);
+  font-weight: 400;
+}
+
+.setting-hint.tight {
+  margin-bottom: 12px;
+}
+
+.about-disclaimer {
+  font-size: 13px;
+  color: var(--cream-dim);
+}
+
+.about-disclaimer strong {
+  background: linear-gradient(90deg, var(--lime), var(--cyan), var(--pink), var(--amber));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.backup-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.backup-btn {
+  flex: 1 1 auto;
+  min-width: 110px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cream);
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.backup-btn:hover { background: var(--moss-1); }
+.backup-btn:active { transform: translateY(1px); }
+.backup-btn #fav-backup-count {
+  color: var(--cream-dim);
+  font-weight: 400;
+}
+.backup-status {
+  margin-top: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--cream);
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 6px;
+  word-break: break-all;
+}
+.backup-status.ok { border-color: rgba(204, 232, 78, 0.5); }
+.backup-status.err { border-color: rgba(255, 120, 120, 0.5); color: #ffb4b4; }
+
+.dev-now-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.dev-now-input {
+  flex: 1 1 180px;
+  min-width: 0;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--cream);
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 8px;
+  color-scheme: dark;
+}
+.dev-now-input:focus {
+  outline: none;
+  border-color: var(--moss-3);
+}
+.dev-now-status {
+  margin-top: 10px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  color: var(--cream);
+  background: var(--night-4);
+  border: 1px solid rgba(204, 232, 78, 0.5);
+  border-radius: 6px;
+}
+.backup-status code {
+  display: block;
+  margin-top: 6px;
+  padding: 8px;
+  font-size: 12px;
+  background: var(--night-2);
+  border-radius: 4px;
+  max-height: 120px;
+  overflow: auto;
+  user-select: all;
+}
+
+#backup-modal-backdrop {
+  z-index: 60;
+}
+.modal.backup-modal {
+  max-width: 480px;
+}
+.code-wrap {
+  position: relative;
+}
+.backup-code {
+  display: block;
+  padding: 10px 78px 10px 10px;
+  font-size: 12px;
+  background: var(--night-2);
+  border-radius: 4px;
+  max-height: 120px;
+  overflow: auto;
+  user-select: all;
+  word-break: break-all;
+}
+.backup-copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cream);
+  background: var(--night-2);
+  border: 1px solid var(--moss-1);
+  border-radius: 6px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.backup-copy-btn:hover { background: var(--moss-1); }
+.backup-copy-btn:active { transform: translateY(1px); }
+.backup-copy-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.backup-copy-btn.copied {
+  background: var(--lime);
+  border-color: var(--lime);
+  color: var(--night-2);
+}
+
+/* ── Header CTAs (Search / Filters / About) ───────────────
+   Mobile default: icon-only 34x34 circular tap targets.
+   Desktop (>=640px): pill with icon + label. */
+.header-ctas {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.cta-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 0;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  background: var(--night-3);
+  border: 1px solid var(--moss-1);
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.12s, background 0.12s, border-color 0.12s, transform 0.1s;
+}
+
+.cta-btn .icon {
+  display: block;
+}
+
+.cta-btn .label {
+  display: none;
+}
+
+@media (hover: hover) {
+  .cta-btn:hover {
+    color: var(--lime);
+    border-color: rgba(204, 232, 78, 0.5);
+    background: var(--night-4);
+  }
+}
+
+.cta-btn:focus {
+  outline: none;
+}
+
+.cta-btn:active {
+  transform: scale(0.94);
+}
+
+.cta-btn.has-active {
+  color: var(--lime);
+  border-color: rgba(204, 232, 78, 0.55);
+  background: rgba(204, 232, 78, 0.12);
+}
+
+/* Favorites star fills with lime when active for an extra visual cue. */
+#fav-toggle.has-active .icon path {
+  fill: currentColor;
+}
+
+.cta-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 12px;
+  height: 12px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--night-0);
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  font-family: var(--font-mono);
+  border: 1.5px solid var(--night-1);
+  box-sizing: content-box;
+}
+
+/* HTML `hidden` attribute is overridden by `display: inline-flex`,
+   so we re-assert display:none explicitly when hidden. */
+.cta-badge[hidden] {
+  display: none;
+}
+
+/* On wider screens, expand CTAs into pills with text labels. */
+@media (min-width: 640px) {
+  .cta-btn {
+    width: auto;
+    height: auto;
+    font-size: 11.5px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    gap: 6px;
+  }
+
+  .cta-btn .label {
+    display: inline;
+  }
+
+  .cta-badge {
+    position: static;
+    border: 0;
+  }
+
+  header {
+    padding:
+      max(10px, env(safe-area-inset-top))
+      max(16px, env(safe-area-inset-right))
+      0
+      max(16px, env(safe-area-inset-left));
+  }
+
+  .header-row {
+    gap: 10px;
+  }
+
+  .logo {
+    height: 34px;
+  }
+}
+
+/* ── Active-filter pill row (live summary under header) ── */
+.active-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 5px;
+  align-items: center;
+  margin: 0 -12px 8px;
+  padding: 0 12px 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+  .active-filters {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.active-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.active-filter-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  background: rgba(204, 232, 78, 0.16);
+  color: var(--lime);
+  border: 1px solid rgba(204, 232, 78, 0.45);
+  font-family: inherit;
+}
+
+.active-filter-pill button {
+  background: rgba(0, 0, 0, 0.25);
+  border: 0;
+  color: var(--lime);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  font: 700 11px/1 var(--font-sans);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.active-filter-pill button:hover {
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--cream);
+}
+
+.active-filter-pill.clear-all {
+  background: transparent;
+  color: var(--moss-3);
+  border-color: var(--moss-2);
+  border-style: dashed;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+.active-filter-pill.clear-all:hover {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+/* ── Search / Filters modal: chips + sections ────────────── */
+.modal .modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modal .modal-head h2 {
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: 0;
+  color: var(--moss-3);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .modal-close:hover {
+    background: var(--night-3);
+    color: var(--cream);
+  }
+}
+
+.modal input[type="search"] {
+  width: 100%;
+  background: var(--night-3);
+  border: 1px solid var(--moss-1);
+  color: var(--cream);
+  padding: 11px 14px;
+  border-radius: var(--radius);
+  /* Must be >=16px or iOS Safari auto-zooms on focus. */
+  font-size: 16px;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+  box-sizing: border-box;
+}
+
+.modal input[type="search"]:focus {
+  outline: none;
+  border-color: var(--lime-deep);
+  background: var(--night-4);
+}
+
+.modal input[type="search"]::placeholder {
+  color: var(--moss-3);
+}
+
+.modal-section {
+  margin-top: 16px;
+}
+
+.modal-section h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  font-weight: 600;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 14px;
+  min-height: 36px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--night-3);
+  color: var(--cream-dim);
+  border: 1px solid var(--moss-1);
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Hover styles only on pointer devices — on touch, iOS keeps the
+   hover state stuck after a tap, which makes selection unclear. */
+@media (hover: hover) {
+  .chip:hover {
+    background: var(--night-4);
+    color: var(--cream);
+  }
+}
+
+.chip:active {
+  transform: scale(0.97);
+}
+
+/* All chips share the same lime fill when active — same visual
+   language across Quick, Time of day, Tags, and Neighbourhoods.
+   Just a color fade via the existing .chip transition. No bounce
+   or scale animation — keeps tapping calm and fast. */
+.chip.active {
+  background: rgba(204, 232, 78, 0.22);
+  color: var(--lime);
+  border-color: rgba(204, 232, 78, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(204, 232, 78, 0.35);
+}
+
+.chip .count {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.75;
+  letter-spacing: 0;
+}
+
+.quick-chips .chip {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+.modal .close-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.btn-ghost {
+  background: transparent !important;
+  color: var(--moss-3) !important;
+  border: 1px solid var(--moss-2) !important;
+  font-weight: 600 !important;
+}
+
+.btn-ghost:hover {
+  color: var(--warn) !important;
+  border-color: var(--warn) !important;
+  transform: none !important;
+}
+
+/* ── Favorite (★) toggle on event cards + modal ────────── */
+.fav-btn {
+  background: transparent;
+  border: 0;
+  color: var(--moss-3);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 6px;
+  font-family: inherit;
+  transition: color 0.12s, background 0.12s, transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .fav-btn:hover {
+    color: var(--lime-soft);
+    background: rgba(204, 232, 78, 0.1);
+  }
+}
+
+.fav-btn.is-fav {
+  color: var(--lime);
+}
+
+.fav-btn:active {
+  transform: scale(0.85);
+}
+
+/* Tap animation — only runs on the favorite (★) state transition.
+   transform + color are GPU-cheap, so this stays smooth even on a
+   page with 80+ cards. The class is added by JS and removed when
+   the animation ends (one-shot, no re-render needed). */
+.fav-btn.just-favorited {
+  animation: fav-pop 0.32s cubic-bezier(0.34, 1.6, 0.5, 1) both;
+}
+
+@keyframes fav-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+
+/* Star sits absolutely in the top-right corner of the card with a
+   generous 44x44 tap target so it's easy to thumb-tap. The visual
+   glyph stays compact; the surrounding padding makes the hit area
+   forgiving. z-index keeps it above the ::before color bar. */
+.event-card > .fav-btn {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  font-size: 22px;
+  z-index: 2;
+}
+
+.modal .fav-btn {
+  font-size: 22px;
+  padding: 4px 8px;
+}
+
+.modal .modal-head .fav-btn {
+  margin-right: 4px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 -12px;
+  padding: 0 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--moss-1);
+  scrollbar-width: thin;
+}
+
+@media (min-width: 640px) {
+  .tabs {
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.tab {
+  background: transparent;
+  border: 0;
+  color: var(--cream-dim);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .tab:hover {
+    color: var(--cream);
+  }
+}
+
+.tab {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab.active {
+  color: var(--lime);
+  border-bottom-color: var(--lime);
+}
+
+.tab .count {
+  color: var(--moss-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-left: 6px;
+}
+
+.tab.active .count {
+  color: var(--lime-deep);
+}
+
+.mode-tabs .tab {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 10px 12px;
+}
+
+/* Self-teaching affordance for the re-click-to-jump gesture: a small
+   lime dot appears on the active By Day tab only when the now-line
+   is off-screen (set by updateNowCue()). Static, not pulsing. */
+.mode-tabs .tab.has-now-cue::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  box-shadow: 0 0 6px rgba(204, 232, 78, 0.7);
+  margin-left: 8px;
+  vertical-align: 1px;
+}
+
+/* ── Main ────────────────────────────────────────────────── */
+main {
+  padding: 28px 24px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+footer.site-footer {
+  border-top: 1px solid var(--moss-1);
+  padding: 22px 24px 32px;
+  margin-top: 40px;
+  color: var(--cream-dim);
+  font-size: 13px;
+}
+
+footer.site-footer .footer-row {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+footer.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+footer.site-footer a {
+  color: var(--cream-soft);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--moss-2);
+  padding-bottom: 1px;
+}
+
+footer.site-footer a:hover {
+  color: var(--lime);
+  border-bottom-color: var(--lime);
+}
+
+/* ── By Day timeline ─────────────────────────────────────── */
+.hour-row {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--moss-1);
+  align-items: start;
+}
+
+.hour-row:first-child {
+  border-top: 0;
+  padding-top: 4px;
+}
+
+/* "Now" indicator drawn across the timeline at the current wall-
+   clock time on today's day. Pure CSS positioning — JS only sets
+   a percentage; no per-second redraw. */
+.now-line {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 0;
+  margin: -2px 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.now-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--lime);
+  box-shadow: 0 0 8px rgba(204, 232, 78, 0.6);
+}
+
+.now-line::after {
+  content: "NOW";
+  position: absolute;
+  left: 0;
+  top: -8px;
+  background: var(--lime);
+  color: var(--night-0);
+  font: 700 9px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  padding: 3px 5px 2px;
+  border-radius: 4px;
+}
+
+/* Skipped empty hours now collapse into a single thin "Quiet"
+   divider row instead of one dash per empty hour. */
+.hour-row.quiet-run {
+  padding: 6px 0;
+  opacity: 0.7;
+}
+
+.hour-row.quiet-run .hour-label .time {
+  font-size: 14px;
+  color: var(--moss-3);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.quiet-pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--moss-3);
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  background: rgba(120, 180, 200, 0.05);
+  border: 1px dashed var(--moss-2);
+  border-radius: 999px;
+}
+
+/* "Earlier today" — past hours collapsed into a single expandable
+   pill on today's day. Whole row is the hit target (mobile-
+   friendly) so the time gutter doesn't feel dead. */
+.hour-row.past-run {
+  padding: 6px 0;
+}
+
+.hour-row.past-run .hour-label .time {
+  font-size: 14px;
+  color: var(--moss-3);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.past-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--moss-3);
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+  background: rgba(120, 180, 200, 0.06);
+  border: 1px dashed var(--moss-2);
+  border-radius: 999px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.past-pill:hover,
+.past-pill:focus-visible {
+  color: var(--cream);
+  border-color: var(--moss-3);
+}
+
+.past-pill:focus { outline: none; }
+.past-pill:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
+}
+
+.past-pill-caret {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.hour-label {
+  position: sticky;
+  top: 160px;
+  padding-top: 4px;
+}
+
+.hour-label .time {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-align: right;
+}
+
+/* "MORNING/AFTERNOON/..." period sub-label is hidden — the time itself
+   carries enough info, and removing it keeps the rail visually quiet
+   so the eye is drawn to event content. */
+.hour-label .period {
+  display: none;
+}
+
+/* Current-hour treatment on today's day — static lime + glow + bold.
+   Calm on purpose: the .now-line bar above already animates nothing
+   and carries the explicit "NOW" badge. Doubling up with a pulse
+   creates visual noise. */
+.hour-row.is-now-hour .hour-label .time {
+  color: var(--lime);
+  text-shadow: 0 0 10px rgba(204, 232, 78, 0.55);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hour-row.is-now-hour .hour-label .time {
+    text-shadow: none;
+  }
+}
+
+.hour-events {
+  min-height: 24px;
+}
+
+.event-grid {
+  display: grid;
+  /* Single column always on mobile (no auto-fit). The auto-fit +
+     minmax(min(100%, ...)) pattern has a known sizing quirk where
+     the column resolves wider than its container — overflowing
+     past the viewport. Multi-column packing kicks in only at the
+     desktop breakpoint below. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+
+@media (min-width: 720px) {
+  .event-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+}
+
+/* Each card is matted with a translucent wash of its type color so
+   the grid reads like a curated gallery wall. The top edge has a
+   brighter type-color band; the body fades to the surface tone. */
+.event-card {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(204, 232, 78, 0.10) 0%, transparent 38%),
+    var(--night-2);
+  border: 1px solid rgba(204, 232, 78, 0.22);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  padding-right: 48px;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.12s, box-shadow 0.18s;
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+
+.event-card::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: -1px;
+  height: 4px;
+  background: var(--type-camp);
+}
+
+.event-card[data-type="sound_stage"] {
+  background:
+    linear-gradient(180deg, rgba(255, 134, 189, 0.10) 0%, transparent 38%),
+    var(--night-2);
+  border-color: rgba(255, 134, 189, 0.22);
+}
+
+.event-card[data-type="sound_stage"]::before {
+  background: var(--type-stage);
+}
+
+.event-card[data-type="art_installation"] {
+  background:
+    linear-gradient(180deg, rgba(116, 220, 232, 0.10) 0%, transparent 38%),
+    var(--night-2);
+  border-color: rgba(116, 220, 232, 0.22);
+}
+
+.event-card[data-type="art_installation"]::before {
+  background: var(--type-art);
+}
+
+.event-card[data-type="mutant_vehicle"] {
+  background:
+    linear-gradient(180deg, rgba(255, 174, 90, 0.10) 0%, transparent 38%),
+    var(--night-2);
+  border-color: rgba(255, 174, 90, 0.22);
+}
+
+.event-card[data-type="mutant_vehicle"]::before {
+  background: var(--type-vehicle);
+}
+
+@media (hover: hover) {
+  .event-card:hover {
+    background:
+      linear-gradient(180deg, rgba(204, 232, 78, 0.16) 0%, transparent 42%),
+      var(--night-3);
+    border-color: rgba(204, 232, 78, 0.5);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
+  }
+
+  .event-card[data-type="sound_stage"]:hover {
+    background:
+      linear-gradient(180deg, rgba(255, 134, 189, 0.16) 0%, transparent 42%),
+      var(--night-3);
+    border-color: rgba(255, 134, 189, 0.5);
+  }
+
+  .event-card[data-type="art_installation"]:hover {
+    background:
+      linear-gradient(180deg, rgba(116, 220, 232, 0.16) 0%, transparent 42%),
+      var(--night-3);
+    border-color: rgba(116, 220, 232, 0.5);
+  }
+
+  .event-card[data-type="mutant_vehicle"]:hover {
+    background:
+      linear-gradient(180deg, rgba(255, 174, 90, 0.16) 0%, transparent 42%),
+      var(--night-3);
+    border-color: rgba(255, 174, 90, 0.5);
+  }
+
+  .event-card.is-ongoing:hover {
+    opacity: 0.95;
+    background: var(--night-3);
+    border-style: solid;
+  }
+}
+
+.event-card.is-ongoing {
+  opacity: 0.55;
+  background: var(--night-2);
+  border-style: dashed;
+}
+
+.event-card.is-ongoing::before {
+  opacity: 0.55;
+  height: 2px;
+}
+
+.event-card .ongoing-tag {
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--cream-dim);
+}
+
+.event-card .meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.event-card .meta-row .time {
+  white-space: nowrap;
+}
+
+.event-card .meta-row .meta-right {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Crosses-midnight indicator is now an inline ⁺¹ superscript right
+   after the end time so it doesn't take its own row.
+   color: inherit so it picks up the type-specific time color (lime
+   for camp, pink for stage, cyan for art, amber for vehicle). */
+.event-card .cross-midnight,
+.camp-day-event .cross-midnight,
+#camp-modal .event-row .cross-midnight {
+  display: inline;
+  font-family: var(--font-mono);
+  font-size: 0.7em;
+  color: inherit;
+  vertical-align: super;
+  margin-left: 1px;
+  letter-spacing: 0;
+}
+
+.event-card .time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lime);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.event-card[data-type="sound_stage"] .time {
+  color: var(--pink);
+}
+
+.event-card[data-type="art_installation"] .time {
+  color: var(--cyan);
+}
+
+.event-card[data-type="mutant_vehicle"] .time {
+  color: var(--amber);
+}
+
+.event-card .meta-right {
+  font-size: 11px;
+  color: var(--moss-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.event-card .duration {
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.event-card .title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variation-settings: "opsz" 96;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--cream);
+  margin: 2px 0 6px;
+  letter-spacing: -0.015em;
+}
+
+.event-card .owner {
+  font-size: 12px;
+  color: var(--cream-dim);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* The camp name text shrinks first if anything has to give, but
+   doesn't auto-grow — keeps the dot, name, neighbourhood, and ✓
+   checkmark visually clustered together on the left. */
+.event-card .owner .n {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Pills next to it don't shrink — name takes the hit instead. */
+.event-card .owner .dot,
+.event-card .owner .neighbourhood-chip,
+.event-card .owner .verified-pill {
+  flex-shrink: 0;
+}
+
+.neighbourhood-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: rgba(116, 220, 232, 0.08);
+  border: 1px solid rgba(116, 220, 232, 0.28);
+  border-radius: 999px;
+  padding: 1px 7px 1px 6px;
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+
+.neighbourhood-chip::before {
+  content: "📍";
+  font-size: 9px;
+  filter: grayscale(0.2);
+}
+
+.modal .meta .neighbourhood-chip {
+  font-size: 11px;
+}
+
+.event-card .owner .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--type-camp);
+}
+
+.event-card[data-type="sound_stage"] .owner .dot {
+  background: var(--type-stage);
+}
+
+.event-card[data-type="art_installation"] .owner .dot {
+  background: var(--type-art);
+}
+
+.event-card[data-type="mutant_vehicle"] .owner .dot {
+  background: var(--type-vehicle);
+}
+
+.event-card .description {
+  color: var(--cream-soft);
+  font-size: 13px;
+  line-height: 1.62;
+  margin: 8px 0 0;
+}
+
+.event-card .description.is-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  position: relative;
+}
+
+.event-card .description.is-clamped::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36px;
+  background: linear-gradient(180deg, rgba(18, 35, 50, 0) 0%, var(--night-2) 100%);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .event-card:hover .description.is-clamped::after {
+    background: linear-gradient(180deg, rgba(26, 48, 69, 0) 0%, var(--night-3) 100%);
+  }
+}
+
+.event-card .flags {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--warn);
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 3px 8px;
+  background: rgba(255, 210, 74, 0.10);
+  border: 1px solid rgba(255, 210, 74, 0.35);
+  border-radius: 999px;
+}
+
+.event-card .tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag-chip {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(204, 232, 78, 0.08);
+  color: var(--moss-3);
+  border: 1px solid rgba(204, 232, 78, 0.22);
+  white-space: nowrap;
+}
+
+.tag-chip[data-tag="19+"],
+.tag-chip[data-tag="Alcohol Involved"] {
+  background: rgba(255, 134, 189, 0.10);
+  color: var(--type-stage);
+  border-color: rgba(255, 134, 189, 0.32);
+}
+
+.tag-chip[data-tag="Music / Dance"],
+.tag-chip[data-tag="Performance / Show"] {
+  background: rgba(116, 220, 232, 0.10);
+  color: var(--type-art);
+  border-color: rgba(116, 220, 232, 0.32);
+}
+
+.tag-chip[data-tag="Food / Drink"] {
+  background: rgba(255, 210, 74, 0.10);
+  color: var(--warn);
+  border-color: rgba(255, 210, 74, 0.32);
+}
+
+
+/* ── By Camp view ────────────────────────────────────────── */
+.camp-block {
+  background: var(--night-2);
+  border: 1px solid var(--moss-1);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+.camp-block summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  row-gap: 6px;
+  flex-wrap: wrap;
+  user-select: none;
+  transition: background 0.15s;
+  min-width: 0;
+}
+
+/* Name shares row 1 with the chips and truncates with an ellipsis.
+   min-width: 0 is REQUIRED — without it, flex items default to
+   min-content which is the full word/text width and breaks ellipsis
+   inside flex containers (well-known gotcha). */
+.camp-block summary .name {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Camp summary doesn't wrap — keeps everything on one tidy row. */
+.camp-block summary {
+  flex-wrap: nowrap;
+}
+
+.camp-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.camp-block summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 6px solid var(--moss-3);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  transition: transform 0.15s;
+}
+
+.camp-block[open] summary::before {
+  transform: rotate(90deg);
+  border-left-color: var(--lime);
+}
+
+.camp-block summary:hover {
+  background: var(--night-3);
+}
+
+.camp-block .name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-variation-settings: "opsz" 48;
+  font-size: 17px;
+  color: var(--cream);
+  flex: 1;
+  letter-spacing: -0.01em;
+  /* Long camp names truncate to one line with an ellipsis instead of
+     wrapping to a second row. Full name still in title attribute for
+     hover and accessibility. */
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.type-pill {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  background: rgba(204, 232, 78, 0.14);
+  color: var(--type-camp);
+  border: 1px solid rgba(204, 232, 78, 0.45);
+}
+
+.type-pill[data-type="sound_stage"] {
+  background: rgba(255, 134, 189, 0.14);
+  color: var(--type-stage);
+  border-color: rgba(255, 134, 189, 0.45);
+}
+
+.type-pill[data-type="art_installation"] {
+  background: rgba(116, 220, 232, 0.14);
+  color: var(--type-art);
+  border-color: rgba(116, 220, 232, 0.45);
+}
+
+.type-pill[data-type="mutant_vehicle"] {
+  background: rgba(255, 174, 90, 0.14);
+  color: var(--type-vehicle);
+  border-color: rgba(255, 174, 90, 0.45);
+}
+
+.camp-block .count {
+  color: var(--moss-3);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* On the event card, the verified marker is a compact circular ✓
+   so it doesn't fight the time, owner, and neighbourhood pills for
+   space. The full "VERIFIED" pill stays in the By-Camp summary and
+   the modal where there's room. */
+.verified-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(204, 232, 78, 0.16);
+  color: var(--lime);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(204, 232, 78, 0.45);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--font-sans);
+}
+
+.event-card .owner .verified-pill {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  font-size: 10px;
+  gap: 0;
+  justify-content: center;
+  border-radius: 50%;
+  /* The "✓ Verified" text is replaced with just ✓ via JS, so this
+     shrinks to a tight circular badge. */
+}
+
+.camp-block .body {
+  padding: 4px 18px 18px;
+  border-top: 1px solid var(--moss-1);
+}
+
+.camp-day {
+  margin-top: 14px;
+}
+
+.camp-day h3 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--lime);
+  font-weight: 600;
+}
+
+.camp-day-event {
+  padding: 10px 12px;
+  margin: 0 -12px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  align-items: baseline;
+  transition: background 0.12s;
+}
+
+.camp-day-event+.camp-day-event {
+  margin-top: 2px;
+}
+
+.camp-day-event:hover {
+  background: var(--night-3);
+}
+
+.camp-day-event .time {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--lime);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.camp-day-event .title {
+  font-size: 14px;
+  color: var(--cream);
+  font-weight: 500;
+}
+
+.camp-empty {
+  color: var(--moss-3);
+  font-size: 13px;
+  font-style: italic;
+  padding: 12px 0;
+}
+
+/* ── Modal ───────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 9, 12, 0.78);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 24px;
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+/* Scroll-lock applied to <body> while any .modal-backdrop is open.
+   position: fixed + preserved scroll offset is the iOS-safe pattern
+   that fully stops the underlying page from scrolling or rubber-
+   banding when the dimmed backdrop area is tapped/dragged. */
+body.modal-open {
+  position: fixed;
+  top: var(--scroll-lock-top, 0);
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.modal {
+  background: var(--night-2);
+  border: 1px solid var(--moss-2);
+  border-radius: var(--radius-lg);
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 26px 28px;
+  box-shadow: var(--shadow-2);
+}
+
+/* Slide-up animation on every modal — matches the native iOS
+   sheet feel. transform-only so no layout thrash. */
+.modal-backdrop.open .modal {
+  animation: sheet-up 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* On phones, the Filters modal anchors to the bottom as a card
+   (close to thumb reach for the many small chips), but the Search
+   modal centers on screen since it's mostly a single input that
+   fits comfortably mid-viewport. All cards stay rounded on 4 sides. */
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 8px 8px max(10px, env(safe-area-inset-bottom));
+  }
+
+  /* Search modal: center vertically, smaller card. The bottom
+     padding includes half the --keyboard-inset (set in JS from
+     window.visualViewport) so the card rises just enough to
+     clear the iOS on-screen keyboard without snapping all the
+     way to the top of the visible area. (align-items: center
+     on the flex backdrop means extra bottom padding shifts the
+     card up by half that padding.) */
+  #search-modal-backdrop {
+    align-items: center;
+    padding: 16px 16px calc(16px + var(--keyboard-inset, 0px) / 2);
+  }
+
+  .modal.search-modal {
+    max-height: 70vh;
+    max-height: 70dvh;
+    max-width: 480px;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: 16px 18px 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal.filters-modal {
+    max-height: 86vh;
+    max-height: 86dvh;
+    max-width: none;
+    width: 100%;
+    border-radius: var(--radius-lg);
+    padding: 16px 18px 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .modal.search-modal .modal-head,
+  .modal.filters-modal .modal-head {
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+
+  .modal.search-modal .modal-section,
+  .modal.filters-modal .modal-section {
+    margin-top: 14px;
+  }
+
+  .modal.search-modal > input[type="search"] {
+    flex-shrink: 0;
+  }
+
+  /* Scrollable content region between head and sticky action bar */
+  .modal.search-modal .sheet-body,
+  .modal.filters-modal .sheet-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    margin: 0 -18px;
+    padding: 0 18px 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal.search-modal .close-row,
+  .modal.filters-modal .close-row {
+    margin: 0 -18px;
+    padding: 12px 18px 14px;
+    border-top: 1px solid var(--moss-1);
+    background: var(--night-2);
+    flex-shrink: 0;
+  }
+}
+
+/* Section divider — visually separates Quick / Neighbourhoods / Tags. */
+.modal-section + .modal-section {
+  padding-top: 14px;
+  border-top: 1px solid var(--moss-1);
+}
+
+/* Bigger, more prominent Done button. */
+.modal .close-row button:not(.btn-ghost) {
+  flex: 1;
+  padding: 12px 18px;
+  font-size: 14px;
+}
+
+.modal .close-row .btn-ghost {
+  flex: 0 0 auto;
+}
+
+.modal h2 {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--cream);
+  letter-spacing: -0.01em;
+}
+
+.modal .meta {
+  color: var(--cream-dim);
+  font-size: 13px;
+  margin-bottom: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.modal .meta .time {
+  color: var(--lime);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.modal .meta .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--moss-2);
+  flex-shrink: 0;
+}
+
+.modal p {
+  margin: 14px 0;
+  color: var(--cream-soft);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.modal .flags-block {
+  color: var(--warn);
+  font-size: 13px;
+  padding: 8px 12px;
+  background: rgba(255, 210, 74, 0.10);
+  border: 1px solid rgba(255, 210, 74, 0.35);
+  border-radius: 8px;
+}
+
+.modal .tags-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 4px;
+}
+
+.modal .tags-block .tag-chip {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.modal .raw {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--moss-3);
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--moss-1);
+}
+
+.modal .close-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  gap: 8px;
+}
+
+/* Links inside modals use the lime accent, not default browser blue. */
+.modal a {
+  color: var(--lime);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(204, 232, 78, 0.4);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+@media (hover: hover) {
+  .modal a:hover {
+    color: var(--lime-soft);
+    border-bottom-color: var(--lime-soft);
+  }
+}
+
+/* Scoped to .close-row only — previously this targeted EVERY button
+   inside any modal, which made chips, the X button, and the favorite
+   star all render as lime. */
+.modal .close-row > button {
+  background: var(--lime);
+  color: var(--night-0);
+  border: 0;
+  padding: 9px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .modal .close-row > button:hover {
+    background: var(--lime-soft);
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Map preview (in event modal) ───────────────────────── */
+.map-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 794 / 615;
+  background: var(--night-3);
+  border: 1px solid var(--moss-1);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 14px 0 4px;
+  cursor: pointer;
+}
+
+.map-preview.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--moss-3);
+  font-size: 12px;
+  font-style: italic;
+  aspect-ratio: auto;
+  padding: 20px;
+}
+
+.map-preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.map-preview .marker {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 50%;
+  border: 3px solid var(--cream);
+  box-shadow: 0 0 0 2px rgba(18, 42, 53, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  animation: pulse 1.6s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.map-preview .marker.camp {
+  background: var(--lime-soft);
+}
+
+.map-preview .marker.sound_stage {
+  background: var(--pink-soft);
+}
+
+.map-preview .marker.art_installation {
+  background: var(--cyan-soft);
+}
+
+.map-preview .open-hint {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(18, 42, 53, 0.82);
+  color: var(--night-0);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.map-preview.loading::after {
+  content: "Loading map…";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--night-3);
+  color: var(--moss-3);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* ── Map view (full Map tab) ────────────────────────────── */
+.map-view {
+  position: relative;
+  width: 100%;
+  background: var(--night-2);
+  border: 1px solid var(--moss-1);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.map-view .stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 794 / 615;
+  overflow: hidden;
+  cursor: grab;
+  /* Disable browser pan/zoom so our pointer handlers can drive
+     pan + pinch-zoom directly without conflict. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ── Map fullscreen mode ────────────────────────────────────
+   Activated by body.map-fullscreen (toggled in switchMode()).
+   Hides the header + footer entirely and lets the map take the
+   full viewport; navigation lives in floating overlays. */
+body.map-fullscreen header,
+body.map-fullscreen footer.site-footer {
+  display: none;
+}
+
+/* Header is hidden in fullscreen, so reclaim the reserved space
+   that body.padding-top normally holds for the floating header. */
+body.map-fullscreen {
+  padding-top: 0;
+}
+
+body.map-fullscreen main {
+  padding: 0;
+  max-width: none;
+  margin: 0;
+}
+
+body.map-fullscreen .map-view {
+  border: 0;
+  border-radius: 0;
+  height: 100vh;
+  height: 100dvh;
+}
+
+body.map-fullscreen .map-view .stage {
+  aspect-ratio: auto;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Floating back-to-schedule pill (top-left of map fullscreen). */
+.map-back-pill {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: rgba(18, 42, 53, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #eff7f8;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
+  padding: 8px 14px 8px 10px;
+  border-radius: 999px;
+  font: 600 12.5px/1 var(--font-sans);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  z-index: 12;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.map-fullscreen .map-back-pill {
+  display: inline-flex;
+}
+
+.map-back-pill svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* In fullscreen, move the legend out of the top row (it was fighting
+   the zoom controls). Bottom-left, no tab bar to clear anymore. */
+body.map-fullscreen .map-view .legend {
+  top: auto;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left));
+  font-size: 11px;
+  gap: 10px;
+  padding: 6px 10px;
+}
+
+body.map-fullscreen .map-view .controls-overlay {
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+}
+
+.map-view .stage.panning {
+  cursor: grabbing;
+}
+
+.map-view .canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.map-view .canvas img {
+  display: block;
+  /* Render at the source's natural pixel resolution. The .canvas
+     element gets explicit width/height in JS once the image loads,
+     and the entire canvas is scaled to fit via CSS transform. This
+     keeps the iOS Safari compositor rasterizing the layer at full
+     source resolution instead of at the small CSS-pixel viewport
+     size (which made transform-zoom look blurry on mobile). */
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.map-view .loading-shade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--night-2);
+  color: var(--moss-3);
+  font-size: 13px;
+  font-style: italic;
+  transition: opacity 0.25s ease-out;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.map-view .loading-shade.hidden {
+  opacity: 0;
+}
+
+.map-view .pin {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  border-radius: 50%;
+  border: 2px solid var(--cream);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transform: scale(var(--pin-scale, 1));
+  transform-origin: center;
+  transition: transform 0.12s ease-out;
+  /* Match the stage so iOS doesn't hijack pin-rooted touches with
+     its own pan/zoom heuristics — the stage handlers own all
+     gestures, including pinches that start on a pin. */
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.map-view .pin:hover,
+.map-view .pin.pin-armed {
+  transform: scale(calc(var(--pin-scale, 1) * 1.5));
+  z-index: 5;
+}
+
+/* Pin-hide toggle in the map: when active, all pins are hidden so
+   you can see the underlying art map without overlay clutter. */
+.map-view.pins-hidden .pin {
+  display: none;
+}
+
+.map-view .pin.camp {
+  background: var(--lime-soft);
+}
+
+.map-view .pin.sound_stage {
+  background: var(--pink-soft);
+}
+
+.map-view .pin.art_installation {
+  background: var(--cyan-soft);
+}
+
+.map-view .pin.dim {
+  opacity: 0.25;
+}
+
+.map-view .pin.dim:hover {
+  opacity: 1;
+}
+
+.map-view .controls-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 2px;
+  background: rgba(18, 42, 53, 0.94);
+  backdrop-filter: blur(8px);
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  z-index: 10;
+}
+
+.map-view .controls-overlay button {
+  background: transparent;
+  border: 0;
+  color: #eff7f8;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  cursor: pointer;
+  font: 700 16px/1 var(--font-sans);
+  padding: 0;
+  transition: background 0.12s;
+}
+
+.map-view .controls-overlay button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.map-view .controls-overlay button:active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.map-view .controls-overlay button.pins-toggle.active {
+  background: rgba(204, 232, 78, 0.24);
+  color: var(--lime);
+}
+
+.map-view .controls-overlay button.pins-toggle svg {
+  display: block;
+  margin: auto;
+}
+
+.map-view .controls-overlay .zoom-readout {
+  font: 600 12px/30px var(--font-mono);
+  color: #eff7f8;
+  min-width: 44px;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.map-view .legend {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(18, 42, 53, 0.94);
+  backdrop-filter: blur(8px);
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  display: flex;
+  gap: 16px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #eff7f8;
+  align-items: center;
+  z-index: 10;
+}
+
+.map-view .legend .swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.map-view .legend .dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid #eff7f8;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.map-view .legend .dot.camp {
+  background: var(--lime-soft);
+}
+
+.map-view .legend .dot.sound_stage {
+  background: var(--pink-soft);
+}
+
+.map-view .legend .dot.art_installation {
+  background: var(--cyan-soft);
+}
+
+.map-view .empty-state {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--moss-3);
+  font-size: 14px;
+}
+
+.map-view .empty-state code {
+  background: var(--night-3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* Camp modal (list of events for a camp) */
+#camp-modal .event-list {
+  display: flex;
+  flex-direction: column;
+  margin: 12px 0;
+  max-height: 50vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--moss-1);
+}
+
+#camp-modal .event-row {
+  display: grid;
+  grid-template-columns: 70px 90px 1fr;
+  gap: 12px;
+  padding: 8px 4px;
+  align-items: baseline;
+  border-bottom: 1px solid var(--moss-1);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+#camp-modal .event-row:hover {
+  background: var(--night-3);
+}
+
+#camp-modal .event-row .day {
+  color: var(--moss-3);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+#camp-modal .event-row .time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cream-soft);
+}
+
+#camp-modal .event-row .title {
+  color: var(--cream);
+}
+
+#camp-modal .empty {
+  color: var(--moss-3);
+  padding: 12px 0;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.empty-state {
+  color: var(--moss-3);
+  text-align: center;
+  padding: 60px 24px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-style: italic;
+}
+
+.empty-state .empty-title {
+  color: var(--cream);
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.empty-state .empty-sub {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 13px;
+  color: var(--cream-dim);
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+/* Narrow-screen layout tweaks for the schedule body itself. The
+   header / controls / tabs are already compact at every size, so
+   this block only fixes the timeline column widths on phones. */
+@media (max-width: 720px) {
+  .hour-row {
+    grid-template-columns: 48px 1fr;
+    gap: 10px;
+  }
+
+  .hour-label .time {
+    font-size: 12px;
+  }
+
+  main {
+    padding: 18px 14px 60px;
+  }
+
+  .camp-day-event {
+    grid-template-columns: 100px 1fr;
+    gap: 8px;
+  }
+}
+

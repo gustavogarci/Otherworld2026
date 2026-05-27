@@ -2,6 +2,18 @@
 claims.php
 claim_rate.php
 
+# Legacy artifact: dashboard.php / reconcile-sheet.php still write data.js
+# on every save, but the client reads events.json directly. We keep the
+# server-side regeneration for back-compat with anything still loading it
+# but stop committing the regenerated copy into the repo (each save was
+# producing a ~460 KB diff alongside the events.json change). Delete the
+# regeneration code once you can confirm no consumers remain.
+data.js
+
+# Big source-of-truth assets that don't need to live in git history.
+# map.pdf is the 28 MB parse-map.js input; map.webp is regenerated.
+map.pdf
+
 node_modules/
 # Backups and stray copies
 *.bak

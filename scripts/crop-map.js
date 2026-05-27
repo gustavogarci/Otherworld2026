@@ -22,7 +22,6 @@ const { PNG } = require("pngjs");
 
 const ROOT     = path.resolve(__dirname, "..");
 const SRC_WEBP = path.join(ROOT, "map.webp");
-const SRC_PNG  = path.join(ROOT, "map.png");
 const TMP_PNG  = "/tmp/otherworld_map_source.png";
 const DEST_DIR = "/tmp/otherworld_map_tiles";
 const OVERLAP  = 0.10;
@@ -30,18 +29,13 @@ const OVERLAP  = 0.10;
 const cols = parseInt(process.argv[2], 10) || 4;
 const rows = parseInt(process.argv[3], 10) || 3;
 
-let SRC;
-if (fs.existsSync(SRC_WEBP)) {
-  // Decode webp → temp PNG for pngjs. `-quiet` keeps stderr clean.
-  execFileSync("dwebp", ["-quiet", SRC_WEBP, "-o", TMP_PNG]);
-  SRC = TMP_PNG;
-} else if (fs.existsSync(SRC_PNG)) {
-  // Back-compat: still works if someone has an old map.png lying around.
-  SRC = SRC_PNG;
-} else {
-  console.error(`Missing ${SRC_WEBP} (and no fallback ${SRC_PNG}). Run \`node scripts/parse-map.js\` first.`);
+if (!fs.existsSync(SRC_WEBP)) {
+  console.error(`Missing ${SRC_WEBP}. Run \`node scripts/parse-map.js\` first.`);
   process.exit(1);
 }
+// Decode webp → temp PNG for pngjs. `-quiet` keeps stderr clean.
+execFileSync("dwebp", ["-quiet", SRC_WEBP, "-o", TMP_PNG]);
+const SRC = TMP_PNG;
 
 fs.mkdirSync(DEST_DIR, { recursive: true });
 // Clean any prior run so stale tiles don't confuse the merge step.

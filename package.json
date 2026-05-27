@@ -1,14 +1,14 @@
 {
   "name": "www",
   "version": "1.0.0",
-  "description": "",
-  "main": "parse-schedule.js",
+  "description": "Otherworld 2026 community schedule site",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "parse": "node parse-schedule.js",
-    "parse-map": "node parse-map.js",
+    "parse": "node scripts/parse-schedule.js",
+    "parse-map": "node scripts/parse-map.js",
     "crop-map": "node scripts/crop-map.js",
     "merge-agent-results": "node scripts/merge-agent-results.js",
+    "merge-qa-results": "node scripts/merge-qa-results.js",
     "serve": "php -S 127.0.0.1:8000 -t .",
     "screenshots": "node scripts/mobile-screenshots.js"
   },

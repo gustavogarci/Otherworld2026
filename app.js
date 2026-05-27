@@ -1,0 +1,2515 @@
+(async () => {
+  const [_eventsResp, _aliasResp] = await Promise.all([
+    fetch('./events.json',       { cache: 'no-store' }),
+    fetch('./camp-aliases.json', { cache: 'no-store' }).catch(() => null),
+  ]);
+  if (!_eventsResp.ok) throw new Error('Failed to load events.json: ' + _eventsResp.status);
+  window.OTHERWORLD_DATA = await _eventsResp.json();
+  const _aliasData = (_aliasResp && _aliasResp.ok) ? await _aliasResp.json().catch(() => null) : null;
+
+  // Defensive dedupe: collapse entries whose names canonicalize to the
+  // same key (so "Orcar" and "Orcar Camp" / "Magic Stick" and "The Magic
+  // Stick" fold together) AND apply the typo-alias map from
+  // camp-aliases.json so misspelled camp names ("The Saloon Saloon")
+  // merge with their canonical version. Also collapses same
+  // (title,day,startTime) events within each entry. The reconcile cron
+  // used to leak duplicates for claimed camps; that's fixed at the
+  // source, but this is the belt-and-suspenders so the page never shows
+  // stale dups.
+  //
+  // Keep in sync with admin/reconcile-sheet.php::canonical() and
+  // scripts/dedupe-events.php::canonical(), and with the alias map.
+  (function dedupe(data, aliasData) {
+    if (!data || !Array.isArray(data.entries)) return;
+    const canonical = name => {
+      if (!name) return "";
+      let s = String(name).trim().toLowerCase();
+      // Strip accents.
+      s = s.normalize("NFKD").replace(/[̀-ͯ]/g, "");
+      s = s.replace(/^the\s+/, "");
+      s = s.replace(/,?\s*the\s*$/, "");
+      s = s.replace(/\s+camp\s*$/, "");
+      s = s.replace(/[^a-z0-9]+/g, "");
+      return s;
+    };
+    // Build alias map: canonical(typo) -> canonical(target).
+    const aliasMap = new Map();
+    const rawAliases = (aliasData && aliasData.aliases) || {};
+    for (const [from, to] of Object.entries(rawAliases)) {
+      const k = canonical(from);
+      if (k && typeof to === "string") aliasMap.set(k, canonical(to));
+    }
+    const resolveKey = name => {
+      const c = canonical(name);
+      return aliasMap.get(c) || c;
+    };
+    const evKey = e => (e.title || "").trim().toLowerCase()
+                     + "|" + (e.day || "").trim()
+                     + "|" + (e.startTime || "").trim();
+    const groups = new Map(); // canonicalKey -> array of {entry, index}
+    data.entries.forEach((entry, index) => {
+      const k = resolveKey(entry.name || "");
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push({ entry, index });
+    });
+    const out = [];
+    for (const list of groups.values()) {
+      // Primary: claimed wins, otherwise lowest index.
+      list.sort((a, b) => {
+        const ac = a.entry.claimed ? 0 : 1;
+        const bc = b.entry.claimed ? 0 : 1;
+        if (ac !== bc) return ac - bc;
+        return a.index - b.index;
+      });
+      const primary = list[0].entry;
+      // If the primary's name is itself an aliased (typo'd) variant,
+      // rewrite to the canonical display name from the alias map.
+      const primaryCanon = canonical(primary.name || "");
+      for (const [from, to] of Object.entries(rawAliases)) {
+        if (canonical(from) === primaryCanon) { primary.name = to; break; }
+      }
+      // Dedupe primary's own events (first-wins), then append any net-new
+      // events from the other dupes in the group.
+      const seen = new Set();
+      primary.events = (primary.events || []).filter(ev => {
+        const k = evKey(ev);
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      for (let i = 1; i < list.length; i++) {
+        for (const ev of (list[i].entry.events || [])) {
+          const k = evKey(ev);
+          if (seen.has(k)) continue;
+          seen.add(k);
+          primary.events.push(ev);
+        }
+      }
+      out.push(primary);
+    }
+    data.entries = out;
+  })(window.OTHERWORLD_DATA, _aliasData);
+
+  const DATA = window.OTHERWORLD_DATA;
+  const MAP = window.OTHERWORLD_MAP || { pins: [] };
+  const PIN_BY_NAME = new Map(
+    (MAP.pins || []).filter(p => p && p.name).map(p => [p.name, p])
+  );
+
+  // Lazy-load + localStorage cache the map image. The WebP is ~2.4 MB;
+  // we only fetch it the first time something requests it (map tab open
+  // or first event modal), then keep a base64 data URL in localStorage
+  // keyed by the parser's `version` so re-runs of parse-map invalidate
+  // the cache automatically. Falls back to a direct <img src> if fetch
+  // is blocked (file://) or localStorage is full.
+  const MapImage = (() => {
+    const IMG_PATH = MAP.imagePath || "map.webp";
+    const VERSION = MAP.version || "0";
+    const KEY = "otherworld:map:" + VERSION;
+    let cachedSrc = null;
+    let inflight = null;
+    let triedCache = false;
+
+    function readCache() {
+      try { return localStorage.getItem(KEY); } catch { return null; }
+    }
+    function writeCache(dataUrl) {
+      try {
+        // Clear stale versions before writing.
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith("otherworld:map:") && k !== KEY) localStorage.removeItem(k);
+        }
+        localStorage.setItem(KEY, dataUrl);
+      } catch { /* quota exceeded — browser HTTP cache still helps */ }
+    }
+    async function fetchAsDataUrl() {
+      const resp = await fetch(IMG_PATH, { cache: "force-cache" });
+      if (!resp.ok) throw new Error("map fetch " + resp.status);
+      const blob = await resp.blob();
+      return await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result);
+        fr.onerror = reject;
+        fr.readAsDataURL(blob);
+      });
+    }
+
+    // Returns a Promise<src> usable as <img src>. Always resolves —
+    // falls back to the plain path if anything goes wrong.
+    function get() {
+      if (cachedSrc) return Promise.resolve(cachedSrc);
+      if (!triedCache) {
+        triedCache = true;
+        const cached = readCache();
+        if (cached) { cachedSrc = cached; return Promise.resolve(cached); }
+      }
+      if (inflight) return inflight;
+      inflight = fetchAsDataUrl()
+        .then(src => { cachedSrc = src; writeCache(src); inflight = null; return src; })
+        .catch(() => { inflight = null; return IMG_PATH; });
+      return inflight;
+    }
+
+    // Optimistic synchronous src: returns cached data URL if already
+    // available, otherwise null (caller should attach .get().then()).
+    function syncSrc() {
+      if (cachedSrc) return cachedSrc;
+      if (!triedCache) {
+        triedCache = true;
+        const cached = readCache();
+        if (cached) { cachedSrc = cached; return cached; }
+      }
+      return null;
+    }
+
+    return { get, syncSrc };
+  })();
+  const DAY_ORDER = ["Thursday", "Friday", "Saturday", "Sunday", "Monday"];
+  const FESTIVAL_START_HOUR = 6;
+  const HOURS_IN_DAY = 24;
+
+  const ALL_EVENTS = [];
+  for (const entry of DATA.entries) {
+    for (const ev of entry.events) ALL_EVENTS.push({ ...ev, _entry: entry });
+  }
+
+  // ── Favorites (localStorage-backed) ───────────────────
+  // Stable per-event key. Intentionally tolerant — built from the
+  // canonicalised camp name + day + a normalised title (lowercase, no
+  // accents/emoji/punctuation, collapsed whitespace). startTime is
+  // deliberately NOT in the key so that a camp tweaking their schedule
+  // ("14:00 → 14:30") doesn't silently un-favorite the event for
+  // everyone who already starred it. Same for title edits like adding
+  // a 🍵 emoji or fixing punctuation.
+  //
+  // Risk in the other direction: if a camp has two recurring events on
+  // the same day with the same normalised title (rare, since the title
+  // is usually descriptive enough), they collapse to one favorite.
+  // We accept that tradeoff — losing favorites silently is worse than
+  // collapsing a true duplicate.
+  const FAV_KEY = "otherworld:favorites:v1";
+  function normalizeTitleForKey(s) {
+    if (!s) return "";
+    let t = String(s).toLowerCase();
+    t = t.normalize("NFKD").replace(/[\u0300-\u036f]/g, ""); // strip accents
+    t = t.replace(/[^a-z0-9]+/g, " ").trim();                // emoji/punct → space
+    return t;
+  }
+  function normalizeCampForKey(s) {
+    if (!s) return "";
+    let t = String(s).toLowerCase();
+    t = t.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+    t = t.replace(/^the\s+/, "");
+    t = t.replace(/,?\s*the\s*$/, "");
+    t = t.replace(/\s+camp\s*$/, "");
+    t = t.replace(/[^a-z0-9]+/g, "");
+    return t;
+  }
+  function eventFavKey(ev) {
+    return [
+      normalizeCampForKey((ev._entry && ev._entry.name) || ev.owner || ""),
+      (ev.day || "").trim().toLowerCase(),
+      normalizeTitleForKey(ev.title || ""),
+    ].join("|");
+  }
+  function loadFavorites() {
+    try {
+      const raw = localStorage.getItem(FAV_KEY);
+      if (!raw) return new Set();
+      const arr = JSON.parse(raw);
+      return migrateLegacyFavorites(Array.isArray(arr) ? arr : []);
+    } catch { return new Set(); }
+  }
+  // Migrate any v1 keys saved with the old 4-part shape
+  // (camp|day|startTime|title) by stripping the third segment and
+  // normalising title + camp. Idempotent: keys already in the new
+  // 3-part shape pass through unchanged.
+  function migrateLegacyFavorites(arr) {
+    const out = new Set();
+    let migrated = false;
+    for (const k of arr) {
+      if (typeof k !== "string") continue;
+      const parts = k.split("|");
+      if (parts.length === 4) {
+        // Legacy: camp|day|startTime|title → drop startTime, normalise.
+        const [camp, day, , title] = parts;
+        out.add([
+          normalizeCampForKey(camp),
+          (day || "").trim().toLowerCase(),
+          normalizeTitleForKey(title),
+        ].join("|"));
+        migrated = true;
+      } else {
+        out.add(k);
+      }
+    }
+    if (migrated) {
+      try { localStorage.setItem(FAV_KEY, JSON.stringify([...out])); } catch {}
+    }
+    return out;
+  }
+  function saveFavorites(set) {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify([...set])); } catch {}
+  }
+
+  const state = {
+    mode: "day",
+    // Placeholder — overwritten by initialDay() once devNowOverride
+    // is initialized below. initialDay() depends on getNow() which
+    // reads devNowOverride, so we can't call it here without a TDZ.
+    day: discoverDefaultDay(),
+    search: "",
+    type: "all",
+    tags: new Set(),
+    neighbourhoods: new Set(),
+    // Time-bucket quick chips: "now" | "next". OR semantics within the
+    // set (Happening now ∪ Up next reads naturally as "soon"), AND-
+    // combined with every other filter group.
+    quick: new Set(),
+    // Favorites is its own facet — a personal flag, not a time bucket —
+    // so it AND-combines with everything else (including "now"/"next").
+    // Lived in state.quick previously, which surprised users who
+    // expected "Favorites + Happening now" to intersect, not union.
+    favoritesOnly: false,
+    // Time-of-day chips ("morning" | "afternoon" | "evening" | "late").
+    // Multi-select, OR semantics across selected periods AND-combined
+    // with other filters.
+    timesOfDay: new Set(),
+    // Duration buckets ("short" | "medium" | "long"). Multi-select with
+    // OR semantics, AND-combined with other filters.
+    durations: new Set(),
+    favorites: loadFavorites(),
+  };
+
+  // Map a time-of-day key to a predicate that takes an event's start
+  // hour (0..23) and returns true if it falls in that period. Mirrors
+  // hourPeriodLabel() so chips visibly map to the timeline labels.
+  const TIME_OF_DAY = {
+    morning:   h => h >= 6 && h < 12,
+    afternoon: h => h >= 12 && h < 17,
+    evening:   h => h >= 17 && h < 21,
+    late:      h => h >= 21 || h < 6,
+  };
+  // Duration buckets split at the natural cliffs in the dataset: most
+  // events end by 2h (median 1.5h); 2–6h covers parties / workshops;
+  // >6h is mostly "camp is always open" ambient entries. Boundaries
+  // are inclusive on the upper end so a clean "2h" event lands in
+  // short and a clean "6h" event lands in medium.
+  const DURATION_BUCKET = {
+    short:  d => d > 0 && d <= 2,
+    medium: d => d > 2 && d <= 6,
+    long:   d => d > 6,
+  };
+  function eventStartHour(ev) {
+    if (!ev.startTime) return null;
+    return Number(ev.startTime.split(":")[0]);
+  }
+
+  // Discovered from the data so the filter row stays in sync with whatever
+  // the spreadsheet currently uses. Ordered by frequency (most-tagged first)
+  // so the common categories are easiest to spot.
+  const ALL_TAGS = (() => {
+    const counts = new Map();
+    for (const ev of ALL_EVENTS) {
+      for (const t of ev.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t);
+  })();
+
+  // Neighbourhood lives on the entry (camp), not on events. Sort by
+  // camp-count so the populated neighbourhoods float to the top.
+  const ALL_NEIGHBOURHOODS = (() => {
+    const counts = new Map();
+    for (const entry of DATA.entries) {
+      const n = entry.neighbourhood;
+      if (!n) continue;
+      counts.set(n, (counts.get(n) || 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => n);
+  })();
+
+  // ── Happening Now / Up Next ────────────────────────────
+  // "Today" is the festival day matching the current weekday WITHIN
+  // the festival window. Outside the festival, returns null and the
+  // empty-state copy kicks in.
+  const UP_NEXT_WINDOW_MIN = 120; // events starting in the next 2 hours
+  const FESTIVAL_START = new Date(2026, 5, 4);  // Thu Jun 4 2026
+  const FESTIVAL_END_EXCLUSIVE = new Date(2026, 5, 9);  // Tue Jun 9 (Mon Jun 8 inclusive)
+
+  // Dev override: when set, every "what time is it?" check inside the
+  // schedule (Today / Happening Now / Up Next / festival window) uses
+  // this value instead of the wall clock. Stored as a "YYYY-MM-DDTHH:mm"
+  // string (matches <input type="datetime-local">) so reloads persist.
+  // The "last updated" relative-time string deliberately keeps using
+  // the real clock — that's about data freshness, not the festival.
+  const DEV_NOW_KEY = "ow_dev_now";
+  function loadDevNow() {
+    try { return localStorage.getItem(DEV_NOW_KEY) || ""; } catch { return ""; }
+  }
+  function saveDevNow(v) {
+    try {
+      if (v) localStorage.setItem(DEV_NOW_KEY, v);
+      else localStorage.removeItem(DEV_NOW_KEY);
+    } catch {}
+  }
+  let devNowOverride = (() => {
+    const v = loadDevNow();
+    if (!v) return null;
+    const d = new Date(v);
+    return isNaN(d) ? null : d;
+  })();
+  function getNow() {
+    return devNowOverride ? new Date(devNowOverride) : new Date();
+  }
+  // Now that devNowOverride is settled, pick the live "today" if the
+  // festival is active. See initialDay() below.
+  state.day = initialDay();
+
+  function isFestivalActive(now = getNow()) {
+    return now >= FESTIVAL_START && now < FESTIVAL_END_EXCLUSIVE;
+  }
+  function getToday() {
+    const now = getNow();
+    if (!isFestivalActive(now)) return null;
+    const weekday = now.toLocaleDateString("en-US", { weekday: "long" });
+    return DAY_ORDER.includes(weekday) ? weekday : null;
+  }
+  function daysUntilFestival(now = getNow()) {
+    const ms = FESTIVAL_START - now;
+    return Math.ceil(ms / (1000 * 60 * 60 * 24));
+  }
+  function festivalEmptyMessage() {
+    const now = getNow();
+    if (isFestivalActive(now)) return null;
+    if (now < FESTIVAL_START) {
+      const days = daysUntilFestival(now);
+      if (days <= 0) return "Otherworld starts today — see you there.";
+      if (days === 1) return "Otherworld starts tomorrow (Thursday June 4).";
+      return `Otherworld starts in ${days} days (Thursday June 4).`;
+    }
+    return "Otherworld has wrapped — until next year.";
+  }
+  function eventIsHappeningNow(ev) {
+    const today = getToday();
+    if (!today || ev.day !== today) return false;
+    if (!ev.startTime || !ev.endTime) return false;
+    const now = getNow();
+    const nowFest = festivalMinutes(
+      String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0")
+    );
+    const start = festivalMinutes(ev.startTime);
+    const end = festivalMinutes(ev.endTime);
+    if (end <= start) return false; // skip malformed
+    return nowFest >= start && nowFest < end;
+  }
+  function eventIsUpNext(ev) {
+    const today = getToday();
+    if (!today || ev.day !== today) return false;
+    if (!ev.startTime) return false;
+    const now = getNow();
+    const nowFest = festivalMinutes(
+      String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0")
+    );
+    const start = festivalMinutes(ev.startTime);
+    const delta = start - nowFest;
+    return delta > 0 && delta <= UP_NEXT_WINDOW_MIN;
+  }
+  function eventIsFavorite(ev) {
+    return state.favorites.has(eventFavKey(ev));
+  }
+
+  function discoverDefaultDay() {
+    const counts = Object.fromEntries(DAY_ORDER.map(d => [d, 0]));
+    for (const e of ALL_EVENTS) if (counts[e.day] !== undefined) counts[e.day]++;
+    const present = DAY_ORDER.filter(d => counts[d] > 0);
+    return present[0] || DAY_ORDER[0];
+  }
+
+  // Prefer today during the festival window so a refresh lands on the
+  // live day instead of always the first festival day. Falls back to
+  // discoverDefaultDay() outside the window. getToday() reads getNow()
+  // so dev-now simulation flows through naturally.
+  function initialDay() {
+    const today = getToday();
+    if (today && ALL_EVENTS.some(e => e.day === today)) return today;
+    return discoverDefaultDay();
+  }
+
+  // Scroll the page so .now-line sits just below the header. Smooth
+  // for explicit user gestures (re-click By Day); instant on first
+  // load to avoid a 1–2s pan fighting the scroll-hide header on iOS.
+  function scrollToNowLine({ smooth = true } = {}) {
+    const el = document.querySelector(".now-line");
+    if (!el) return false;
+    const header = document.querySelector("header");
+    const headerH = header ? header.getBoundingClientRect().height : 0;
+    const y = el.getBoundingClientRect().top + window.scrollY - headerH - 16;
+    window.scrollTo({ top: Math.max(0, y), behavior: smooth ? "smooth" : "auto" });
+    return true;
+  }
+
+  // Snap to today + scroll to the now-line. Re-collapses the Earlier
+  // Today section so the user lands on a clean, focused view of right
+  // now. No-op outside the festival window.
+  function jumpToNow({ smooth = true } = {}) {
+    if (!isFestivalActive()) return;
+    const today = getToday();
+    if (!today) return;
+    state.mode = "day";
+    state.day = today;
+    state._expandPast = false;
+    renderAll();
+    requestAnimationFrame(() => scrollToNowLine({ smooth }));
+  }
+
+  // Subtle lime dot on the active By Day tab, shown only when
+  // re-clicking would actually do something visible — i.e. the
+  // now-line exists on the page but is off-screen. Self-teaching
+  // affordance for the otherwise hidden re-click gesture. Cheap:
+  // one getBoundingClientRect; safe to call from scroll handlers.
+  function updateNowCue() {
+    const btn = document.querySelector('#mode-tabs .tab[data-mode="day"]');
+    if (!btn) return;
+    let on = false;
+    if (isFestivalActive() && state.mode === "day") {
+      const line = document.querySelector(".now-line");
+      if (line) {
+        const r = line.getBoundingClientRect();
+        const inView = r.top < window.innerHeight - 80 && r.bottom > 80;
+        on = !inView;
+      }
+    }
+    btn.classList.toggle("has-now-cue", on);
+  }
+
+  // Keep the schedule honest as the clock advances: re-render the
+  // day view every minute so the now-line, current-hour highlight,
+  // and "Earlier today" boundary track real time without a manual
+  // refresh. Only fires when relevant (visible tab, day mode, today),
+  // so other views (Camp / Map) don't pay for the tick. Also catches
+  // up immediately on visibilitychange in case the tab was hidden
+  // across an hour boundary.
+  let _liveTickHandle = null;
+  function startLiveTick() {
+    function tick() {
+      if (document.visibilityState !== "visible") return;
+      if (state.mode !== "day") return;
+      if (state.day !== getToday()) return;
+      renderDayView();
+      renderDayTabs();
+      updateNowCue();
+    }
+    if (!_liveTickHandle) {
+      _liveTickHandle = setInterval(tick, 60_000);
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") tick();
+    });
+  }
+
+  function toMinutes(t) { const [h, m] = t.split(":").map(Number); return h * 60 + m; }
+  function festivalMinutes(t) {
+    const min = toMinutes(t);
+    const start = FESTIVAL_START_HOUR * 60;
+    return min >= start ? min - start : (HOURS_IN_DAY * 60 - start) + min;
+  }
+  const HOUR_ORDER = (() => {
+    const out = [];
+    for (let i = 0; i < HOURS_IN_DAY; i++) out.push((FESTIVAL_START_HOUR + i) % HOURS_IN_DAY);
+    return out;
+  })();
+  function fmtHour(h) { return String(h).padStart(2, "0") + ":00"; }
+  function hourPeriodLabel(h) {
+    if (h >= 6 && h < 12) return "Morning";
+    if (h >= 12 && h < 17) return "Afternoon";
+    if (h >= 17 && h < 21) return "Evening";
+    if (h >= 21 || h < 2) return "Night";
+    return "Late night";
+  }
+  function fmtDuration(hours) {
+    if (hours == null) return "";
+    const totalMins = Math.round(hours * 60);
+    if (totalMins < 60) return totalMins + "m";
+    const h = Math.floor(totalMins / 60), m = totalMins % 60;
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+  function typeLabel(t) {
+    return ({ camp: "Camp", art_installation: "Art", sound_stage: "Stage", mutant_vehicle: "Vehicle" })[t] || t;
+  }
+
+  function eventMatchesTags(ev) {
+    if (state.tags.size === 0) return true;
+    const evTags = ev.tags || [];
+    // OR semantics: an event matches if it carries any of the selected tags.
+    // Most natural for browsing by interest ("show me music OR food").
+    for (const t of evTags) if (state.tags.has(t)) return true;
+    return false;
+  }
+  function eventMatchesNeighbourhood(ev) {
+    if (state.neighbourhoods.size === 0) return true;
+    const n = ev._entry && ev._entry.neighbourhood;
+    return n ? state.neighbourhoods.has(n) : false;
+  }
+  function eventMatchesQuick(ev) {
+    if (state.quick.size === 0) return true;
+    // OR semantics across the time-bucket chips ("now" / "next") only.
+    // Favorites used to live here too, but that turned the whole group
+    // into a union ("Favorites OR Happening now") which felt broken.
+    // See state.favoritesOnly + eventMatchesEventLevelFilters().
+    if (state.quick.has("now") && eventIsHappeningNow(ev)) return true;
+    if (state.quick.has("next") && eventIsUpNext(ev)) return true;
+    return false;
+  }
+  function eventMatchesTimeOfDay(ev) {
+    if (state.timesOfDay.size === 0) return true;
+    const h = eventStartHour(ev);
+    if (h == null) return false;
+    for (const k of state.timesOfDay) {
+      const pred = TIME_OF_DAY[k];
+      if (pred && pred(h)) return true;
+    }
+    return false;
+  }
+  function eventMatchesDuration(ev) {
+    if (state.durations.size === 0) return true;
+    const d = ev.durationHours;
+    if (typeof d !== "number") return false;
+    for (const k of state.durations) {
+      const pred = DURATION_BUCKET[k];
+      if (pred && pred(d)) return true;
+    }
+    return false;
+  }
+  // All filters that operate on a single event (as opposed to
+  // entry/camp-level facets like neighbourhood or owner type).
+  // Centralising this lets entryMatchesFilters require ONE event to
+  // satisfy every event-level facet at once — instead of each facet
+  // being satisfied by a different event in the camp, which was the
+  // old bug. renderCampView uses the same predicate to trim the
+  // events shown inside each expanded camp.
+  function eventMatchesEventLevelFilters(ev) {
+    if (state.favoritesOnly && !eventIsFavorite(ev)) return false;
+    if (!eventMatchesTags(ev)) return false;
+    if (!eventMatchesQuick(ev)) return false;
+    if (!eventMatchesTimeOfDay(ev)) return false;
+    if (!eventMatchesDuration(ev)) return false;
+    return true;
+  }
+  function hasAnyEventLevelFilter() {
+    return state.favoritesOnly
+      || state.tags.size > 0
+      || state.quick.size > 0
+      || state.timesOfDay.size > 0
+      || state.durations.size > 0;
+  }
+  function eventMatchesFilters(ev) {
+    if (state.type !== "all" && ev.ownerType !== state.type) return false;
+    if (!eventMatchesNeighbourhood(ev)) return false;
+    if (!eventMatchesEventLevelFilters(ev)) return false;
+    if (!state.search) return true;
+    const q = state.search.toLowerCase();
+    return (
+      (ev.title || "").toLowerCase().includes(q) ||
+      (ev._entry.name || "").toLowerCase().includes(q) ||
+      (ev.description || "").toLowerCase().includes(q)
+    );
+  }
+  function entryMatchesFilters(entry) {
+    if (state.type !== "all" && entry.type !== state.type) return false;
+    if (state.neighbourhoods.size > 0
+        && (!entry.neighbourhood || !state.neighbourhoods.has(entry.neighbourhood))) {
+      return false;
+    }
+    // Require a SINGLE event in this camp to satisfy every event-level
+    // facet simultaneously (favorites + tag + quick + time-of-day +
+    // duration). Previously each facet was checked independently via
+    // entry.events.some(...), so a camp with one workshop event and
+    // one unrelated event happening now would pass "workshops + now"
+    // even though no single event was both.
+    if (hasAnyEventLevelFilter() && !entry.events.some(eventMatchesEventLevelFilters)) {
+      return false;
+    }
+    if (!state.search) return true;
+    const q = state.search.toLowerCase();
+    if ((entry.name || "").toLowerCase().includes(q)) return true;
+    return entry.events.some(ev =>
+      (ev.title || "").toLowerCase().includes(q) ||
+      (ev.description || "").toLowerCase().includes(q)
+    );
+  }
+
+  function activeFilterCount() {
+    // Favorites is intentionally excluded — it's its own boolean
+    // surfaced by the header star, not a chip-style filter facet.
+    return (state.type !== "all" ? 1 : 0)
+      + state.tags.size
+      + state.neighbourhoods.size
+      + state.quick.size
+      + state.timesOfDay.size
+      + state.durations.size;
+  }
+  function totalVisibleEventCount() {
+    return ALL_EVENTS.filter(eventMatchesFilters).length;
+  }
+
+  // ── By Day view ─────────────────────────────────────────
+  function renderDayView() {
+    const view = document.getElementById("view");
+    view.innerHTML = "";
+
+    const dayEvents = ALL_EVENTS.filter(e => e.day === state.day && eventMatchesFilters(e));
+    if (dayEvents.length === 0) {
+      // Friendlier empty state when the user has Now or Up next on
+      // but the festival hasn't started — otherwise the "no matches"
+      // text feels broken.
+      const wantsTimeNow = state.quick.has("now") || state.quick.has("next");
+      const offSeasonMsg = wantsTimeNow ? festivalEmptyMessage() : null;
+      if (offSeasonMsg) {
+        view.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-title">${offSeasonMsg}</div>
+            <div class="empty-sub">“Happening now” &amp; “Up next” light up during the festival.</div>
+          </div>`;
+      } else {
+        view.innerHTML = `<div class="empty-state">No events match your filters on ${state.day}.</div>`;
+      }
+      return;
+    }
+
+    const byHour = new Map();
+    for (const h of HOUR_ORDER) byHour.set(h, { starting: [], ongoing: [] });
+
+    for (const ev of dayEvents) {
+      if (!ev.startTime) continue;
+      const startBucket = Math.floor(toMinutes(ev.startTime) / 60);
+      if (byHour.has(startBucket)) byHour.get(startBucket).starting.push(ev);
+      if (!ev.endTime) continue;
+      const startFest = festivalMinutes(ev.startTime);
+      const endFest = festivalMinutes(ev.endTime);
+      if (endFest <= startFest) continue;
+      for (let i = 0; i < HOUR_ORDER.length; i++) {
+        const h = HOUR_ORDER[i];
+        if (h === startBucket) continue;
+        const hourFestStart = i * 60;
+        const hourFestEnd = hourFestStart + 60;
+        if (startFest < hourFestEnd && endFest > hourFestStart) {
+          byHour.get(h).ongoing.push(ev);
+        }
+      }
+    }
+
+    for (const bucket of byHour.values()) {
+      bucket.starting.sort((a, b) => toMinutes(a.startTime) - toMinutes(b.startTime));
+      bucket.ongoing.sort((a, b) => toMinutes(a.startTime) - toMinutes(b.startTime));
+    }
+
+    // If we're rendering today's day in the festival window, find the
+    // current wall-clock hour bucket so we can drop a "now" line just
+    // before that row in the DOM.
+    const today = getToday();
+    const showNow = today && today === state.day;
+    let nowHour = null, nowMinuteFraction = 0, nowPos = -1;
+    if (showNow) {
+      const now = getNow();
+      nowHour = now.getHours();
+      nowMinuteFraction = now.getMinutes() / 60;
+      nowPos = HOUR_ORDER.indexOf(nowHour);
+    }
+    let nowLinePlaced = false;
+
+    // Skip empty hours entirely AND collapse consecutive runs into a
+    // single "Quiet HH:00 → HH:00" row so the timeline doesn't waste
+    // a screen of dashes between events on slow days.
+    let quietRun = null;
+    function flushQuietRun() {
+      if (!quietRun) return;
+      const row = document.createElement("div");
+      row.className = "hour-row quiet-run";
+      row.innerHTML = `
+        <div class="hour-label">
+          <div class="time"></div>
+        </div>
+        <div class="hour-events">
+          <div class="quiet-pill"></div>
+        </div>
+      `;
+      const fromLabel = fmtHour(quietRun.from);
+      const toLabel = fmtHour((quietRun.to + 1) % HOURS_IN_DAY);
+      row.querySelector(".hour-label .time").textContent = fromLabel;
+      row.querySelector(".quiet-pill").textContent =
+        quietRun.from === quietRun.to
+          ? `Quiet · ${fromLabel}`
+          : `Quiet · ${fromLabel} → ${toLabel}`;
+      view.appendChild(row);
+      quietRun = null;
+    }
+
+    function maybeAppendNowLine(h) {
+      if (!showNow || nowHour !== h || nowLinePlaced) return;
+      const line = document.createElement("div");
+      line.className = "now-line";
+      view.appendChild(line);
+      nowLinePlaced = true;
+    }
+
+    // Render a single hour row (or extend the quietRun if empty).
+    // Extracted so the past-collapse fallback can replay hours
+    // through the same rendering path as the main loop.
+    function renderHourRow(h) {
+      const bucket = byHour.get(h);
+      const isEmpty = bucket.starting.length === 0 && bucket.ongoing.length === 0;
+      if (isEmpty) {
+        if (!quietRun) quietRun = { from: h, to: h };
+        else quietRun.to = h;
+        return;
+      }
+      flushQuietRun();
+      maybeAppendNowLine(h);
+      const row = document.createElement("div");
+      row.className = "hour-row";
+      // Lit-up time label for the current hour — calmer than a pulse,
+      // pairs with the .now-line bar a few rows above. No animation.
+      if (showNow && h === nowHour) row.classList.add("is-now-hour");
+      row.innerHTML = `
+      <div class="hour-label">
+        <div class="time">${fmtHour(h)}</div>
+        <span class="period">${hourPeriodLabel(h)}</span>
+      </div>
+      <div class="hour-events">
+        <div class="event-grid"></div>
+      </div>
+    `;
+      const grid = row.querySelector(".event-grid");
+      for (const ev of bucket.starting) grid.appendChild(eventCard(ev, false));
+      for (const ev of bucket.ongoing) grid.appendChild(eventCard(ev, true));
+
+      view.appendChild(row);
+    }
+
+    // "Earlier today" collapse — on today's day, hours before the
+    // current hour fold into a single expandable pill so finished
+    // events don't visually compete with what's happening now. Only
+    // collapses when ≥2 past hours have events; below that, replay
+    // through the normal row renderer.
+    const collapsePast = showNow && !state._expandPast;
+    let pastHours = collapsePast ? [] : null;
+    let pastEventCount = 0;
+    let pastEventfulCount = 0;
+
+    function flushPastRun() {
+      if (!pastHours) return;
+      const hours = pastHours;
+      pastHours = null;
+      if (pastEventfulCount >= 2 && pastEventCount >= 1) {
+        const fromH = hours[0];
+        const label = `Show ${pastEventCount} earlier event${pastEventCount === 1 ? "" : "s"} from today`;
+        const row = document.createElement("div");
+        row.className = "hour-row past-run";
+        row.innerHTML = `
+          <div class="hour-label">
+            <div class="time">${fmtHour(fromH)}</div>
+          </div>
+          <div class="hour-events">
+            <button type="button" class="past-pill" aria-expanded="false">
+              <span class="past-pill-caret">▸</span>
+              Earlier today — ${pastEventCount} event${pastEventCount === 1 ? "" : "s"} hidden
+            </button>
+          </div>
+        `;
+        const pill = row.querySelector(".past-pill");
+        pill.setAttribute("aria-label", label);
+        pill.addEventListener("click", () => {
+          state._expandPast = true;
+          renderAll();
+        });
+        view.appendChild(row);
+      } else {
+        for (const h of hours) renderHourRow(h);
+      }
+    }
+
+    // When the past section is explicitly expanded, drop a small
+    // "Hide earlier" affordance above the schedule so the user can
+    // collapse it back without scrolling.
+    if (showNow && state._expandPast) {
+      const anyPastEvents = HOUR_ORDER
+        .slice(0, Math.max(0, nowPos))
+        .some(h => byHour.get(h).starting.length > 0);
+      if (anyPastEvents) {
+        const row = document.createElement("div");
+        row.className = "hour-row past-run is-expanded";
+        row.innerHTML = `
+          <div class="hour-label"><div class="time"></div></div>
+          <div class="hour-events">
+            <button type="button" class="past-pill" aria-expanded="true" aria-label="Hide earlier events from today">
+              <span class="past-pill-caret">▾</span>
+              Hide earlier today
+            </button>
+          </div>
+        `;
+        row.querySelector(".past-pill").addEventListener("click", () => {
+          state._expandPast = false;
+          renderAll();
+        });
+        view.appendChild(row);
+      }
+    }
+
+    for (let i = 0; i < HOUR_ORDER.length; i++) {
+      const h = HOUR_ORDER[i];
+      if (collapsePast && i < nowPos) {
+        pastHours.push(h);
+        const startingN = byHour.get(h).starting.length;
+        pastEventCount += startingN;
+        if (startingN > 0) pastEventfulCount += 1;
+        continue;
+      }
+      if (pastHours) flushPastRun();
+      renderHourRow(h);
+    }
+    if (pastHours) flushPastRun();
+    // Edge case: current hour (and possibly the rest of the day)
+    // has no events. The main loop's maybeAppendNowLine never fires
+    // in that case, so drop a now-line marker here BEFORE flushing
+    // any trailing quiet run — that way the "you are here" signal
+    // appears above the "Quiet …" pill rather than below it.
+    if (showNow && !nowLinePlaced) {
+      const line = document.createElement("div");
+      line.className = "now-line";
+      view.appendChild(line);
+      nowLinePlaced = true;
+    }
+    flushQuietRun();
+  }
+
+  function eventCard(ev, ongoing) {
+    const card = document.createElement("article");
+    card.className = "event-card" + (ongoing ? " is-ongoing" : "");
+    card.dataset.type = ev.ownerType || "camp";
+
+    const flags = (ev.normalizationFlags || []).length
+      ? `<div class="flags">⚠ ${ev.normalizationFlags.join(", ")}</div>`
+      : "";
+    const cross = ev.crossesMidnight
+      ? `<span class="cross-midnight" title="Ends the next day">⁺¹</span>`
+      : "";
+    const dur = ev.durationHours != null ? `<span class="duration">${fmtDuration(ev.durationHours)}</span>` : "";
+    const tag = ongoing ? `<span class="ongoing-tag">ongoing</span>` : "";
+    // ⁺¹ superscript sits inline next to the end time, no extra row.
+
+    const desc = (ev.description || "").trim();
+    // Only show the full description on starting events — ongoing cards stay
+    // compact so the eye is drawn to what's beginning at this hour.
+    const showDesc = !ongoing && desc;
+    const descNeedsClamp = desc.length > 320;
+
+    // Tags are constrained to a small set of known labels from the
+    // spreadsheet ("19+", "Workshop / Class", etc.) — none contain HTML, so
+    // direct interpolation is safe and stays consistent with the rest of
+    // this template.
+    const tags = (ev.tags || []);
+    const tagsHtml = tags.length
+      ? `<div class="tags">${tags.map(t => `<span class="tag-chip" data-tag="${t}">${t}</span>`).join("")}</div>`
+      : "";
+
+    const isFav = eventIsFavorite(ev);
+    card.innerHTML = `
+    <button class="fav-btn${isFav ? " is-fav" : ""}" aria-label="${isFav ? "Unfavorite" : "Favorite"}" aria-pressed="${isFav ? "true" : "false"}">${isFav ? "★" : "☆"}</button>
+    <div class="meta-row">
+      <span class="time">${ev.startTime}–${ev.endTime}${cross}</span>
+      <span class="meta-right">${tag}${tag ? " · " : ""}${typeLabel(ev.ownerType)}${dur ? " · " : ""}${dur}</span>
+    </div>
+    <h3 class="title"></h3>
+    <div class="owner"><span class="dot"></span><span class="n"></span></div>
+    ${showDesc ? `<p class="description${descNeedsClamp ? " is-clamped" : ""}"></p>` : ""}
+    ${tagsHtml}
+    ${flags}
+  `;
+    const favBtn = card.querySelector(".fav-btn");
+    favBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      toggleFavorite(ev, favBtn);
+    });
+    card.querySelector(".title").textContent = ev.title || "(untitled)";
+    card.querySelector(".owner .n").textContent = ev._entry.name;
+    if (ev._entry.neighbourhood) {
+      const nb = document.createElement("span");
+      nb.className = "neighbourhood-chip";
+      nb.title = "Neighbourhood";
+      nb.textContent = ev._entry.neighbourhood;
+      card.querySelector(".owner").appendChild(nb);
+    }
+    if (ev._entry.claimed) {
+      const pill = document.createElement("span");
+      pill.className = "verified-pill";
+      pill.title = "Verified — managed by the camp owner";
+      pill.setAttribute("aria-label", "Verified — managed by the camp owner");
+      // Just the checkmark on cards — full label lives in By-Camp + modal.
+      pill.textContent = "✓";
+      card.querySelector(".owner").appendChild(pill);
+    }
+    if (showDesc) card.querySelector(".description").textContent = desc;
+    card.addEventListener("click", () => showModal(ev));
+    return card;
+  }
+
+  // ── By Camp view ────────────────────────────────────────
+  function renderCampView() {
+    const view = document.getElementById("view");
+    view.innerHTML = "";
+
+    const entries = DATA.entries.filter(entryMatchesFilters);
+    if (entries.length === 0) {
+      view.innerHTML = `<div class="empty-state">No entries match your filters.</div>`;
+      return;
+    }
+
+    // Sort by type-group (camps → sound stages → art → mutant vehicles),
+    // then alphabetically by name. The raw `DATA.entries` order is parse
+    // order: PDF-parsed camps first, then stages, MVs, art, with any
+    // sheet-reconciled camps appended at the end — which surfaces as a
+    // second "camps" block after art in the UI.
+    const TYPE_ORDER = { camp: 0, sound_stage: 1, art_installation: 2, mutant_vehicle: 3 };
+    entries.sort((a, b) => {
+      const ta = TYPE_ORDER[a.type] ?? 99;
+      const tb = TYPE_ORDER[b.type] ?? 99;
+      if (ta !== tb) return ta - tb;
+      return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" });
+    });
+
+    const filterEvents = hasAnyEventLevelFilter();
+    for (const entry of entries) {
+      const events = entry.events.filter(ev => {
+        // Hide events that don't match the current event-level filters
+        // so the camp shows only what the user actually asked for
+        // (e.g. just the workshops happening now, not the whole
+        // schedule). The entry-level filter already guaranteed at
+        // least one event passes.
+        if (filterEvents && !eventMatchesEventLevelFilters(ev)) return false;
+        if (!state.search) return true;
+        const q = state.search.toLowerCase();
+        if ((entry.name || "").toLowerCase().includes(q)) return true;
+        return (
+          (ev.title || "").toLowerCase().includes(q) ||
+          (ev.description || "").toLowerCase().includes(q)
+        );
+      });
+
+      const byDay = new Map();
+      for (const ev of events) {
+        const k = ev.day || "Unknown";
+        if (!byDay.has(k)) byDay.set(k, []);
+        byDay.get(k).push(ev);
+      }
+      const dayKeys = Array.from(byDay.keys()).sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
+
+      const block = document.createElement("details");
+      block.className = "camp-block";
+      if (state.search && events.length > 0) block.open = true;
+      block.innerHTML = `
+      <summary>
+        <span class="name" title=""></span>
+        ${entry.neighbourhood ? `<span class="neighbourhood-chip"></span>` : ""}
+        ${entry.claimed ? `<span class="verified-pill" title="Verified camp">✓ Verified</span>` : ""}
+        <span class="type-pill" data-type="${entry.type}">${typeLabel(entry.type)}</span>
+        <span class="count">${events.length}</span>
+      </summary>
+      <div class="body"></div>
+    `;
+      const nameEl = block.querySelector(".name");
+      nameEl.textContent = entry.name;
+      nameEl.title = entry.name;
+      if (entry.neighbourhood) {
+        block.querySelector(".neighbourhood-chip").textContent = entry.neighbourhood;
+      }
+
+      const body = block.querySelector(".body");
+      if (events.length === 0) {
+        const note = document.createElement("div");
+        note.className = "camp-empty";
+        note.textContent = "No scheduled events listed in the PDF.";
+        body.appendChild(note);
+      } else {
+        for (const day of dayKeys) {
+          const sec = document.createElement("div");
+          sec.className = "camp-day";
+          const h3 = document.createElement("h3");
+          h3.textContent = day;
+          sec.appendChild(h3);
+          const dayEvs = byDay.get(day).slice().sort(
+            (a, b) => toMinutes(a.startTime || "00:00") - toMinutes(b.startTime || "00:00")
+          );
+          for (const ev of dayEvs) {
+            const row = document.createElement("div");
+            row.className = "camp-day-event";
+            const cross = ev.crossesMidnight
+              ? `<span class="cross-midnight" title="Ends the next day">⁺¹</span>`
+              : "";
+            row.innerHTML = `<span class="time">${ev.startTime}–${ev.endTime}${cross}</span><span class="title"></span>`;
+            row.querySelector(".title").textContent = ev.title || "(untitled)";
+            row.addEventListener("click", () => showModal({ ...ev, _entry: entry }));
+            sec.appendChild(row);
+          }
+          body.appendChild(sec);
+        }
+      }
+      view.appendChild(block);
+    }
+  }
+
+  function renderDayTabs() {
+    const wrap = document.getElementById("day-tabs");
+    wrap.style.display = state.mode === "day" ? "" : "none";
+    wrap.innerHTML = "";
+    const counts = Object.fromEntries(DAY_ORDER.map(d => [d, 0]));
+    for (const e of ALL_EVENTS) if (eventMatchesFilters(e) && counts[e.day] !== undefined) counts[e.day]++;
+    const present = DAY_ORDER.filter(d => counts[d] > 0);
+    if (!present.length) {
+      wrap.innerHTML = `<div style="color:var(--moss-3);padding:12px 0;font-size:13px;">No days match filters.</div>`;
+      return;
+    }
+    if (!present.includes(state.day)) state.day = present[0];
+    for (const d of present) {
+      const btn = document.createElement("button");
+      btn.className = "tab" + (d === state.day ? " active" : "");
+      btn.innerHTML = `${d}<span class="count">${counts[d]}</span>`;
+      btn.addEventListener("click", () => {
+        state.day = d;
+        state._expandPast = false;
+        renderAll();
+      });
+      wrap.appendChild(btn);
+    }
+  }
+
+  // ── Modal ────────────────────────────────────────────────
+  let _modalEvent = null;
+  function showModal(ev) {
+    _modalEvent = ev;
+    document.getElementById("m-title").textContent = ev.title || "(untitled)";
+    document.getElementById("m-owner").textContent = `${ev._entry.name} · ${typeLabel(ev.ownerType)}`;
+    document.getElementById("m-day").textContent = ev.day || "?";
+    document.getElementById("m-time").textContent =
+      `${ev.startTime || "?"}–${ev.endTime || "?"}${ev.crossesMidnight ? " (→ next day)" : ""}`;
+    const mFav = document.getElementById("m-fav");
+    const isFav = eventIsFavorite(ev);
+    mFav.textContent = isFav ? "★" : "☆";
+    mFav.classList.toggle("is-fav", isFav);
+    const nbEl = document.getElementById("m-neighbourhood");
+    nbEl.innerHTML = "";
+    if (ev._entry.neighbourhood) {
+      const chip = document.createElement("span");
+      chip.className = "neighbourhood-chip";
+      chip.textContent = ev._entry.neighbourhood;
+      nbEl.appendChild(chip);
+    }
+    document.getElementById("m-desc").textContent = ev.description || "";
+
+    const tagsEl = document.getElementById("m-tags");
+    tagsEl.innerHTML = "";
+    for (const t of (ev.tags || [])) {
+      const chip = document.createElement("span");
+      chip.className = "tag-chip";
+      chip.dataset.tag = t;
+      chip.textContent = t;
+      tagsEl.appendChild(chip);
+    }
+    tagsEl.style.display = (ev.tags || []).length ? "" : "none";
+
+    const flagsEl = document.getElementById("m-flags");
+    if ((ev.normalizationFlags || []).length) {
+      flagsEl.textContent = "⚠ Flags: " + ev.normalizationFlags.join(", ");
+      flagsEl.style.display = "";
+    } else {
+      flagsEl.style.display = "none";
+    }
+    document.getElementById("m-raw").textContent =
+      `Raw: "${ev.rawTimeText || ""}"  ·  duration: ${ev.durationHours != null ? ev.durationHours + " h" : "?"}`;
+    renderModalMapPreview(ev._entry);
+    document.getElementById("modal-backdrop").classList.add("open");
+  }
+  function hideModal() { document.getElementById("modal-backdrop").classList.remove("open"); }
+
+  // Body scroll-lock: whenever any .modal-backdrop has the .open
+  // class, lock the page so taps/drags on the dimmed area don't
+  // scroll what's behind it. Uses a MutationObserver so every
+  // existing open/close path (button, Esc, backdrop click, Done,
+  // and any future modal that follows the same convention) is
+  // covered without touching individual show/hide helpers.
+  let savedScrollY = 0;
+  function anyModalOpen() {
+    return !!document.querySelector(".modal-backdrop.open");
+  }
+  function applyScrollLock() {
+    const locked = document.body.classList.contains("modal-open");
+    const shouldLock = anyModalOpen();
+    if (shouldLock && !locked) {
+      savedScrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.setProperty("--scroll-lock-top", `-${savedScrollY}px`);
+      document.body.classList.add("modal-open");
+    } else if (!shouldLock && locked) {
+      document.body.classList.remove("modal-open");
+      document.body.style.removeProperty("--scroll-lock-top");
+      window.scrollTo(0, savedScrollY);
+    }
+  }
+  const lockObserver = new MutationObserver(applyScrollLock);
+  document.querySelectorAll(".modal-backdrop").forEach(el => {
+    lockObserver.observe(el, { attributes: true, attributeFilter: ["class"] });
+  });
+
+  function renderModalMapPreview(entry) {
+    const el = document.getElementById("m-map-preview");
+    const pin = PIN_BY_NAME.get(entry.name);
+    el.innerHTML = "";
+    if (!pin) {
+      el.classList.add("empty");
+      el.textContent = "Location not yet mapped for this camp.";
+      el.onclick = null;
+      return;
+    }
+    el.classList.remove("empty");
+    const img = document.createElement("img");
+    img.alt = "Map";
+    const sync = MapImage.syncSrc();
+    if (sync) {
+      img.src = sync;
+    } else {
+      el.classList.add("loading");
+      MapImage.get().then(src => {
+        img.src = src;
+        el.classList.remove("loading");
+      });
+    }
+    el.appendChild(img);
+    const marker = document.createElement("div");
+    marker.className = "marker " + pin.type;
+    marker.style.left = (pin.x * 100) + "%";
+    marker.style.top = (pin.y * 100) + "%";
+    el.appendChild(marker);
+    const hint = document.createElement("div");
+    hint.className = "open-hint";
+    hint.textContent = "Open map";
+    el.appendChild(hint);
+    el.onclick = () => {
+      hideModal();
+      switchMode("map");
+      mapView.focusOn(pin);
+    };
+  }
+
+  function switchMode(mode) {
+    state.mode = mode;
+    for (const b of document.querySelectorAll("#mode-tabs .tab")) {
+      b.classList.toggle("active", b.dataset.mode === mode);
+    }
+    applyFullscreenMode();
+    renderAll();
+  }
+
+  // Map mode is edge-to-edge fullscreen: hides header/footer.
+  // The Back-to-schedule pill is the only navigation surface — the
+  // mode tabs stay inside the (hidden) header until the user returns.
+  function applyFullscreenMode() {
+    const wantFullscreen = state.mode === "map";
+    document.body.classList.toggle("map-fullscreen", wantFullscreen);
+    // Re-show the header in case auto-hide had it hidden when the
+    // user entered map mode.
+    const headerEl = document.querySelector("header");
+    if (headerEl && !wantFullscreen) headerEl.classList.remove("header-hidden");
+  }
+
+  function bindUi() {
+    for (const btn of document.querySelectorAll("#mode-tabs .tab")) {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.mode;
+        // Re-clicking the already-active By Day tab is the
+        // jump-to-now gesture (see updateNowCue() for the affordance).
+        if (target === "day" && state.mode === "day") {
+          jumpToNow({ smooth: true });
+          return;
+        }
+        switchMode(target);
+      });
+    }
+
+    // Header Favorites toggle — quickest path to filter by favorites.
+    document.getElementById("fav-toggle").addEventListener("click", () => {
+      state.favoritesOnly = !state.favoritesOnly;
+      renderAll();
+    });
+
+    // Search modal — typing only updates a *pending* value plus the
+    // result-count baked into the Search button label. Nothing is
+    // applied to the underlying schedule until the user explicitly
+    // confirms (Search button or Return on the iOS keyboard), which
+    // avoids per-keystroke re-renders that cause iOS UI jank under
+    // the on-screen keyboard. Cancel paths (X / backdrop / Esc)
+    // discard pending edits.
+    const searchInput = document.getElementById("search");
+    let pendingSearch = state.search;
+
+    const updateSearchCountOnly = () => {
+      const committed = state.search;
+      state.search = pendingSearch;
+      const total = totalVisibleEventCount();
+      state.search = committed;
+      const sr = document.getElementById("search-results");
+      if (sr) {
+        sr.textContent = total === 0
+          ? "Search · no matches"
+          : `Search · ${total} event${total === 1 ? "" : "s"}`;
+      }
+    };
+
+    const commitSearch = () => {
+      state.search = pendingSearch;
+      renderAll();
+      hideSearchModal();
+    };
+
+    const cancelSearch = () => {
+      pendingSearch = state.search;
+      searchInput.value = state.search;
+      hideSearchModal();
+    };
+
+    searchInput.addEventListener("input", e => {
+      pendingSearch = e.target.value.trim();
+      updateSearchCountOnly();
+    });
+    searchInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commitSearch();
+      }
+    });
+    document.getElementById("search-open").addEventListener("click", () => {
+      searchInput.value = state.search;
+      pendingSearch = state.search;
+      updateSearchCountOnly();
+      document.getElementById("search-modal-backdrop").classList.add("open");
+      setTimeout(() => searchInput.focus(), 50);
+    });
+    document.getElementById("search-close").addEventListener("click", cancelSearch);
+    document.getElementById("search-done").addEventListener("click", commitSearch);
+    document.getElementById("search-clear").addEventListener("click", () => {
+      pendingSearch = "";
+      state.type = "all";
+      searchInput.value = "";
+      updateSearchCountOnly();
+      renderTypeChips();
+    });
+    document.getElementById("search-modal-backdrop").addEventListener("click", e => {
+      if (e.target.id === "search-modal-backdrop") cancelSearch();
+    });
+
+    // iOS keyboard handling — without this, the search card stays
+    // centered in the layout viewport and the bottom half (Clear /
+    // Search button) ends up hidden behind the on-screen keyboard.
+    // We expose the keyboard height as --keyboard-inset on the
+    // search backdrop; CSS uses it as extra bottom padding so the
+    // flex container re-centers the card in the visible area
+    // above the keyboard.
+    const searchBackdrop = document.getElementById("search-modal-backdrop");
+    const vv = window.visualViewport;
+    if (vv) {
+      const updateKeyboardInset = () => {
+        const backdropH = searchBackdrop.getBoundingClientRect().height || window.innerHeight;
+        const inset = Math.max(0, backdropH - vv.height - vv.offsetTop);
+        searchBackdrop.style.setProperty("--keyboard-inset", inset + "px");
+      };
+      vv.addEventListener("resize", updateKeyboardInset);
+      vv.addEventListener("scroll", updateKeyboardInset);
+      searchInput.addEventListener("blur", () => {
+        searchBackdrop.style.setProperty("--keyboard-inset", "0px");
+      });
+    }
+
+    // Type chip group (replaces the old <select>)
+    const typeChips = document.getElementById("type-chips");
+    typeChips.addEventListener("click", e => {
+      const btn = e.target.closest(".chip[data-type]");
+      if (!btn) return;
+      state.type = btn.dataset.type;
+      renderAll();
+    });
+
+    // Filters modal — chip taps mutate state directly for pending
+    // editing (so the existing chip renderers, which read state.*
+    // for active-class, work unchanged), but the underlying
+    // schedule is NOT re-rendered while the modal is open. A
+    // snapshot taken on open lets us revert on cancel (X /
+    // backdrop / Esc). Done commits by calling renderAll().
+    document.getElementById("filters-open").addEventListener("click", () => {
+      // No need to snapshot state.favoritesOnly — it can't be
+      // mutated from inside the modal anymore.
+      filtersSnapshot = {
+        quick: new Set(state.quick),
+        timesOfDay: new Set(state.timesOfDay),
+        durations: new Set(state.durations),
+        tags: new Set(state.tags),
+        neighbourhoods: new Set(state.neighbourhoods),
+      };
+      document.getElementById("filters-modal-backdrop").classList.add("open");
+      renderFiltersModalOnly();
+    });
+    document.getElementById("filters-close").addEventListener("click", cancelFilters);
+    document.getElementById("filters-done").addEventListener("click", commitFilters);
+    document.getElementById("filters-clear").addEventListener("click", () => {
+      // Favorites is intentionally untouched — see the header star.
+      state.tags.clear();
+      state.neighbourhoods.clear();
+      state.quick.clear();
+      state.timesOfDay.clear();
+      state.durations.clear();
+      renderFiltersModalOnly();
+    });
+    document.getElementById("filters-modal-backdrop").addEventListener("click", e => {
+      if (e.target.id === "filters-modal-backdrop") cancelFilters();
+    });
+    // Quick chips — Happening now / Up next. Multi-select with OR
+    // semantics inside this group, AND-combined with every other
+    // section. Favorites is intentionally NOT here — it lives only
+    // on the header star (state.favoritesOnly).
+    document.getElementById("quick-chips").addEventListener("click", e => {
+      const btn = e.target.closest(".chip[data-quick]");
+      if (!btn) return;
+      const q = btn.dataset.quick;
+      if (state.quick.has(q)) state.quick.delete(q);
+      else state.quick.add(q);
+      renderFiltersModalOnly();
+    });
+
+    // Time-of-day chips — multi-select, OR within the group.
+    document.getElementById("time-of-day-chips").addEventListener("click", e => {
+      const btn = e.target.closest(".chip[data-tod]");
+      if (!btn) return;
+      const k = btn.dataset.tod;
+      if (state.timesOfDay.has(k)) state.timesOfDay.delete(k);
+      else state.timesOfDay.add(k);
+      renderFiltersModalOnly();
+    });
+
+    // Duration chips — multi-select, OR within the group.
+    document.getElementById("duration-chips").addEventListener("click", e => {
+      const btn = e.target.closest(".chip[data-dur]");
+      if (!btn) return;
+      const k = btn.dataset.dur;
+      if (state.durations.has(k)) state.durations.delete(k);
+      else state.durations.add(k);
+      renderFiltersModalOnly();
+    });
+
+    // Event modal
+    document.getElementById("modal-backdrop").addEventListener("click", e => {
+      if (e.target.id === "modal-backdrop") hideModal();
+    });
+    document.getElementById("m-close").addEventListener("click", hideModal);
+    document.getElementById("m-fav").addEventListener("click", e => {
+      if (_modalEvent) toggleFavorite(_modalEvent, e.currentTarget);
+    });
+
+    // Camp modal
+    document.getElementById("camp-modal-backdrop").addEventListener("click", e => {
+      if (e.target.id === "camp-modal-backdrop") hideCampModal();
+    });
+    document.getElementById("cm-close").addEventListener("click", hideCampModal);
+
+    // Map fullscreen: back-to-schedule pill returns to By Day.
+    const backPill = document.getElementById("map-back");
+    if (backPill) backPill.addEventListener("click", () => switchMode("day"));
+
+    // About modal
+    document.getElementById("about-open").addEventListener("click", () => {
+      document.getElementById("about-modal-backdrop").classList.add("open");
+    });
+    document.getElementById("about-modal-backdrop").addEventListener("click", e => {
+      if (e.target.id === "about-modal-backdrop") hideAboutModal();
+    });
+    document.getElementById("about-close").addEventListener("click", hideAboutModal);
+
+    // Single Escape dispatcher. Walks the modal-backdrop nodes in
+    // priority order (innermost / most-recently-opened first) and
+    // closes the topmost one only. Avoids the old "close every modal
+    // at once" behaviour where closing the backup popup also yanked
+    // the About modal underneath it.
+    const escTargets = [
+      ["backup-modal-backdrop",  () => document.getElementById("backup-modal-close").click()],
+      ["search-modal-backdrop",  cancelSearch],
+      ["filters-modal-backdrop", cancelFilters],
+      ["modal-backdrop",         hideModal],
+      ["camp-modal-backdrop",    hideCampModal],
+      ["about-modal-backdrop",   hideAboutModal],
+    ];
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Escape") return;
+      for (const [id, close] of escTargets) {
+        const el = document.getElementById(id);
+        if (el && el.classList.contains("open")) {
+          close();
+          return;
+        }
+      }
+    });
+  }
+
+  function hideAboutModal() {
+    document.getElementById("about-modal-backdrop").classList.remove("open");
+  }
+
+  function bindSettings() {
+    bindFavoritesBackup();
+    bindDevNow();
+  }
+
+  // ── Dev tool: pretend it's a different moment ─────────────
+  // Lives in the About modal so it's discoverable but out of the
+  // way. Writes to localStorage via saveDevNow() and to the module
+  // scoped `devNowOverride` so all the festival time helpers pick
+  // it up on the next render. Format matches <input type="datetime-local">
+  // ("YYYY-MM-DDTHH:mm") which is parsed as local time by Date.
+  function bindDevNow() {
+    const input = document.getElementById("dev-now-input");
+    const clearBtn = document.getElementById("dev-now-clear");
+    const statusEl = document.getElementById("dev-now-status");
+    if (!input || !clearBtn || !statusEl) return;
+
+    function refreshStatus() {
+      if (!devNowOverride) {
+        statusEl.hidden = true;
+        statusEl.textContent = "";
+        return;
+      }
+      const label = devNowOverride.toLocaleString(undefined, {
+        weekday: "short", month: "short", day: "numeric",
+        hour: "numeric", minute: "2-digit"
+      });
+      statusEl.hidden = false;
+      statusEl.textContent = "Pretending it's " + label + ".";
+    }
+
+    const stored = loadDevNow();
+    if (stored) input.value = stored;
+    refreshStatus();
+
+    input.addEventListener("change", () => {
+      const v = input.value;
+      if (!v) { devNowOverride = null; saveDevNow(""); refreshStatus(); renderAll(); return; }
+      const d = new Date(v);
+      if (isNaN(d)) return;
+      devNowOverride = d;
+      saveDevNow(v);
+      refreshStatus();
+      renderAll();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      input.value = "";
+      devNowOverride = null;
+      saveDevNow("");
+      refreshStatus();
+      renderAll();
+    });
+  }
+
+  // ── Favorites backup / restore ────────────────────────────
+  // Two-button UI in the About modal. Backup serialises the favorites
+  // set into a compact base64 JSON blob and (a) tries to copy it to the
+  // clipboard, (b) shows it inline as a fallback. Restore parses a
+  // pasted blob back into the set, merging with whatever's already
+  // there (set union — never destroys existing favs).
+  //
+  // The blob includes a small header so a future schema change can
+  // detect old payloads. Round-trips through `eventFavKey` are not
+  // needed — the keys ARE the payload.
+  function bindFavoritesBackup() {
+    const backupBtn = document.getElementById("fav-backup");
+    const restoreBtn = document.getElementById("fav-restore");
+    const countEl = document.getElementById("fav-backup-count");
+    const statusEl = document.getElementById("fav-backup-status");
+    const modalBackdrop = document.getElementById("backup-modal-backdrop");
+    const closeBtn = document.getElementById("backup-modal-close");
+    const hintEl = document.getElementById("fav-backup-hint");
+    const codeEl = document.getElementById("fav-backup-code");
+    const copyBtn = document.getElementById("fav-backup-copy");
+    if (!backupBtn || !restoreBtn || !statusEl) return;
+    const DEFAULT_HINT = "Paste it into Notes (or email it to yourself) so you can Restore later.";
+    const MANUAL_HINT = "Tap and hold the code to copy.";
+    let copyResetTimer = null;
+
+    function refreshCount() {
+      const n = state.favorites.size;
+      if (countEl) countEl.textContent = n ? "(" + n + ")" : "";
+    }
+    refreshCount();
+    // Keep the (N) badge fresh whenever the About modal opens.
+    document.getElementById("about-modal-backdrop")
+      .addEventListener("transitionend", refreshCount);
+
+    function showStatus(html, kind) {
+      statusEl.hidden = false;
+      statusEl.className = "backup-status" + (kind ? " " + kind : "");
+      statusEl.innerHTML = html;
+    }
+    function encodeBlob(set) {
+      const payload = { v: 1, t: "otherworld-favs", favs: [...set] };
+      const json = JSON.stringify(payload);
+      // btoa needs latin-1; TextEncoder + per-byte String.fromCharCode is
+      // the modern unicode-safe path (replaces the deprecated
+      // encodeURIComponent → unescape dance).
+      const bytes = new TextEncoder().encode(json);
+      let binary = "";
+      for (const b of bytes) binary += String.fromCharCode(b);
+      return btoa(binary);
+    }
+    function decodeBlob(str) {
+      const trimmed = String(str || "").trim().replace(/\s+/g, "");
+      if (!trimmed) throw new Error("Empty code");
+      let json;
+      try {
+        const binary = atob(trimmed);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        json = new TextDecoder().decode(bytes);
+      } catch {
+        throw new Error("That doesn't look like a valid backup code.");
+      }
+      let payload;
+      try { payload = JSON.parse(json); }
+      catch { throw new Error("Backup code is corrupted."); }
+      if (!payload || payload.t !== "otherworld-favs" || !Array.isArray(payload.favs)) {
+        throw new Error("Backup code is for something else.");
+      }
+      return payload.favs.filter(k => typeof k === "string");
+    }
+
+    function resetCopyBtn() {
+      if (!copyBtn) return;
+      copyBtn.classList.remove("copied");
+      const label = copyBtn.querySelector(".label");
+      if (label) label.textContent = "Copy";
+    }
+    function flashCopied() {
+      if (!copyBtn) return;
+      copyBtn.classList.add("copied");
+      const label = copyBtn.querySelector(".label");
+      if (label) label.textContent = "Copied";
+      if (copyResetTimer) clearTimeout(copyResetTimer);
+      copyResetTimer = setTimeout(resetCopyBtn, 1500);
+    }
+
+    function openBackupModal() {
+      if (modalBackdrop) modalBackdrop.classList.add("open");
+    }
+    function closeBackupModal() {
+      if (modalBackdrop) modalBackdrop.classList.remove("open");
+    }
+
+    backupBtn.addEventListener("click", async () => {
+      const n = state.favorites.size;
+      if (n === 0) {
+        showStatus("No favorites to back up yet — tap the ★ on any event first.", "err");
+        return;
+      }
+      statusEl.hidden = true;
+      const code = encodeBlob(state.favorites);
+      if (codeEl) codeEl.textContent = code;
+      if (hintEl) hintEl.textContent = DEFAULT_HINT;
+      resetCopyBtn();
+      openBackupModal();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(code);
+        }
+      } catch { /* silent — user can use the Copy button or long-press */ }
+    });
+
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        const code = codeEl ? codeEl.textContent : "";
+        if (!code) return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(code);
+            flashCopied();
+            return;
+          }
+          throw new Error("no clipboard");
+        } catch {
+          if (hintEl) hintEl.textContent = MANUAL_HINT;
+        }
+      });
+    }
+
+    if (closeBtn) closeBtn.addEventListener("click", closeBackupModal);
+    if (modalBackdrop) {
+      modalBackdrop.addEventListener("click", e => {
+        if (e.target.id === "backup-modal-backdrop") closeBackupModal();
+      });
+    }
+    // Escape handling lives in the global dispatcher in bindUi() —
+    // the backup modal is listed first in escTargets so its Esc
+    // press dismisses only the popup, leaving About intact.
+
+    restoreBtn.addEventListener("click", () => {
+      const input = window.prompt(
+        "Paste your backup code below.\n\nRestoring merges with any favorites you already have on this device — nothing is deleted."
+      );
+      if (input == null) return;
+      let keys;
+      try { keys = decodeBlob(input); }
+      catch (err) { showStatus(err.message, "err"); return; }
+      const before = state.favorites.size;
+      // Run restored keys through the legacy migrator so backups
+      // created with the old 4-part format (camp|day|time|title)
+      // upgrade in-place to the new normalised 3-part shape.
+      const normalised = migrateLegacyFavorites(keys);
+      for (const k of normalised) state.favorites.add(k);
+      const added = state.favorites.size - before;
+      saveFavorites(state.favorites);
+      refreshCount();
+      if (typeof renderAll === "function") renderAll();
+      const total = normalised.size;
+      showStatus(
+        "Restored " + total + " favorite" + (total === 1 ? "" : "s") +
+        " (" + added + " new, " + (total - added) + " already on this device).",
+        "ok"
+      );
+    });
+  }
+
+  // ── Auto-hide header on scroll-down, reveal on scroll-up ──
+  // The header is position:fixed and overlays content. We use two
+  // mirrored accumulators (downAccum, upAccum) so neither direction
+  // can be flipped by a single jitter pixel — important deeper into
+  // the page where trailing inertia events used to immediately
+  // re-hide the header right after a clean upward swipe.
+  //
+  // Rules:
+  //   - At the very top: always show, reset both accumulators.
+  //   - Past HIDE_AFTER, downward delta accumulates; crossing
+  //     HIDE_DELTA triggers hide() and resets upAccum.
+  //   - Upward delta accumulates; crossing REVEAL_DELTA triggers
+  //     reveal() and resets downAccum.
+  //   - Direction change resets the *opposite* accumulator so
+  //     intent is captured cleanly (you can't "carry forward" old
+  //     downward distance into a new upward gesture).
+  //
+  // We also expose the live header height as --header-h so body's
+  // padding-top reservation always matches (active-filters and
+  // day-tabs change the header's height dynamically).
+  function bindHeaderAutoHide() {
+    const headerEl = document.querySelector("header");
+    if (!headerEl) return;
+    const HIDE_AFTER = 120;   // px scrolled before we ever hide
+    const HIDE_DELTA = 10;    // cumulative downward px before hide
+    const REVEAL_DELTA = 4;   // cumulative upward px before reveal
+    let lastY = window.scrollY;
+    let downAccum = 0;
+    let upAccum = 0;
+
+    function reveal() { headerEl.classList.remove("header-hidden"); }
+    function hide()   { headerEl.classList.add("header-hidden"); }
+
+    // Keep --header-h in sync with the live header height.
+    function syncHeaderHeight() {
+      const h = headerEl.getBoundingClientRect().height;
+      document.documentElement.style.setProperty("--header-h", h + "px");
+    }
+    syncHeaderHeight();
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(syncHeaderHeight).observe(headerEl);
+    } else {
+      window.addEventListener("resize", syncHeaderHeight, { passive: true });
+    }
+
+    window.addEventListener("scroll", () => {
+      const y = window.scrollY;
+      // Toggle the floating shadow once content sits under the header.
+      document.body.classList.toggle("is-scrolled", y > 4);
+
+      if (y <= 4) {
+        reveal();
+        downAccum = 0;
+        upAccum = 0;
+      } else if (y < lastY) {
+        // Upward: reset opposite, accumulate, fire on threshold.
+        downAccum = 0;
+        upAccum += (lastY - y);
+        if (upAccum >= REVEAL_DELTA) reveal();
+      } else if (y > lastY && y > HIDE_AFTER) {
+        // Downward past the safe zone: reset opposite, accumulate.
+        upAccum = 0;
+        downAccum += (y - lastY);
+        if (downAccum >= HIDE_DELTA) hide();
+      }
+      lastY = y;
+      updateNowCue();
+    }, { passive: true });
+
+    // Touching the very top edge of the viewport while the header is
+    // hidden also reveals it — a thumb-friendly escape hatch when you
+    // want the filters back without scrolling.
+    document.addEventListener("touchstart", e => {
+      if (!headerEl.classList.contains("header-hidden")) return;
+      const t = e.touches && e.touches[0];
+      if (t && t.clientY <= 30) reveal();
+    }, { passive: true });
+  }
+  function hideSearchModal() {
+    document.getElementById("search-modal-backdrop").classList.remove("open");
+  }
+  function hideFiltersModal() {
+    document.getElementById("filters-modal-backdrop").classList.remove("open");
+  }
+
+  // ── Filters modal pending-edit machinery ─────────────────────
+  // Chip taps inside the filters modal mutate state.* directly so
+  // the existing chip renderers (which derive their .active class
+  // from state) work without changes. While the modal is open we
+  // call renderFiltersModalOnly() instead of renderAll(), so the
+  // schedule beneath the backdrop is not re-rendered. On open we
+  // snapshot the four filter Sets so cancel paths can revert.
+  let filtersSnapshot = null;
+
+  function renderFiltersModalOnly() {
+    renderQuickChips();
+    renderTimeOfDayChips();
+    renderDurationChips();
+    renderTagChips();
+    renderNeighbourhoodChips();
+    renderModalResultCounts();
+  }
+
+  function commitFilters() {
+    filtersSnapshot = null;
+    renderAll();
+    hideFiltersModal();
+  }
+
+  function cancelFilters() {
+    if (filtersSnapshot) {
+      state.quick = filtersSnapshot.quick;
+      state.timesOfDay = filtersSnapshot.timesOfDay;
+      state.durations = filtersSnapshot.durations;
+      state.tags = filtersSnapshot.tags;
+      state.neighbourhoods = filtersSnapshot.neighbourhoods;
+      filtersSnapshot = null;
+    }
+    hideFiltersModal();
+  }
+
+  // ── Favorites ───────────────────────────────────────────
+  // toggleFavorite does the MINIMUM DOM work needed to feel correct:
+  //   1. Update the source button (star + class + pop animation)
+  //   2. Update the header badge count + bump animation
+  //   3. Only re-render the schedule if the change actually changes
+  //      visible content (favorites filter on, or favorites count
+  //      shown elsewhere).
+  // This keeps tapping stars feeling instant even on Friday's 345-event
+  // timeline.
+  function toggleFavorite(ev, srcEl) {
+    const k = eventFavKey(ev);
+    const wasFav = state.favorites.has(k);
+    if (wasFav) state.favorites.delete(k);
+    else state.favorites.add(k);
+    saveFavorites(state.favorites);
+
+    // 1. Update the source button in place — no re-render needed.
+    if (srcEl) {
+      const nowFav = !wasFav;
+      srcEl.classList.toggle("is-fav", nowFav);
+      srcEl.textContent = nowFav ? "★" : "☆";
+      srcEl.setAttribute("aria-pressed", nowFav ? "true" : "false");
+      srcEl.setAttribute("aria-label", nowFav ? "Unfavorite" : "Favorite");
+      if (nowFav) {
+        srcEl.classList.remove("just-favorited");
+        void srcEl.offsetWidth; // restart animation if re-tapped fast
+        srcEl.classList.add("just-favorited");
+      }
+    }
+
+    const favCount = state.favorites.size;
+
+    // Modal star (if open on this event).
+    if (_modalEvent && eventFavKey(_modalEvent) === k) {
+      const mFav = document.getElementById("m-fav");
+      const isFav = state.favorites.has(k);
+      mFav.textContent = isFav ? "★" : "☆";
+      mFav.classList.toggle("is-fav", isFav);
+    }
+
+    // 3. Full schedule re-render ONLY if it would actually change what's
+    // on screen. That's: favorites-only filter is active.
+    if (state.favoritesOnly) {
+      renderAll();
+    }
+  }
+
+  // ── Camp modal (events for a camp, opened from a map pin) ──
+  function showCampModal(entry) {
+    document.getElementById("cm-title").textContent = entry.name;
+    document.getElementById("cm-meta").textContent =
+      `${typeLabel(entry.type)} · ${entry.events.length} event${entry.events.length === 1 ? "" : "s"}`
+      + (entry.neighbourhood ? ` · 📍 ${entry.neighbourhood}` : "");
+    const list = document.getElementById("cm-events");
+    list.innerHTML = "";
+    if (!entry.events.length) {
+      const e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = "No scheduled events.";
+      list.appendChild(e);
+    } else {
+      const byDay = new Map();
+      for (const ev of entry.events) {
+        if (!byDay.has(ev.day)) byDay.set(ev.day, []);
+        byDay.get(ev.day).push(ev);
+      }
+      for (const day of DAY_ORDER) {
+        if (!byDay.has(day)) continue;
+        for (const ev of byDay.get(day)) {
+          const row = document.createElement("div");
+          row.className = "event-row";
+          const cross = ev.crossesMidnight
+            ? `<span class="cross-midnight" title="Ends the next day">⁺¹</span>`
+            : "";
+          row.innerHTML = `<span class="day"></span><span class="time"></span><span class="title"></span>`;
+          row.children[0].textContent = day;
+          row.children[1].innerHTML = `${ev.startTime}–${ev.endTime}${cross}`;
+          row.children[2].textContent = ev.title || "(untitled)";
+          row.addEventListener("click", () => {
+            hideCampModal();
+            showModal({ ...ev, _entry: entry });
+          });
+          list.appendChild(row);
+        }
+      }
+    }
+    document.getElementById("camp-modal-backdrop").classList.add("open");
+  }
+  function hideCampModal() {
+    document.getElementById("camp-modal-backdrop").classList.remove("open");
+  }
+
+  // ── Map view ──────────────────────────────────────────────
+  const mapView = (() => {
+    let root = null, canvas = null, stage = null, zoomReadout = null;
+    let zoom = 1, pan = { x: 0, y: 0 };
+    let panning = false, panStart = null;
+    let pendingFocus = null;
+    // Hoisted so renderPins() can check whether a multi-touch
+    // gesture is active and skip firing pin taps in that case.
+    const pointers = new Map();
+    let pinchStart = null;
+    // Set true as soon as a 2nd finger arrives. Pins read this on
+    // pointerup to refuse firing showCampModal when the touch was
+    // actually the start of a pinch.
+    let pinchActive = false;
+
+    function ensureNode() {
+      if (root) return root;
+      root = document.createElement("div");
+      root.className = "map-view";
+      if (!MAP.pins || !MAP.pins.length) {
+        root.innerHTML = `
+        <div class="empty-state">
+          No camp locations have been placed yet.<br>
+          Open <code>map-annotate.html</code> to place pins, then run
+          <code>node parse-map.js</code> to update <code>map-data.js</code>.
+        </div>`;
+        return root;
+      }
+      root.innerHTML = `
+      <div class="stage">
+        <div class="canvas"><img alt="Map"></div>
+        <div class="loading-shade"><span>Loading map…</span></div>
+        <div class="legend">
+          <span class="swatch"><span class="dot camp"></span>Camps</span>
+          <span class="swatch"><span class="dot sound_stage"></span>Stages</span>
+          <span class="swatch"><span class="dot art_installation"></span>Art</span>
+        </div>
+        <div class="controls-overlay">
+          <button data-act="out" title="Zoom out" aria-label="Zoom out">−</button>
+          <span class="zoom-readout">100%</span>
+          <button data-act="in" title="Zoom in" aria-label="Zoom in">+</button>
+          <button data-act="fit" title="Fit to screen" aria-label="Fit to screen">⤢</button>
+          <button data-act="pins" title="Hide pins" aria-label="Toggle pins" class="pins-toggle">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+          </button>
+        </div>
+      </div>`;
+      stage = root.querySelector(".stage");
+      canvas = root.querySelector(".canvas");
+      zoomReadout = root.querySelector(".zoom-readout");
+      const shade = root.querySelector(".loading-shade");
+
+      const img = canvas.querySelector("img");
+      img.addEventListener("load", () => {
+        if (shade) shade.classList.add("hidden");
+        // Size the canvas to the image's natural pixel dimensions so
+        // the browser rasterizes the image at full source resolution.
+        // Without this, mobile Safari rasterizes at CSS-pixel viewport
+        // width (e.g. 393px) and transform-zoom just upscales that
+        // tiny bitmap. With it, transforms scale a full-res bitmap.
+        if (img.naturalWidth && img.naturalHeight) {
+          canvas.style.width  = img.naturalWidth  + "px";
+          canvas.style.height = img.naturalHeight + "px";
+        }
+        fit();
+        if (pendingFocus) { focusOn(pendingFocus); pendingFocus = null; }
+      });
+      const sync = MapImage.syncSrc();
+      if (sync) {
+        img.src = sync;
+      } else {
+        MapImage.get().then(src => { img.src = src; });
+      }
+
+      root.querySelector('[data-act="in"]').addEventListener("click", () => setZoom(zoom * 1.3));
+      root.querySelector('[data-act="out"]').addEventListener("click", () => setZoom(zoom / 1.3));
+      root.querySelector('[data-act="fit"]').addEventListener("click", fit);
+      const pinsBtn = root.querySelector('[data-act="pins"]');
+      pinsBtn.addEventListener("click", () => {
+        const hidden = root.classList.toggle("pins-hidden");
+        pinsBtn.classList.toggle("active", hidden);
+        pinsBtn.title = hidden ? "Show pins" : "Hide pins";
+      });
+
+      stage.addEventListener("wheel", e => {
+        e.preventDefault();
+        setZoom(zoom * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
+      }, { passive: false });
+
+      // Unified pointer events: handles mouse, trackpad, touch, pen.
+      // For touch (mobile), we track 1 pointer = pan, 2 pointers = pinch.
+      // `pointers` + `pinchStart` are declared in the outer IIFE so
+      // renderPins() can see them too.
+      //
+      // We deliberately track pointers that start on .pin elements
+      // too — otherwise a pinch with a finger on a pin would only
+      // ever see one pointer in our Map and never trigger the
+      // pinch path. Pins decide tap-vs-not on their own pointerup
+      // using the shared `pointers` / `pinchActive` state.
+      function shouldIgnoreForTracking(target) {
+        return target.closest(".controls-overlay")
+          || target.closest(".legend")
+          || target.closest(".map-back-pill");
+      }
+
+      function cancelArmedPins() {
+        if (!canvas) return;
+        canvas.querySelectorAll(".pin.pin-armed").forEach(p => {
+          p.classList.remove("pin-armed");
+          p._tapCancelled = true;
+        });
+      }
+
+      stage.addEventListener("pointerdown", e => {
+        if (shouldIgnoreForTracking(e.target)) return;
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        const onPin = !!e.target.closest(".pin");
+        if (pointers.size === 1) {
+          // Only enter pan mode if the touch started on background.
+          // A touch that starts on a pin stays "ambiguous" until
+          // either it moves (→ pan) or a 2nd finger arrives (→ pinch)
+          // or it ends (→ tap, handled by pin's own pointerup).
+          // We also skip setPointerCapture for pin-rooted touches —
+          // capturing would steal the subsequent pointermove/up from
+          // the pin and break tap detection.
+          if (!onPin) {
+            try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+            panning = true;
+            panStart = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+            stage.classList.add("panning");
+          }
+        } else if (pointers.size === 2) {
+          // Pinch confirmed — capture this pointer for robust
+          // tracking off the stage. The other pointer (if it
+          // started on a pin) still bubbles up to us naturally.
+          try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+          panning = false;
+          pinchActive = true;
+          stage.classList.remove("panning");
+          cancelArmedPins();
+          const pts = [...pointers.values()];
+          const dx = pts[1].x - pts[0].x;
+          const dy = pts[1].y - pts[0].y;
+          pinchStart = {
+            dist: Math.hypot(dx, dy),
+            midX: (pts[0].x + pts[1].x) / 2,
+            midY: (pts[0].y + pts[1].y) / 2,
+            zoom,
+          };
+        }
+      });
+
+      stage.addEventListener("pointermove", e => {
+        if (!pointers.has(e.pointerId)) return;
+        pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (pointers.size === 2 && pinchStart) {
+          const pts = [...pointers.values()];
+          const dx = pts[1].x - pts[0].x;
+          const dy = pts[1].y - pts[0].y;
+          const dist = Math.hypot(dx, dy);
+          const newZoom = pinchStart.zoom * (dist / pinchStart.dist);
+          setZoom(newZoom, pinchStart.midX, pinchStart.midY);
+        } else if (panning && pointers.size === 1) {
+          pan.x = e.clientX - panStart.x;
+          pan.y = e.clientY - panStart.y;
+          applyTransform();
+        }
+      });
+
+      function endPointer(e) {
+        pointers.delete(e.pointerId);
+        if (pointers.size < 2) pinchStart = null;
+        if (pointers.size === 0) {
+          panning = false;
+          pinchActive = false;
+          stage.classList.remove("panning");
+        } else if (pointers.size === 1) {
+          // One finger lifted mid-pinch — promote remaining to pan.
+          const [pt] = [...pointers.values()];
+          panning = true;
+          panStart = { x: pt.x - pan.x, y: pt.y - pan.y };
+        }
+      }
+      stage.addEventListener("pointerup", endPointer);
+      stage.addEventListener("pointercancel", endPointer);
+      stage.addEventListener("pointerleave", endPointer);
+
+      renderPins();
+      return root;
+    }
+
+    function renderPins() {
+      if (!canvas) return;
+      canvas.querySelectorAll(".pin").forEach(n => n.remove());
+      const entriesByName = new Map(DATA.entries.map(e => [e.name, e]));
+      // Tap-vs-gesture discrimination — pins are passive observers.
+      // The stage owns pointer tracking (so pinch always sees both
+      // fingers, even when one lands on a pin). On pointerup the pin
+      // decides "this was a tap" iff:
+      //   - same pointer id we armed with
+      //   - movement stayed within TAP_MOVE_TOL
+      //   - no 2nd finger ever joined (pinchActive is false)
+      //   - all other pointers are released
+      const TAP_MOVE_TOL = 8;
+      for (const pin of MAP.pins) {
+        const entry = entriesByName.get(pin.name);
+        const dim = entry && !entryMatchesFilters(entry);
+        const el = document.createElement("div");
+        el.className = "pin " + pin.type + (dim ? " dim" : "");
+        el.style.left = (pin.x * 100) + "%";
+        el.style.top = (pin.y * 100) + "%";
+        el.title = pin.name + (entry ? ` (${entry.events.length} events)` : "");
+
+        let armedPointerId = null;
+        let startPt = null;
+
+        el.addEventListener("pointerdown", e => {
+          // Do NOT stopPropagation — the stage needs to track this
+          // pointer too so pinch detection works.
+          if (armedPointerId !== null) return; // already tracking a finger on this pin
+          armedPointerId = e.pointerId;
+          startPt = { x: e.clientX, y: e.clientY };
+          el._tapCancelled = false;
+          el.classList.add("pin-armed");
+        });
+
+        el.addEventListener("pointermove", e => {
+          if (e.pointerId !== armedPointerId || el._tapCancelled) return;
+          const dx = e.clientX - startPt.x;
+          const dy = e.clientY - startPt.y;
+          if (Math.hypot(dx, dy) > TAP_MOVE_TOL) {
+            el._tapCancelled = true;
+            el.classList.remove("pin-armed");
+          }
+        });
+
+        el.addEventListener("pointerup", e => {
+          if (e.pointerId !== armedPointerId) return;
+          const cancelled = el._tapCancelled;
+          el.classList.remove("pin-armed");
+          armedPointerId = null;
+          startPt = null;
+          // After our pointer comes up the stage will also remove it
+          // from `pointers`. We fire the tap only if no pinch was
+          // ever active and no other fingers remain down.
+          const otherPointersDown = pointers
+            ? Array.from(pointers.keys()).some(id => id !== e.pointerId)
+            : false;
+          if (!cancelled && !pinchActive && !otherPointersDown && entry) {
+            showCampModal(entry);
+          }
+        });
+
+        const cancel = () => {
+          el._tapCancelled = true;
+          el.classList.remove("pin-armed");
+          armedPointerId = null;
+          startPt = null;
+        };
+        el.addEventListener("pointercancel", cancel);
+        canvas.appendChild(el);
+      }
+    }
+
+    function applyTransform() {
+      if (!canvas) return;
+      // Canvas is sized to the image's natural pixel dimensions, so
+      // we need a "base scale" (stage-width / canvas-width) to bring
+      // it down to fit the stage at logical zoom=1. `zoom` keeps its
+      // existing semantics: zoom=1 means "image fits stage width".
+      const img = canvas.querySelector("img");
+      const stageRect = stage && stage.getBoundingClientRect();
+      const baseScale = (img && img.naturalWidth && stageRect && stageRect.width)
+        ? stageRect.width / img.naturalWidth
+        : 1;
+      const scale = baseScale * zoom;
+      canvas.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${scale})`;
+      // Inverse-scale pins (clamped) so they don't blanket the art
+      // at high zoom — at zoom 1 pins are 14px, at zoom 4 they're ~7px.
+      // The 1/baseScale factor compensates for the canvas being natural-
+      // size: at zoom=1 a raw 14px pin would render at 14*baseScale (tiny);
+      // multiplying by 1/baseScale brings it back to ~14 screen pixels.
+      const pinDamp = Math.max(0.35, Math.min(1, 1 / Math.sqrt(zoom)));
+      const pinScale = pinDamp / baseScale;
+      canvas.style.setProperty("--pin-scale", pinScale.toFixed(3));
+      if (zoomReadout) zoomReadout.textContent = Math.round(zoom * 100) + "%";
+    }
+
+    function setZoom(z, clientX, clientY) {
+      z = Math.max(0.3, Math.min(9, z));
+      const rect = stage.getBoundingClientRect();
+      const ax = (clientX ?? rect.left + rect.width / 2) - rect.left;
+      const ay = (clientY ?? rect.top + rect.height / 2) - rect.top;
+      const imgX = (ax - pan.x) / zoom;
+      const imgY = (ay - pan.y) / zoom;
+      zoom = z;
+      pan.x = ax - imgX * zoom;
+      pan.y = ay - imgY * zoom;
+      applyTransform();
+    }
+
+    function fit() {
+      // In fullscreen mode (or any time the stage is much taller than
+      // wide-aspect map at zoom 1), zoom to fill the smaller dimension
+      // so the map uses the whole viewport. Centers the result.
+      const img = canvas && canvas.querySelector("img");
+      const rect = stage && stage.getBoundingClientRect();
+      if (img && rect && img.naturalWidth && img.naturalHeight && rect.width && rect.height) {
+        const imgAR = img.naturalWidth / img.naturalHeight;
+        const stageAR = rect.width / rect.height;
+        // At zoom=1, image renders at rect.width × (rect.width / imgAR).
+        // Scale that to fill rect height (cover) or fit fully (contain).
+        // We use cover so the map fills the screen — pan to explore.
+        const naturalHeightAtZoom1 = rect.width / imgAR;
+        zoom = stageAR < imgAR
+          ? rect.height / naturalHeightAtZoom1   // portrait stage: scale up to fill height
+          : 1;                                    // landscape/wide enough: width already fills
+        const scaledW = rect.width * zoom;
+        const scaledH = naturalHeightAtZoom1 * zoom;
+        pan = {
+          x: (rect.width - scaledW) / 2,
+          y: (rect.height - scaledH) / 2,
+        };
+      } else {
+        zoom = 1;
+        pan = { x: 0, y: 0 };
+      }
+      applyTransform();
+    }
+
+    function focusOn(pin) {
+      if (!stage) { pendingFocus = pin; return; }
+      const rect = stage.getBoundingClientRect();
+      zoom = Math.min(3, Math.max(zoom, 2));
+      // Pin is at (pin.x * stageWidth * zoom, pin.y * stageHeight * zoom)
+      // after scale (canvas starts at 100% of stage width).
+      const px = pin.x * rect.width * zoom;
+      const py = pin.y * rect.height * zoom;
+      pan.x = rect.width / 2 - px;
+      pan.y = rect.height / 2 - py;
+      applyTransform();
+    }
+
+    return {
+      mount(container) {
+        container.appendChild(ensureNode());
+        // Re-evaluate dimming on every mount (filters may have changed).
+        renderPins();
+        // Stage dimensions change between regular and fullscreen
+        // viewports — re-fit so the map fills whatever space we have.
+        requestAnimationFrame(() => fit());
+      },
+      focusOn(pin) {
+        ensureNode();
+        focusOn(pin);
+      },
+      refreshDim: renderPins,
+    };
+  })();
+
+  function renderMapView() {
+    const view = document.getElementById("view");
+    view.innerHTML = "";
+    mapView.mount(view);
+  }
+
+  function renderStats() {
+    const events = DATA.metadata.eventCount;
+    const entries = DATA.metadata.entryCount;
+    const updated = formatRelativeUpdated(DATA.metadata.lastReconciledAt);
+    const parts = [`${events} events`, `${entries} entries`];
+    if (updated) parts.push(updated);
+    document.getElementById("stats").textContent = parts.join(" · ");
+  }
+  // Short relative time for the About modal stats line — must stay
+  // compact ("3h ago", "2d ago") so the whole line fits on one row on
+  // mobile. Falls back to a short date for anything older than a week.
+  function formatRelativeUpdated(iso) {
+    if (!iso) return "";
+    const then = new Date(iso);
+    if (isNaN(then)) return "";
+    const diffMs = Date.now() - then.getTime();
+    if (diffMs < 0) return "just now";
+    const m = Math.floor(diffMs / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return m + "m ago";
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + "h ago";
+    const d = Math.floor(h / 24);
+    if (d < 7) return d + "d ago";
+    return then.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  // ── Filters-modal chip groups ───────────────────────────
+  function renderTagChips() {
+    const wrap = document.getElementById("tag-chips");
+    wrap.innerHTML = "";
+    if (!ALL_TAGS.length) { wrap.parentElement.style.display = "none"; return; }
+    for (const t of ALL_TAGS) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip" + (state.tags.has(t) ? " active" : "");
+      btn.dataset.tag = t;
+      btn.textContent = t;
+      btn.addEventListener("click", () => {
+        if (state.tags.has(t)) state.tags.delete(t); else state.tags.add(t);
+        renderFiltersModalOnly();
+      });
+      wrap.appendChild(btn);
+    }
+  }
+
+  function renderNeighbourhoodChips() {
+    const wrap = document.getElementById("neighbourhood-chips");
+    const section = document.getElementById("neighbourhoods-section");
+    if (!ALL_NEIGHBOURHOODS.length) { section.style.display = "none"; return; }
+    section.style.display = "";
+    wrap.innerHTML = "";
+    for (const n of ALL_NEIGHBOURHOODS) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip" + (state.neighbourhoods.has(n) ? " active" : "");
+      btn.dataset.neighbourhood = n;
+      btn.textContent = n;
+      btn.addEventListener("click", () => {
+        if (state.neighbourhoods.has(n)) state.neighbourhoods.delete(n);
+        else state.neighbourhoods.add(n);
+        renderFiltersModalOnly();
+      });
+      wrap.appendChild(btn);
+    }
+  }
+
+  function renderTypeChips() {
+    for (const btn of document.querySelectorAll("#type-chips .chip[data-type]")) {
+      btn.classList.toggle("active", btn.dataset.type === state.type);
+    }
+  }
+
+  function renderTimeOfDayChips() {
+    for (const k of Object.keys(TIME_OF_DAY)) {
+      const btn = document.querySelector(`#time-of-day-chips .chip[data-tod="${k}"]`);
+      if (!btn) continue;
+      btn.classList.toggle("active", state.timesOfDay.has(k));
+    }
+  }
+
+  function renderQuickChips() {
+    for (const q of ["now", "next"]) {
+      const btn = document.querySelector(`#quick-chips .chip[data-quick="${q}"]`);
+      if (!btn) continue;
+      btn.classList.toggle("active", state.quick.has(q));
+    }
+  }
+
+  function renderDurationChips() {
+    for (const k of Object.keys(DURATION_BUCKET)) {
+      const btn = document.querySelector(`#duration-chips .chip[data-dur="${k}"]`);
+      if (!btn) continue;
+      btn.classList.toggle("active", state.durations.has(k));
+    }
+  }
+
+  // ── CTA badges + active filter pill row + live result counts ──
+  function renderCtaBadges() {
+    const fc = activeFilterCount();
+    const fb = document.getElementById("filters-badge");
+    fb.hidden = fc === 0;
+    fb.textContent = fc || "";
+    document.getElementById("filters-open").classList.toggle("has-active", fc > 0);
+
+    const sb = document.getElementById("search-badge");
+    const hasSearch = !!state.search;
+    sb.hidden = !hasSearch;
+    sb.textContent = hasSearch ? "•" : "";
+    document.getElementById("search-open").classList.toggle("has-active", hasSearch);
+
+    // Header Favorites star — active when the favorites-only flag is on.
+    const favOn = state.favoritesOnly;
+    const favBtn = document.getElementById("fav-toggle");
+    favBtn.classList.toggle("has-active", favOn);
+    favBtn.setAttribute("aria-pressed", favOn ? "true" : "false");
+    // No notification-style count badge on this button — the day-tab
+    // strip already shows "Friday 3" when filtered, which is enough.
+  }
+
+  function renderActiveFilters() {
+    const wrap = document.getElementById("active-filters");
+    wrap.innerHTML = "";
+    const pills = [];
+    // Favorites isn't rendered as a pill — toggling it lives on the
+    // header star, and Clear all here doesn't touch it either.
+    if (state.quick.size > 0) {
+      const labels = { now: "Happening now", next: "Up next" };
+      for (const q of state.quick) {
+        pills.push({ label: labels[q] || q, clear: () => state.quick.delete(q) });
+      }
+    }
+    if (state.timesOfDay.size > 0) {
+      const labels = { morning: "Morning", afternoon: "Afternoon", evening: "Evening", late: "Late night" };
+      for (const k of state.timesOfDay) {
+        pills.push({ label: labels[k] || k, clear: () => state.timesOfDay.delete(k) });
+      }
+    }
+    if (state.durations.size > 0) {
+      const labels = { short: "Up to 2h", medium: "2–6h", long: "Over 6h" };
+      for (const k of state.durations) {
+        pills.push({ label: labels[k] || k, clear: () => state.durations.delete(k) });
+      }
+    }
+    if (state.type !== "all") {
+      pills.push({ label: typeLabel(state.type) + "s", clear: () => { state.type = "all"; } });
+    }
+    for (const n of state.neighbourhoods) {
+      pills.push({ label: "📍 " + n, clear: () => state.neighbourhoods.delete(n) });
+    }
+    for (const t of state.tags) {
+      pills.push({ label: t, clear: () => state.tags.delete(t) });
+    }
+    if (state.search) {
+      pills.push({ label: `“${state.search}”`, clear: () => {
+        state.search = "";
+        const si = document.getElementById("search");
+        if (si) si.value = "";
+      } });
+    }
+    if (pills.length === 0) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    for (const p of pills) {
+      const el = document.createElement("span");
+      el.className = "active-filter-pill";
+    el.innerHTML = `<span></span><button type="button"></button>`;
+    el.querySelector("span").textContent = p.label;
+    const removeBtn = el.querySelector("button");
+    removeBtn.textContent = "✕";
+    removeBtn.setAttribute("aria-label", `Remove filter: ${p.label}`);
+    removeBtn.addEventListener("click", () => { p.clear(); renderAll(); });
+      wrap.appendChild(el);
+    }
+    if (pills.length > 1) {
+      const clearAll = document.createElement("button");
+      clearAll.type = "button";
+      clearAll.className = "active-filter-pill clear-all";
+      clearAll.textContent = "Clear all";
+      clearAll.addEventListener("click", () => {
+        // Deliberately leaves state.favoritesOnly alone — favorites
+        // is owned by the header star, not the filter chrome.
+        state.tags.clear();
+        state.neighbourhoods.clear();
+        state.quick.clear();
+        state.timesOfDay.clear();
+        state.durations.clear();
+        state.type = "all";
+        state.search = "";
+        const si = document.getElementById("search");
+        if (si) si.value = "";
+        renderAll();
+      });
+      wrap.appendChild(clearAll);
+    }
+  }
+
+  function renderModalResultCounts() {
+    const total = totalVisibleEventCount();
+    const fr = document.getElementById("filters-results");
+    if (fr) {
+      fr.textContent = total === 0
+        ? "Done · no matches"
+        : `Done · ${total} event${total === 1 ? "" : "s"}`;
+    }
+    const sr = document.getElementById("search-results");
+    if (sr) {
+      sr.textContent = total === 0
+        ? "Search · no matches"
+        : `Search · ${total} event${total === 1 ? "" : "s"}`;
+    }
+  }
+
+  function renderAll() {
+    renderTagChips();
+    renderNeighbourhoodChips();
+    renderQuickChips();
+    renderTimeOfDayChips();
+    renderDurationChips();
+    renderTypeChips();
+    renderActiveFilters();
+    renderCtaBadges();
+    renderModalResultCounts();
+    renderDayTabs();
+    renderStats();
+    if (state.mode === "day") renderDayView();
+    else if (state.mode === "camp") renderCampView();
+    else if (state.mode === "map") renderMapView();
+    updateNowCue();
+  }
+
+  bindUi();
+  bindHeaderAutoHide();
+  bindSettings();
+  renderAll();
+
+  // First-load snap to now. Instant scroll (no smooth) so we don't
+  // pan during initial paint, which fights the scroll-hide header
+  // and stutters on iOS Safari. Guarded by _didInitialScroll so
+  // later re-renders (filter changes etc.) don't yank the user.
+  if (!state._didInitialScroll
+      && state.mode === "day"
+      && state.day === getToday()) {
+    requestAnimationFrame(() => {
+      if (scrollToNowLine({ smooth: false })) {
+        state._didInitialScroll = true;
+      }
+    });
+  }
+
+  startLiveTick();
+})();
