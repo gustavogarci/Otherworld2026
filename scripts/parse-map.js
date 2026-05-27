@@ -2,8 +2,12 @@
 /**
  * Parse the festival map PDF.
  *
- * Outputs:
- *  - map.png           : rendered map image (high-res)
+ * Outputs (all written to the repo root):
+ *  - map.webp          : rendered map image, WebP-encoded for the web.
+ *                        Rendered at RENDER_DPI then encoded at WEBP_QUALITY;
+ *                        smaller than a PNG at the same fidelity so it both
+ *                        loads faster and fits inside the client's
+ *                        localStorage cache budget.
  *  - map-labels.json   : every clustered text label found on the map
  *                        (centroid + text + bbox), useful as hints in
  *                        the annotation UI.
@@ -16,6 +20,8 @@
  * returns highly fragmented words (e.g. "CAM", "MPI", "NG" for "CAMPING").
  * Strategy: cluster nearby fragments into "labels", then fuzzy-match
  * each entry name against the labels using normalized-letter overlap.
+ *
+ * Requires `pdftoppm`, `pdftotext` (poppler) and `cwebp` (webp) on PATH.
  */
 
 const fs = require("fs");
@@ -23,16 +29,25 @@ const path = require("path");
 const crypto = require("crypto");
 const { execFileSync } = require("child_process");
 
-const MAP_PDF = path.resolve(__dirname, "map.pdf");
-const MAP_PNG = path.resolve(__dirname, "map.png");
+const ROOT = path.resolve(__dirname, "..");
+const MAP_PDF = path.join(ROOT, "map.pdf");
+const MAP_WEBP = path.join(ROOT, "map.webp");
 const TMP_BBOX = "/tmp/map.bbox.html";
 const TMP_RENDER_DIR = "/tmp/map_render";
-const EVENTS_JSON = path.resolve(__dirname, "events.json");
-const LABELS_OUT = path.resolve(__dirname, "map-labels.json");
-const LOCATIONS_OUT = path.resolve(__dirname, "map-locations.json");
-const MAP_DATA_JS = path.resolve(__dirname, "map-data.js");
+const TMP_RENDER_PNG = path.join(TMP_RENDER_DIR, "map-1.png");
+const EVENTS_JSON = path.join(ROOT, "events.json");
+const LABELS_OUT = path.join(ROOT, "map-labels.json");
+const LOCATIONS_OUT = path.join(ROOT, "map-locations.json");
+const MAP_DATA_JS = path.join(ROOT, "map-data.js");
 
-const RENDER_DPI = 200;
+// 300 DPI keeps every camp label readable while staying well under
+// iOS Safari's ~16 MP per-image decode limit (above that, mobile
+// Safari downsamples internally and the map looks worse on phones
+// than at 200 DPI). 3311×2564 ≈ 8.5 MP is the sweet spot. WebP q=88
+// is ~1.6 MB so the localStorage cache (base64, ~5 MB quota) keeps
+// working.
+const RENDER_DPI = 300;
+const WEBP_QUALITY = 88;
 const CLUSTER_EPS_PT = 4;        // tight merge of adjacent pdftotext blocks
 const MIN_LABEL_LEN = 3;         // drop noise (single chars, punctuation)
 const FUZZY_MIN_SCORE = 0.7;     // minimum letter-coverage to accept
@@ -41,6 +56,7 @@ const FUZZY_MIN_SCORE = 0.7;     // minimum letter-coverage to accept
 
 function renderMapImage() {
   fs.mkdirSync(TMP_RENDER_DIR, { recursive: true });
+  // pdftoppm always emits PNG; we keep that as the intermediate.
   execFileSync("pdftoppm", [
     "-r", String(RENDER_DPI),
     "-png",
@@ -48,8 +64,17 @@ function renderMapImage() {
     MAP_PDF,
     path.join(TMP_RENDER_DIR, "map"),
   ]);
-  fs.copyFileSync(path.join(TMP_RENDER_DIR, "map-1.png"), MAP_PNG);
-  console.error(`Wrote ${MAP_PNG}`);
+  // Re-encode the intermediate PNG as WebP for the production asset. At
+  // 300 DPI a PNG is ~4.3 MB but WebP q=88 is ~1.6 MB at visually-identical
+  // quality, which keeps the lazy-load + localStorage cache working.
+  execFileSync("cwebp", [
+    "-q", String(WEBP_QUALITY),
+    "-m", "6",
+    "-quiet",
+    TMP_RENDER_PNG,
+    "-o", MAP_WEBP,
+  ]);
+  console.error(`Wrote ${MAP_WEBP}`);
 }
 
 // ---------- bbox parse ----------
@@ -345,19 +370,19 @@ function main() {
     return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
   });
 
-  // Cache-busting version: short content hash of the rendered PNG.
+  // Cache-busting version: short content hash of the rendered image.
   // The browser-side localStorage cache (in index.html) keys off this,
   // so re-runs that don't change the image keep the cached blob.
   const version = crypto
     .createHash("md5")
-    .update(fs.readFileSync(MAP_PNG))
+    .update(fs.readFileSync(MAP_WEBP))
     .digest("hex")
     .slice(0, 12);
 
   const output = {
     pageWidth, pageHeight,
     version,
-    imagePath: "map.png",
+    imagePath: "map.webp",
     pins,
   };
   fs.writeFileSync(LOCATIONS_OUT, JSON.stringify(output, null, 2));

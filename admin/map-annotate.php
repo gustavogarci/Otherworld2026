@@ -13,7 +13,7 @@ $rootDir       = dirname(__DIR__);
 $eventsPath    = $rootDir . '/events.json';
 $locationsPath = $rootDir . '/map-locations.json';
 $labelsPath    = $rootDir . '/map-labels.json';
-$mapPngPath    = $rootDir . '/map.png';
+$mapImgPath    = $rootDir . '/map.webp';
 
 function readJson(string $path, array $fallback): array {
     if (!file_exists($path)) return $fallback;
@@ -33,9 +33,9 @@ $labels    = readJson($labelsPath,    ['labels'   => []]);
 
 // Image served from the parent dir; cache-bust by content hash so a
 // freshly-rendered map doesn't get served from the browser cache.
-$mapImgUrl = '../map.png';
-if (file_exists($mapPngPath)) {
-    $mapImgUrl .= '?v=' . substr((string) md5_file($mapPngPath), 0, 8);
+$mapImgUrl = '../map.webp';
+if (file_exists($mapImgPath)) {
+    $mapImgUrl .= '?v=' . substr((string) md5_file($mapImgPath), 0, 8);
 }
 
 $jsonFlags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
@@ -1002,7 +1002,7 @@ async function adminResetPins() {
 }
 
 async function adminDeleteMap() {
-  const a = 'Delete the parsed map?\n\nThis removes:\n  · map.png (the rendered image)\n  · map-locations.json (all pins)\n  · map-labels.json (text clusters)\n  · map-data.js (runtime data)\n\nmap.pdf is NOT touched. Re-run the parser to regenerate.';
+  const a = 'Delete the parsed map?\n\nThis removes:\n  · map.webp (the rendered image)\n  · map-locations.json (all pins)\n  · map-labels.json (text clusters)\n  · map-data.js (runtime data)\n\nmap.pdf is NOT touched. Re-run the parser to regenerate.';
   if (!confirm(a)) return;
   setAdminBusy(true);
   showAdminLog('Deleting…');

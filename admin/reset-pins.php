@@ -22,22 +22,22 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 $rootDir       = dirname(__DIR__);
 $locationsPath = $rootDir . '/map-locations.json';
 $mapDataJs     = $rootDir . '/map-data.js';
-$mapPng        = $rootDir . '/map.png';
+$mapImg        = $rootDir . '/map.webp';
 
 try {
     $existing = file_exists($locationsPath)
         ? json_decode(file_get_contents($locationsPath), true, 16, JSON_THROW_ON_ERROR)
         : [];
 
-    $version = file_exists($mapPng)
-        ? substr((string) md5_file($mapPng), 0, 12)
+    $version = file_exists($mapImg)
+        ? substr((string) md5_file($mapImg), 0, 12)
         : ($existing['version'] ?? '0');
 
     $output = [
         'pageWidth'  => $existing['pageWidth']  ?? 1,
         'pageHeight' => $existing['pageHeight'] ?? 1,
         'version'    => $version,
-        'imagePath'  => 'map.png',
+        'imagePath'  => 'map.webp',
         'pins'       => [],
     ];
 

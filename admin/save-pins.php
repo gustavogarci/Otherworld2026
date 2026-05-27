@@ -8,8 +8,8 @@
  *   }
  *
  * Writes the canonical `map-locations.json` and regenerates `map-data.js`
- * (used by index.html at runtime). The PNG file is left untouched —
- * re-render via `node parse-map.js` if the PDF changes.
+ * (used by index.html at runtime). The map image file is left untouched —
+ * re-render via `node scripts/parse-map.js` if the PDF changes.
  *
  * Pins are reconciled with the schedule's entry list (events.json): any
  * pin whose name no longer corresponds to a known camp/stage/art is
@@ -30,7 +30,7 @@ $rootDir       = dirname(__DIR__);
 $locationsPath = $rootDir . '/map-locations.json';
 $mapDataJs     = $rootDir . '/map-data.js';
 $eventsPath    = $rootDir . '/events.json';
-$mapPng        = $rootDir . '/map.png';
+$mapImg        = $rootDir . '/map.webp';
 
 try {
     $raw = file_get_contents('php://input');
@@ -103,15 +103,15 @@ try {
         return strcasecmp($a['name'], $b['name']);
     });
 
-    $version = file_exists($mapPng)
-        ? substr(md5_file($mapPng), 0, 12)
+    $version = file_exists($mapImg)
+        ? substr(md5_file($mapImg), 0, 12)
         : ($existing['version'] ?? '0');
 
     $output = [
         'pageWidth'  => $existing['pageWidth']  ?? 1,
         'pageHeight' => $existing['pageHeight'] ?? 1,
         'version'    => $version,
-        'imagePath'  => 'map.png',
+        'imagePath'  => 'map.webp',
         'pins'       => $cleanPins,
     ];
 

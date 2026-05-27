@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Crop map.png into a grid of overlapping tiles and write them to
- * /tmp/otherworld_map_tiles/. Tiles overlap by 10% so a label that
+ * Crop the rendered map into a grid of overlapping tiles and write them
+ * to /tmp/otherworld_map_tiles/. Tiles overlap by 10% so a label that
  * straddles a tile boundary still appears fully in at least one tile.
  *
  * Also writes /tmp/otherworld_map_tiles/index.json with each tile's
@@ -9,21 +9,37 @@
  * positions in tile-local coords, we map them back to map-global coords
  * using these bounds.
  *
+ * The source-of-truth asset is map.webp (what the browser loads). pngjs
+ * only decodes PNG, so we decode the webp to a temp PNG via `dwebp`
+ * first and crop from there.
+ *
  * Usage: node scripts/crop-map.js [cols=4] [rows=3]
  */
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 const { PNG } = require("pngjs");
 
-const SRC      = path.resolve(__dirname, "..", "map.png");
+const ROOT     = path.resolve(__dirname, "..");
+const SRC_WEBP = path.join(ROOT, "map.webp");
+const SRC_PNG  = path.join(ROOT, "map.png");
+const TMP_PNG  = "/tmp/otherworld_map_source.png";
 const DEST_DIR = "/tmp/otherworld_map_tiles";
 const OVERLAP  = 0.10;
 
 const cols = parseInt(process.argv[2], 10) || 4;
 const rows = parseInt(process.argv[3], 10) || 3;
 
-if (!fs.existsSync(SRC)) {
-  console.error(`Missing ${SRC}. Run \`node parse-map.js\` first.`);
+let SRC;
+if (fs.existsSync(SRC_WEBP)) {
+  // Decode webp → temp PNG for pngjs. `-quiet` keeps stderr clean.
+  execFileSync("dwebp", ["-quiet", SRC_WEBP, "-o", TMP_PNG]);
+  SRC = TMP_PNG;
+} else if (fs.existsSync(SRC_PNG)) {
+  // Back-compat: still works if someone has an old map.png lying around.
+  SRC = SRC_PNG;
+} else {
+  console.error(`Missing ${SRC_WEBP} (and no fallback ${SRC_PNG}). Run \`node scripts/parse-map.js\` first.`);
   process.exit(1);
 }
 
@@ -72,7 +88,7 @@ for (let r = 0; r < rows; r++) {
 }
 
 const index = {
-  source:    path.basename(SRC),
+  source:    "map.webp",
   sourceWidth: W, sourceHeight: H,
   cols, rows,
   overlap: OVERLAP,

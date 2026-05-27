@@ -25,7 +25,7 @@ const TILES_DIR = "/tmp/otherworld_map_tiles";
 const LOC_PATH  = path.join(ROOT, "map-locations.json");
 const DATA_PATH = path.join(ROOT, "map-data.js");
 const EVENTS    = path.join(ROOT, "events.json");
-const MAP_PNG   = path.join(ROOT, "map.png");
+const MAP_IMG   = path.join(ROOT, "map.webp");
 
 const AGREEMENT_RADIUS = 0.04; // 4% of map width — if two tiles report a name within this, they agree
 
@@ -172,15 +172,15 @@ merged.sort((a, b) => {
   return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 });
 
-const version = fs.existsSync(MAP_PNG)
-  ? crypto.createHash("md5").update(fs.readFileSync(MAP_PNG)).digest("hex").slice(0, 12)
+const version = fs.existsSync(MAP_IMG)
+  ? crypto.createHash("md5").update(fs.readFileSync(MAP_IMG)).digest("hex").slice(0, 12)
   : existing.version || "0";
 
 const output = {
   pageWidth:  existing.pageWidth,
   pageHeight: existing.pageHeight,
   version,
-  imagePath:  existing.imagePath || "map.png",
+  imagePath:  existing.imagePath || "map.webp",
   pins: merged,
 };
 

@@ -20,3 +20,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local-only screenshot output from scripts/mobile-screenshots.js
+screenshots/

@@ -2,7 +2,7 @@
 /**
  * POST endpoint: remove the parsed map.
  *
- * Deletes the rendered image (map.png) plus everything derived from it:
+ * Deletes the rendered image (map.webp) plus everything derived from it:
  *   - map-locations.json  (pin positions)
  *   - map-labels.json     (text clusters)
  *   - map-data.js         (runtime data for index.html)
@@ -26,7 +26,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 
 $rootDir = dirname(__DIR__);
 $targets = [
-    'map.png',
+    'map.webp',
+    'map.png', // legacy, only present if upgrading from an older parser
     'map-data.js',
     'map-locations.json',
     'map-labels.json',

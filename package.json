@@ -9,7 +9,8 @@
     "parse-map": "node parse-map.js",
     "crop-map": "node scripts/crop-map.js",
     "merge-agent-results": "node scripts/merge-agent-results.js",
-    "serve": "php -S 127.0.0.1:8000 -t ."
+    "serve": "php -S 127.0.0.1:8000 -t .",
+    "screenshots": "node scripts/mobile-screenshots.js"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +18,8 @@
   "type": "commonjs",
   "dependencies": {
     "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
   }
 }
