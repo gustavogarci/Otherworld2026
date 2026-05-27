@@ -41,14 +41,22 @@ jobs:
         run: git fetch upstream master
 
       - name: Pull data files only (never source)
-        # Allowlist of files to mirror. If upstream adds a new data file
-        # we care about, add it here. The `|| true` keeps us going if a
-        # file disappears upstream (e.g. one of the optional map JSONs).
+        # Allowlist of files to mirror. Iterate one at a time so a single
+        # missing file (e.g. upstream renames or deletes one) doesn't
+        # atomically abort the whole checkout. Note: map.webp is NOT on
+        # this list because upstream tracks map.png while this fork has
+        # diverged to its own optimised webp; the map image rarely
+        # changes anyway and is regenerated locally when it does.
         run: |
-          git checkout upstream/master -- \
-            events.json data.js camp-aliases.json \
-            map-data.js map-locations.json map-labels.json map.webp \
-            || true
+          for f in events.json data.js camp-aliases.json \
+                   map-data.js map-locations.json map-labels.json; do
+            if git cat-file -e "upstream/master:$f" 2>/dev/null; then
+              git checkout upstream/master -- "$f"
+              echo "  pulled: $f"
+            else
+              echo "  skipped (not in upstream): $f"
+            fi
+          done
 
       - name: Commit and push if changed
         run: |
