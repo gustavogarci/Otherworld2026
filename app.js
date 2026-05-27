@@ -1200,7 +1200,144 @@
     }
   }
 
-  // ── Modal ────────────────────────────────────────────────
+  // ── Native <dialog> helpers ───────────────────────────────
+  // All six modals are top-layer <dialog> elements opened via
+  // showModal(). The browser handles ESC, focus trap, ::backdrop
+  // paint, and (modern Safari) lets two dialogs stack — the Settings
+  // → Backup nested flow relies on that.
+  //
+  // We toggle html.modal-open from these helpers so a tiny CSS rule
+  // (overflow:hidden + overscroll-behavior:none on <html>) can lock
+  // the page scroll on iOS Safari, which does NOT auto-lock body
+  // scroll for top-layer dialogs. The class clears only after the
+  // LAST open dialog closes — important for Settings → Backup.
+  //
+  // _closingDialog: Safari/WebKit fires a cancelable `cancel` event on
+  // dialog.close(). Our cancel handlers call preventDefault() to run
+  // revert logic for Esc/backdrop; without this flag that also blocks
+  // programmatic closes (Done / X), leaving dialog.open stuck true so
+  // the next header tap is a no-op in openDialog().
+  let _closingDialog = false;
+  function openDialog(dialog) {
+    if (!dialog) return;
+    if (dialog.open) return;
+    document.documentElement.classList.add("modal-open");
+    dialog.showModal();
+    // showModal() focuses the first focusable child; blur so iOS
+    // Safari doesn't flash a blue pre-selection ring on ★ / ✕ / Copy.
+    const focused = document.activeElement;
+    if (focused && focused !== dialog && dialog.contains(focused)) {
+      focused.blur();
+    }
+  }
+  function closeDialog(dialog) {
+    if (!dialog || !dialog.open) return;
+    _closingDialog = true;
+    dialog.close();
+    _closingDialog = false;
+    // Closing a stacked dialog (Backup over Settings) restores focus
+    // to the dialog underneath — often the whole <dialog> or the
+    // control that opened it. Blur so iOS doesn't ring the sheet.
+    const clearFocusUnderOpenDialog = () => {
+      const stillOpen = document.querySelector("dialog[open]");
+      if (!stillOpen) return;
+      const el = document.activeElement;
+      if (el && (el === stillOpen || stillOpen.contains(el))) {
+        el.blur();
+      }
+    };
+    clearFocusUnderOpenDialog();
+    requestAnimationFrame(clearFocusUnderOpenDialog);
+  }
+  // One delegated listener per dialog. A click whose target is the
+  // dialog itself originated either from the ::backdrop pseudo or
+  // from the dialog's own padding area — both count as outside the
+  // visible card, so we close. onClose is optional (used by the
+  // search / filters modals to route through cancel-revert paths).
+  function bindDialogBackdropClose(dialog, onClose) {
+    if (!dialog) return;
+    dialog.addEventListener("click", e => {
+      if (e.target === dialog) (onClose || (() => closeDialog(dialog)))();
+    });
+    dialog.addEventListener("close", () => {
+      if (!document.querySelector("dialog[open]")) {
+        document.documentElement.classList.remove("modal-open");
+      }
+    });
+  }
+
+  // Copy helpers — sync paths run inside the click handler so iOS keeps
+  // the user-gesture. navigator.clipboard.writeText often *resolves* but
+  // leaves the pasteboard empty inside stacked <dialog>s, so it is last.
+  function copyFromElement(el) {
+    if (!el) return false;
+    const tag = el.tagName;
+    if (tag === "TEXTAREA" || tag === "INPUT") {
+      const text = el.value;
+      if (!text) return false;
+      el.focus({ preventScroll: true });
+      el.select();
+      el.setSelectionRange(0, text.length);
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch { /* ignore */ }
+      return ok;
+    }
+    const prevEditable = el.getAttribute("contenteditable");
+    el.setAttribute("contenteditable", "true");
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    if (!sel) {
+      if (prevEditable == null) el.removeAttribute("contenteditable");
+      else el.setAttribute("contenteditable", prevEditable);
+      return false;
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch { /* ignore */ }
+    sel.removeAllRanges();
+    if (prevEditable == null) el.removeAttribute("contenteditable");
+    else el.setAttribute("contenteditable", prevEditable);
+    return ok;
+  }
+  function copyTextFallback(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = [
+      "position:fixed",
+      "top:0",
+      "left:0",
+      "width:2em",
+      "height:2em",
+      "padding:0",
+      "border:0",
+      "outline:none",
+      "box-shadow:none",
+      "background:transparent",
+    ].join(";");
+    document.body.appendChild(ta);
+    ta.focus({ preventScroll: true });
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch { /* ignore */ }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(text, sourceEl) {
+    const str = String(text || "");
+    if (!str) return Promise.resolve(false);
+    if (sourceEl && copyFromElement(sourceEl)) return Promise.resolve(true);
+    if (copyTextFallback(str)) return Promise.resolve(true);
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      return navigator.clipboard.writeText(str).then(() => true).catch(() => false);
+    }
+    return Promise.resolve(false);
+  }
+
+  // ── Event modal ──────────────────────────────────────────
   let _modalEvent = null;
   function showModal(ev) {
     _modalEvent = ev;
@@ -1248,127 +1385,9 @@
       flagsEl.style.display = "none";
     }
     renderModalMapPreview(ev._entry);
-    const backdrop = document.getElementById("modal-backdrop");
-    backdrop.classList.add("open");
-    // Reset scroll on both the modal element and the backdrop. On
-    // mobile the modal is short-circuited (overflow: visible) and the
-    // backdrop is the scroll container, so we reset the backdrop's
-    // scrollTop. On desktop the modal scrolls internally. Both resets
-    // are cheap and idempotent.
-    document.getElementById("modal").scrollTop = 0;
-    backdrop.scrollTop = 0;
+    openDialog(document.getElementById("modal"));
   }
-  function hideModal() { document.getElementById("modal-backdrop").classList.remove("open"); }
-
-  // Body scroll-lock: whenever any .modal-backdrop has the .open
-  // class, lock the page so taps/drags on the dimmed area don't
-  // scroll what's behind it. Uses a MutationObserver so every
-  // existing open/close path (button, Esc, backdrop click, Done,
-  // and any future modal that follows the same convention) is
-  // covered without touching individual show/hide helpers.
-  //
-  // We deliberately avoid `position: fixed` on <body> here. With a
-  // ~67 000-px-tall day view containing hundreds of cards, taking the
-  // body in/out of layout flow forced a full-page reflow on both open
-  // and close — which surfaced as a multi-hundred-ms freeze when
-  // dismissing an event card on phones. `overflow: hidden` on <html>
-  // is a constant-time toggle that doesn't move the body in/out of
-  // flow, so layout stays put.
-  //
-  // overflow: hidden DOES collapse the scrollable extent, which on
-  // most browsers also pins the scroll offset to 0 while locked. We
-  // save the offset on lock and restore it on unlock — but unlike the
-  // old position:fixed path, the unlock-time scrollTo runs against an
-  // already-correctly-laid-out document, so it's a cheap scroll-only
-  // update, not a relayout of every card.
-  let savedScrollY = 0;
-  // Snapshot of the header's hidden state at lock time, used to
-  // re-assert that exact state on unlock so the header can never end
-  // up in a partial transform on iOS Safari (see applyScrollLock).
-  let _savedHeaderHidden = false;
-  // Set briefly during the unlock-time scroll restore so the
-  // auto-hide-header handler can ignore the synthetic scroll events
-  // it would otherwise see (a transient 0 → savedScrollY pair). Read
-  // by bindHeaderAutoHide.
-  let _suppressScrollHandler = false;
-  function anyModalOpen() {
-    return !!document.querySelector(".modal-backdrop.open");
-  }
-  // Pin the header to a known-stable transform during the lock. iOS
-  // Safari re-runs compositing on fixed-position elements when the
-  // root overflow toggles, and with `transition: transform 0.18s` on
-  // <header> that re-layout can briefly animate the transform —
-  // surfacing as a half-revealed header (just the bottom day-tabs
-  // peeking above the schedule) after the modal dismisses. We zero
-  // the transition for the duration of the lock toggle so no spurious
-  // animation can play, then restore it on the frame after unlock.
-  function freezeHeaderTransition() {
-    const headerEl = document.querySelector("header");
-    if (!headerEl) return;
-    headerEl.style.transition = "none";
-  }
-  function thawHeaderTransition() {
-    const headerEl = document.querySelector("header");
-    if (!headerEl) return;
-    // Force a reflow so the inline-style override commits before we
-    // clear it; otherwise some browsers batch and skip our intent.
-    void headerEl.offsetHeight;
-    headerEl.style.transition = "";
-  }
-  function applyScrollLock() {
-    const locked = document.body.classList.contains("modal-open");
-    const shouldLock = anyModalOpen();
-    if (shouldLock && !locked) {
-      // Suppress the auto-hide scroll handler across the lock toggle.
-      // overflow:hidden can transiently snap scrollY to 0, which the
-      // handler would otherwise read as "back at the top" and reveal
-      // the header underneath the modal. The header would then show
-      // on close even though the user was deep in the page.
-      _suppressScrollHandler = true;
-      savedScrollY = window.scrollY || window.pageYOffset || 0;
-      _savedHeaderHidden = !!document.querySelector("header.header-hidden");
-      freezeHeaderTransition();
-      document.documentElement.classList.add("modal-open");
-      document.body.classList.add("modal-open");
-      requestAnimationFrame(() => {
-        thawHeaderTransition();
-        requestAnimationFrame(() => { _suppressScrollHandler = false; });
-      });
-    } else if (!shouldLock && locked) {
-      // Mirror of the open path: suppress the auto-hide scroll
-      // handler across the unlock + the potential scrollTo restore.
-      // Without this, browsers that snapped to 0 while locked fire a
-      // y=0 event (reveal) immediately followed by a y=savedScrollY
-      // event (hide) — visible as a momentary header flash on close.
-      _suppressScrollHandler = true;
-      freezeHeaderTransition();
-      document.documentElement.classList.remove("modal-open");
-      document.body.classList.remove("modal-open");
-      // Some browsers preserve the scroll offset across the overflow
-      // toggle, others snap to 0. Restoring unconditionally is safe:
-      // a no-op when already correct.
-      if (window.scrollY !== savedScrollY) window.scrollTo(0, savedScrollY);
-      // Re-assert the snapshotted header-hidden state. iOS Safari can
-      // mutate the effective transform during the overflow toggle;
-      // forcing the class back to its pre-lock value (with transition
-      // disabled, set above) guarantees a clean discrete state.
-      const headerEl = document.querySelector("header");
-      if (headerEl) {
-        headerEl.classList.toggle("header-hidden", _savedHeaderHidden);
-      }
-      // Clear the suppress flag and re-enable transitions after the
-      // next frame, by which time any synchronous scroll events and
-      // the discrete transform commit have flushed.
-      requestAnimationFrame(() => {
-        thawHeaderTransition();
-        requestAnimationFrame(() => { _suppressScrollHandler = false; });
-      });
-    }
-  }
-  const lockObserver = new MutationObserver(applyScrollLock);
-  document.querySelectorAll(".modal-backdrop").forEach(el => {
-    lockObserver.observe(el, { attributes: true, attributeFilter: ["class"] });
-  });
+  function hideModal() { closeDialog(document.getElementById("modal")); }
 
   function renderModalMapPreview(entry) {
     const el = document.getElementById("m-map-preview");
@@ -1496,12 +1515,24 @@
         commitSearch();
       }
     });
+    const searchDialog = document.getElementById("search-modal");
     document.getElementById("search-open").addEventListener("click", () => {
       searchInput.value = state.search;
       pendingSearch = state.search;
       updateSearchCountOnly();
-      document.getElementById("search-modal-backdrop").classList.add("open");
-      setTimeout(() => searchInput.focus(), 50);
+      if (searchDialog.open) {
+        requestAnimationFrame(() => {
+          searchInput.focus({ preventScroll: true });
+        });
+        return;
+      }
+      openDialog(searchDialog);
+      // preventScroll stops iOS from also panning the visual viewport to
+      // the input — that pan stacks on top of --keyboard-inset and
+      // shoves the card under the status bar.
+      requestAnimationFrame(() => {
+        searchInput.focus({ preventScroll: true });
+      });
     });
     document.getElementById("search-close").addEventListener("click", cancelSearch);
     document.getElementById("search-done").addEventListener("click", commitSearch);
@@ -1512,29 +1543,51 @@
       updateSearchCountOnly();
       renderTypeChips();
     });
-    document.getElementById("search-modal-backdrop").addEventListener("click", e => {
-      if (e.target.id === "search-modal-backdrop") cancelSearch();
+    bindDialogBackdropClose(searchDialog, cancelSearch);
+    // ESC on a <dialog> fires a cancel event before close. Intercept
+    // it so Esc reverts the pending search (matches X / backdrop
+    // semantics) instead of committing whatever was typed.
+    searchDialog.addEventListener("cancel", e => {
+      if (_closingDialog) return;
+      e.preventDefault();
+      pendingSearch = state.search;
+      searchInput.value = state.search;
+      closeDialog(searchDialog);
     });
 
     // iOS keyboard handling — without this, the search card stays
     // centered in the layout viewport and the bottom half (Clear /
     // Search button) ends up hidden behind the on-screen keyboard.
     // We expose the keyboard height as --keyboard-inset on the
-    // search backdrop; CSS uses it as extra bottom padding so the
-    // flex container re-centers the card in the visible area
-    // above the keyboard.
-    const searchBackdrop = document.getElementById("search-modal-backdrop");
+    // search dialog; CSS uses it to lift the card above the keyboard.
     const vv = window.visualViewport;
     if (vv) {
       const updateKeyboardInset = () => {
-        const backdropH = searchBackdrop.getBoundingClientRect().height || window.innerHeight;
-        const inset = Math.max(0, backdropH - vv.height - vv.offsetTop);
-        searchBackdrop.style.setProperty("--keyboard-inset", inset + "px");
+        if (!searchDialog.open) return;
+        // Match the old full-screen backdrop formula: layout viewport
+        // height vs the visible visual viewport, minus any pan iOS
+        // applied to keep the focused field in view.
+        const viewH = document.documentElement.clientHeight
+          || window.innerHeight;
+        const inset = Math.max(0, viewH - vv.height - vv.offsetTop);
+        searchDialog.style.setProperty("--keyboard-inset", inset + "px");
       };
       vv.addEventListener("resize", updateKeyboardInset);
       vv.addEventListener("scroll", updateKeyboardInset);
-      searchInput.addEventListener("blur", () => {
-        searchBackdrop.style.setProperty("--keyboard-inset", "0px");
+      searchInput.addEventListener("focus", () => {
+        updateKeyboardInset();
+        requestAnimationFrame(updateKeyboardInset);
+      });
+      // No blur reset: on iOS the tap sequence for Done is
+      // touchend → input blur → click. A synchronous reset of
+      // --keyboard-inset here drops the dialog by ~½ the keyboard
+      // height before the click resolves, so the click lands on the
+      // backdrop and routes to cancelSearch — eating the query.
+      // visualViewport.resize already zeroes the inset as the
+      // keyboard animates away, and the close listener below handles
+      // dialog dismissal.
+      searchDialog.addEventListener("close", () => {
+        searchDialog.style.setProperty("--keyboard-inset", "0px");
       });
     }
 
@@ -1553,9 +1606,8 @@
     // schedule is NOT re-rendered while the modal is open. A
     // snapshot taken on open lets us revert on cancel (X /
     // backdrop / Esc). Done commits by calling renderAll().
+    const filtersDialog = document.getElementById("filters-modal");
     document.getElementById("filters-open").addEventListener("click", () => {
-      // No need to snapshot state.favoritesOnly — it can't be
-      // mutated from inside the modal anymore.
       filtersSnapshot = {
         quick: new Set(state.quick),
         timesOfDay: new Set(state.timesOfDay),
@@ -1563,27 +1615,35 @@
         tags: new Set(state.tags),
         neighbourhoods: new Set(state.neighbourhoods),
       };
-      document.getElementById("filters-modal-backdrop").classList.add("open");
+      openDialog(filtersDialog);
       renderFiltersModalOnly();
     });
     document.getElementById("filters-close").addEventListener("click", cancelFilters);
     document.getElementById("filters-done").addEventListener("click", commitFilters);
-    document.getElementById("filters-clear").addEventListener("click", () => {
-      // Favorites is intentionally untouched — see the header star.
+    document.getElementById("filters-clear").addEventListener("click", e => {
       state.tags.clear();
       state.neighbourhoods.clear();
       state.quick.clear();
       state.timesOfDay.clear();
       state.durations.clear();
       renderFiltersModalOnly();
+      // Release focus so iOS doesn't keep :hover stuck on this ghost btn.
+      e.currentTarget.blur();
     });
-    document.getElementById("filters-modal-backdrop").addEventListener("click", e => {
-      if (e.target.id === "filters-modal-backdrop") cancelFilters();
+    bindDialogBackdropClose(filtersDialog, cancelFilters);
+    filtersDialog.addEventListener("cancel", e => {
+      if (_closingDialog) return;
+      e.preventDefault();
+      if (filtersSnapshot) {
+        state.quick = filtersSnapshot.quick;
+        state.timesOfDay = filtersSnapshot.timesOfDay;
+        state.durations = filtersSnapshot.durations;
+        state.tags = filtersSnapshot.tags;
+        state.neighbourhoods = filtersSnapshot.neighbourhoods;
+        filtersSnapshot = null;
+      }
+      closeDialog(filtersDialog);
     });
-    // Quick chips — Happening now / Up next. Multi-select with OR
-    // semantics inside this group, AND-combined with every other
-    // section. Favorites is intentionally NOT here — it lives only
-    // on the header star (state.favoritesOnly).
     document.getElementById("quick-chips").addEventListener("click", e => {
       const btn = e.target.closest(".chip[data-quick]");
       if (!btn) return;
@@ -1593,7 +1653,6 @@
       renderFiltersModalOnly();
     });
 
-    // Time-of-day chips — multi-select, OR within the group.
     document.getElementById("time-of-day-chips").addEventListener("click", e => {
       const btn = e.target.closest(".chip[data-tod]");
       if (!btn) return;
@@ -1603,7 +1662,6 @@
       renderFiltersModalOnly();
     });
 
-    // Duration chips — multi-select, OR within the group.
     document.getElementById("duration-chips").addEventListener("click", e => {
       const btn = e.target.closest(".chip[data-dur]");
       if (!btn) return;
@@ -1614,18 +1672,16 @@
     });
 
     // Event modal
-    document.getElementById("modal-backdrop").addEventListener("click", e => {
-      if (e.target.id === "modal-backdrop") hideModal();
-    });
+    const eventDialog = document.getElementById("modal");
+    bindDialogBackdropClose(eventDialog);
     document.getElementById("m-close").addEventListener("click", hideModal);
     document.getElementById("m-fav").addEventListener("click", e => {
       if (_modalEvent) toggleFavorite(_modalEvent, e.currentTarget);
     });
 
     // Camp modal
-    document.getElementById("camp-modal-backdrop").addEventListener("click", e => {
-      if (e.target.id === "camp-modal-backdrop") hideCampModal();
-    });
+    const campDialog = document.getElementById("camp-modal");
+    bindDialogBackdropClose(campDialog);
     document.getElementById("cm-close").addEventListener("click", hideCampModal);
 
     // Map fullscreen: back-to-schedule pill returns to By Day.
@@ -1633,42 +1689,17 @@
     if (backPill) backPill.addEventListener("click", () => switchMode("day"));
 
     // Settings modal
+    const settingsDialog = document.getElementById("settings-modal");
     document.getElementById("settings-open").addEventListener("click", () => {
-      document.getElementById("settings-modal-backdrop").classList.add("open");
+      openDialog(settingsDialog);
     });
-    document.getElementById("settings-modal-backdrop").addEventListener("click", e => {
-      if (e.target.id === "settings-modal-backdrop") hideSettingsModal();
-    });
+    bindDialogBackdropClose(settingsDialog, hideSettingsModal);
     document.getElementById("settings-close").addEventListener("click", hideSettingsModal);
     document.getElementById("settings-close-btn").addEventListener("click", hideSettingsModal);
-
-    // Single Escape dispatcher. Walks the modal-backdrop nodes in
-    // priority order (innermost / most-recently-opened first) and
-    // closes the topmost one only. Avoids the old "close every modal
-    // at once" behaviour where closing the backup popup also yanked
-    // the Settings modal underneath it.
-    const escTargets = [
-      ["backup-modal-backdrop",  () => document.getElementById("backup-modal-close").click()],
-      ["search-modal-backdrop",  cancelSearch],
-      ["filters-modal-backdrop", cancelFilters],
-      ["modal-backdrop",         hideModal],
-      ["camp-modal-backdrop",    hideCampModal],
-      ["settings-modal-backdrop", hideSettingsModal],
-    ];
-    document.addEventListener("keydown", e => {
-      if (e.key !== "Escape") return;
-      for (const [id, close] of escTargets) {
-        const el = document.getElementById(id);
-        if (el && el.classList.contains("open")) {
-          close();
-          return;
-        }
-      }
-    });
   }
 
   function hideSettingsModal() {
-    document.getElementById("settings-modal-backdrop").classList.remove("open");
+    closeDialog(document.getElementById("settings-modal"));
   }
 
   function bindSettings() {
@@ -1761,7 +1792,7 @@
     const restoreBtn = document.getElementById("fav-restore");
     const countEl = document.getElementById("fav-backup-count");
     const statusEl = document.getElementById("fav-backup-status");
-    const modalBackdrop = document.getElementById("backup-modal-backdrop");
+    const backupDialog = document.getElementById("backup-modal");
     const closeBtn = document.getElementById("backup-modal-close");
     const hintEl = document.getElementById("fav-backup-hint");
     const codeEl = document.getElementById("fav-backup-code");
@@ -1775,9 +1806,11 @@
       if (countEl) countEl.textContent = n ? "(" + n + ")" : "";
     }
     refreshCount();
-    // Keep the (N) badge fresh whenever the Settings modal opens.
-    document.getElementById("settings-modal-backdrop")
-      .addEventListener("transitionend", refreshCount);
+    // Refresh the (N) badge each time the Settings modal opens.
+    // The settings-open click handler fires before showModal(), so
+    // count is fresh by the time the dialog paints.
+    document.getElementById("settings-open")
+      .addEventListener("click", refreshCount);
 
     function showStatus(html, kind) {
       statusEl.hidden = false;
@@ -1842,12 +1875,41 @@
       if (copyResetTimer) clearTimeout(copyResetTimer);
       copyResetTimer = setTimeout(resetCopyBtn, 1500);
     }
+    function selectBackupCode() {
+      if (!codeEl) return;
+      if (codeEl.tagName === "TEXTAREA" || codeEl.tagName === "INPUT") {
+        codeEl.focus({ preventScroll: true });
+        codeEl.select();
+        return;
+      }
+      const range = document.createRange();
+      range.selectNodeContents(codeEl);
+      const sel = window.getSelection();
+      if (!sel) return;
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    function onManualCopyResult(ok) {
+      if (ok) {
+        if (hintEl) hintEl.textContent = DEFAULT_HINT;
+        flashCopied();
+        return;
+      }
+      selectBackupCode();
+      if (hintEl) {
+        hintEl.textContent = "Couldn't copy automatically — the code is selected; long-press and choose Copy.";
+      }
+    }
 
+    // Stacks on top of the still-open Settings dialog via a second
+    // showModal() call. Modern Safari (17+) supports two top-layer
+    // dialogs at once; closing the backup leaves Settings intact with
+    // its scroll position preserved.
     function openBackupModal() {
-      if (modalBackdrop) modalBackdrop.classList.add("open");
+      openDialog(backupDialog);
     }
     function closeBackupModal() {
-      if (modalBackdrop) modalBackdrop.classList.remove("open");
+      closeDialog(backupDialog);
     }
 
     backupBtn.addEventListener("click", async () => {
@@ -1858,39 +1920,29 @@
       }
       statusEl.hidden = true;
       const code = encodeBlob(state.favorites, state.favoritesRed);
-      if (codeEl) codeEl.textContent = code;
+      if (codeEl) codeEl.value = code;
       if (hintEl) hintEl.textContent = DEFAULT_HINT;
       resetCopyBtn();
       openBackupModal();
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(code);
-        }
-      } catch { /* silent — user can use the Copy button or long-press */ }
+      // Best-effort clipboard on open — no button/hint feedback; the
+      // user hasn't tapped Copy yet.
+      void copyText(code, codeEl);
     });
 
     if (copyBtn) {
-      copyBtn.addEventListener("click", async () => {
-        const code = codeEl ? codeEl.textContent : "";
+      copyBtn.addEventListener("click", () => {
+        const code = codeEl ? codeEl.value : "";
         if (!code) return;
-        try {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            await navigator.clipboard.writeText(code);
-            flashCopied();
-          }
-        } catch { /* silent */ }
+        void copyText(code, codeEl).then(onManualCopyResult);
       });
     }
 
     if (closeBtn) closeBtn.addEventListener("click", closeBackupModal);
-    if (modalBackdrop) {
-      modalBackdrop.addEventListener("click", e => {
-        if (e.target.id === "backup-modal-backdrop") closeBackupModal();
-      });
-    }
-    // Escape handling lives in the global dispatcher in bindUi() —
-    // the backup modal is listed first in escTargets so its Esc
-    // press dismisses only the popup, leaving About intact.
+    bindDialogBackdropClose(backupDialog, closeBackupModal);
+    // ESC on the backup dialog only closes it (native top-layer
+    // semantics: cancel applies to the topmost open dialog), so the
+    // Settings dialog underneath stays open with its scroll position
+    // intact. No global keydown dispatcher needed.
 
     restoreBtn.addEventListener("click", () => {
       const input = window.prompt(
@@ -1976,13 +2028,6 @@
 
     window.addEventListener("scroll", () => {
       const y = window.scrollY;
-      // Skip the synthetic scroll events from modal-close scroll
-      // restore (see applyScrollLock). We still keep lastY in sync so
-      // the next *real* scroll computes a correct delta.
-      if (_suppressScrollHandler) {
-        lastY = y;
-        return;
-      }
       // Toggle the floating shadow once content sits under the header.
       document.body.classList.toggle("is-scrolled", y > 4);
 
@@ -2016,10 +2061,10 @@
   }
 
   function hideSearchModal() {
-    document.getElementById("search-modal-backdrop").classList.remove("open");
+    closeDialog(document.getElementById("search-modal"));
   }
   function hideFiltersModal() {
-    document.getElementById("filters-modal-backdrop").classList.remove("open");
+    closeDialog(document.getElementById("filters-modal"));
   }
 
   // ── Filters modal pending-edit machinery ─────────────────────
@@ -2181,13 +2226,10 @@
         }
       }
     }
-    const campBackdrop = document.getElementById("camp-modal-backdrop");
-    campBackdrop.classList.add("open");
-    document.getElementById("camp-modal").scrollTop = 0;
-    campBackdrop.scrollTop = 0;
+    openDialog(document.getElementById("camp-modal"));
   }
   function hideCampModal() {
-    document.getElementById("camp-modal-backdrop").classList.remove("open");
+    closeDialog(document.getElementById("camp-modal"));
   }
 
   // ── Map view ──────────────────────────────────────────────
@@ -2744,7 +2786,7 @@
       clearAll.type = "button";
       clearAll.className = "active-filter-pill clear-all";
       clearAll.textContent = "Clear all";
-      clearAll.addEventListener("click", () => {
+      clearAll.addEventListener("click", e => {
         // Deliberately leaves state.favoritesOnly alone — favorites
         // is owned by the header star, not the filter chrome.
         state.tags.clear();
@@ -2757,6 +2799,7 @@
         const si = document.getElementById("search");
         if (si) si.value = "";
         renderAll();
+        e.currentTarget.blur();
       });
       wrap.appendChild(clearAll);
     }
@@ -2800,40 +2843,6 @@
   bindHeaderAutoHide();
   bindSettings();
   renderAll();
-
-  // Pre-decode the map image into the browser's image cache so the
-  // first event-modal open doesn't pay the decode cost on the main
-  // thread. The map.webp is ~2.4MB and the Web Inspector trace showed
-  // ~107ms of the first-paint work was renderModalMapPreview setting
-  // `img.src = <2.4MB data URL>` — iOS Safari then did a second paint
-  // pass ~85ms later that the user perceived as a flicker/jump.
-  //
-  // We Image()-decode the data URL eagerly and pin a reference to the
-  // resulting Image object so the browser's image-pixel cache keeps
-  // the decoded bitmap warm. When showModal later sets the same data
-  // URL as an <img>'s src, the cache hits and the decode is a no-op.
-  //
-  // Deferred behind two RAFs so it doesn't compete with the initial
-  // schedule render for main-thread time.
-  let _prewarmedMapImage = null;
-  function prewarmMapImage() {
-    if (typeof Image === "undefined") return;
-    MapImage.get()
-      .then(src => {
-        const img = new Image();
-        img.src = src;
-        if (typeof img.decode === "function") {
-          return img.decode().catch(() => {}).then(() => img);
-        }
-        return new Promise(resolve => {
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(img);
-        });
-      })
-      .then(img => { _prewarmedMapImage = img; })
-      .catch(() => {});
-  }
-  requestAnimationFrame(() => requestAnimationFrame(prewarmMapImage));
 
   // First-load snap to now. Instant scroll (no smooth) so we don't
   // pan during initial paint, which fights the scroll-hide header

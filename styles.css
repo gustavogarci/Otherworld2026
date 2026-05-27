@@ -84,6 +84,22 @@
   box-sizing: border-box;
 }
 
+/* showModal() auto-focuses the first control; mobile Safari draws a
+   bright blue :focus ring that reads like accidental pre-selection.
+   Strip it on buttons — search inputs keep their border treatment;
+   setting toggles / past-pill keep their own :focus-visible cues. */
+button:focus,
+.chip:focus,
+.fav-btn:focus,
+.modal-close:focus,
+.tab:focus,
+.cta-btn:focus,
+.backup-btn:focus,
+.map-back-pill:focus,
+dialog:focus {
+  outline: none;
+}
+
 html,
 body {
   height: 100%;
@@ -217,15 +233,16 @@ header.header-hidden {
 }
 
 /* iOS PWA home-indicator scrim — mirrors .status-bar-scrim but for the
-   bottom safe-area band. Needed because `position: fixed; inset: 0`
-   (e.g. .modal-backdrop) gets clamped to the layout viewport in
-   standalone PWA mode and does NOT extend into the env(safe-area-
-   inset-bottom) area — but an explicitly-sized fixed element at
-   `bottom: 0; height: env(safe-area-inset-bottom)` DOES. Without
-   this, the Filters/Settings bottom-sheet modals leave a visible
-   strip of body background showing through below them in PWA mode.
-   Transparent by default; tinted to match the close-row tray
-   (--night-3) only while those two modals are open. */
+   bottom safe-area band. Needed because the dialog's `::backdrop`
+   pseudo (and any `position: fixed; inset: 0` element) gets clamped
+   to the layout viewport in standalone PWA mode and does NOT extend
+   into the env(safe-area-inset-bottom) area — but an explicitly-
+   sized fixed element at `bottom: 0; height: env(safe-area-inset-
+   bottom)` DOES. Without this, the Filters/Settings bottom-sheet
+   dialogs leave a visible strip of body background showing through
+   below them in PWA mode. Transparent by default; tinted to match
+   the close-row tray (--night-3) only while those two modals are
+   open. */
 .home-indicator-scrim {
   display: none;
   position: fixed;
@@ -249,8 +266,8 @@ html.is-standalone-app .home-indicator-scrim {
   display: block;
 }
 
-body:has(#filters-modal-backdrop.open) .home-indicator-scrim,
-body:has(#settings-modal-backdrop.open) .home-indicator-scrim {
+body:has(dialog#filters-modal[open]) .home-indicator-scrim,
+body:has(dialog#settings-modal[open]) .home-indicator-scrim {
   background: var(--night-3);
 }
 
@@ -299,32 +316,24 @@ h1.logo-h1 a {
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
 }
 
-.settings-stats {
-  color: var(--moss-3);
-  font-size: 12.5px;
-  font-family: var(--font-mono);
-  margin: 4px 0 14px;
-  padding: 10px 12px;
-  background: var(--night-3);
-  border: 1px solid var(--moss-1);
-  border-radius: 8px;
-  letter-spacing: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-
-.settings-card {
-  margin: 0 0 14px;
-  padding: 14px;
-  background: var(--night-3);
-  border: 1px solid var(--moss-1);
-  border-radius: 8px;
-}
-
-.settings-card h3 {
+.settings-modal .sheet-body > .settings-panel {
   margin: 0 0 10px;
+  background: var(--night-3);
+  border: 1px solid var(--moss-1);
+  border-radius: 8px;
+}
+
+.settings-modal .sheet-body > .settings-panel:not(.settings-foldable) {
+  padding: 4px 14px 10px;
+}
+
+.settings-modal .sheet-body > .settings-panel:last-child {
+  margin-bottom: 0;
+}
+
+.settings-section-label {
+  display: block;
+  margin: 0;
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -332,22 +341,38 @@ h1.logo-h1 a {
   font-weight: 600;
 }
 
-.settings-card-foldable > summary {
+.settings-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.settings-panel > .settings-row-block {
+  border-top: 1px solid var(--moss-1);
+  padding-top: 10px;
+  padding-bottom: 4px;
+}
+
+.settings-foldable {
+  padding: 0 14px;
+}
+
+.settings-foldable-summary {
   list-style: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: -14px;
-  padding: 14px;
+  padding: 12px 0;
   -webkit-tap-highlight-color: transparent;
 }
-.settings-card-foldable[open] > summary {
-  margin-bottom: 14px;
-}
-.settings-card-foldable > summary::-webkit-details-marker { display: none; }
-.settings-card-foldable > summary::after {
+
+.settings-foldable-summary::-webkit-details-marker { display: none; }
+
+.settings-foldable-summary::after {
   content: "";
+  flex-shrink: 0;
   width: 8px;
   height: 8px;
   border-right: 2px solid var(--cream-dim);
@@ -356,35 +381,71 @@ h1.logo-h1 a {
   margin-right: 4px;
   transition: transform 0.15s;
 }
-.settings-card-foldable[open] > summary::after {
+
+.settings-foldable[open] > .settings-foldable-summary::after {
   transform: rotate(-135deg);
   margin-top: 4px;
 }
-.settings-card-foldable > summary h3 {
-  margin: 0;
+
+.settings-foldable-summary .settings-section-label {
+  padding: 0;
+}
+
+.settings-foldable-body {
+  padding-bottom: 12px;
+}
+
+.settings-foldable-dev .settings-section-label {
+  opacity: 0.82;
+}
+
+.settings-stats {
+  color: var(--moss-3);
+  font-size: 12.5px;
+  font-family: var(--font-mono);
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 8px;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-modal .settings-foldable-body p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cream-soft);
+}
+
+.settings-modal .settings-foldable-body p:last-child {
+  margin-bottom: 0;
+}
+
+.setting-toggle-hint,
+.setting-hint {
+  font-size: 12px;
+  color: var(--cream-dim);
+  font-weight: 400;
+  line-height: 1.35;
 }
 
 .setting-hint {
   margin: 0 0 10px;
+}
+
+.settings-modal .settings-foldable-body .settings-disclaimer {
   font-size: 12px;
   color: var(--cream-dim);
-  font-weight: 400;
-}
-
-.setting-hint.tight {
-  margin-bottom: 12px;
-}
-
-.settings-disclaimer {
-  font-size: 13px;
-  color: var(--cream-dim);
+  line-height: 1.45;
 }
 
 .settings-disclaimer strong {
-  background: linear-gradient(90deg, var(--lime), var(--cyan), var(--pink), var(--amber));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  font-weight: 600;
+  color: var(--cream-soft);
 }
 
 .backup-row {
@@ -392,6 +453,13 @@ h1.logo-h1 a {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+.backup-row .backup-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 14px;
+}
+
 .backup-btn {
   flex: 1 1 auto;
   min-width: 110px;
@@ -408,6 +476,17 @@ h1.logo-h1 a {
 }
 .backup-btn:hover { background: var(--moss-1); }
 .backup-btn:active { transform: translateY(1px); }
+.backup-btn-primary {
+  border-color: rgba(204, 232, 78, 0.4);
+}
+.backup-btn-primary:hover {
+  border-color: var(--lime);
+  background: rgba(204, 232, 78, 0.08);
+}
+.backup-btn.btn-ghost {
+  font-size: 13px;
+  font-weight: 600 !important;
+}
 .backup-btn #fav-backup-count {
   color: var(--cream-dim);
   font-weight: 400;
@@ -484,11 +563,6 @@ h1.logo-h1 a {
   color: var(--cream);
   font-weight: 500;
 }
-.setting-toggle-hint {
-  font-size: 12px;
-  color: var(--cream-dim);
-  line-height: 1.35;
-}
 .setting-toggle-input {
   position: absolute;
   width: 1px;
@@ -546,10 +620,7 @@ h1.logo-h1 a {
   user-select: all;
 }
 
-#backup-modal-backdrop {
-  z-index: 60;
-}
-.modal.backup-modal {
+dialog.modal.backup-modal {
   max-width: 480px;
 }
 .code-wrap {
@@ -557,13 +628,21 @@ h1.logo-h1 a {
 }
 .backup-code {
   display: block;
+  box-sizing: border-box;
+  width: 100%;
   padding: 10px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 12px;
+  line-height: 1.45;
+  color: inherit;
   background: var(--night-2);
+  border: 0;
   border-radius: 4px;
   max-height: 120px;
   overflow: auto;
+  resize: none;
   user-select: all;
+  -webkit-user-select: all;
   word-break: break-all;
 }
 .modal.backup-modal #fav-backup-copy.copied {
@@ -775,11 +854,21 @@ h1.logo-h1 a {
   border-style: dashed;
   padding: 3px 10px;
   cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.active-filter-pill.clear-all:hover {
+.active-filter-pill.clear-all:active {
+  transform: scale(0.97);
   color: var(--warn);
   border-color: var(--warn);
+}
+
+@media (hover: hover) {
+  .active-filter-pill.clear-all:hover {
+    color: var(--warn);
+    border-color: var(--warn);
+  }
 }
 
 /* ── Search / Filters modal: chips + sections ────────────── */
@@ -932,12 +1021,22 @@ h1.logo-h1 a {
   color: var(--moss-3) !important;
   border: 1px solid var(--moss-2) !important;
   font-weight: 600 !important;
+  transition: color 0.12s, border-color 0.12s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.btn-ghost:hover {
+.btn-ghost:active {
+  transform: scale(0.97) !important;
   color: var(--warn) !important;
   border-color: var(--warn) !important;
-  transform: none !important;
+}
+
+@media (hover: hover) {
+  .btn-ghost:hover {
+    color: var(--warn) !important;
+    border-color: var(--warn) !important;
+    transform: none !important;
+  }
 }
 
 /* ── Favorite (★) toggle on event cards + modal ────────── */
@@ -1918,253 +2017,132 @@ footer.site-footer a:hover {
 }
 
 /* ── Modal ───────────────────────────────────────────────── */
-/* On phones we use a fully opaque backdrop. A semi-transparent dim
-   (even at 88%) lets bright tag chips and event titles bleed through
-   from the busy day-view, especially in the safe-area strip below
-   the modal — and a small blur radius wasn't enough to fully mask
-   them. Going opaque keeps the modal feeling like a modal regardless
-   of what's underneath, and lets us drop backdrop-filter entirely
-   on mobile (it's the GPU-expensive bit). Larger screens keep the
-   translucent + blurred treatment because there's more breathing
-   room around the modal so the dimming reads as a visual frame
-   rather than a leak. */
-/* Every modal backdrop stays in the layout tree from page load
-   (display: flex) but starts invisible (visibility: hidden + opacity 0
-   + pointer-events: none). Toggling `.open` only flips those three
-   properties — no display change, no first-time render-tree
-   transition.
+/* Modals are native <dialog> elements opened via showModal(). They
+   render in the browser's top layer — a separate rendering tree above
+   the rest of the page — which on iOS Safari paints in a single pass
+   rather than the two-stage paint that the old display:none → flex
+   .modal-backdrop suffered from. ESC, focus trap, and ::backdrop are
+   all native; we only own the visual styling and the backdrop-click-
+   to-close behavior (set up in app.js via bindDialogBackdropClose).
 
-   This matters because iOS Safari pays a real one-shot cost the first
-   time a previously-display:none element becomes display:flex: font
-   shaping for any text instance not previously laid out, image decode
-   pipeline setup, layout cache priming. On the user's first card tap
-   that cost surfaced as a one-paint layout adjustment (the modal-head
-   row going from 0 to its full height, pushing all content down) —
-   visible as a jump. Once iOS had cached the work, subsequent opens
-   were instant, which matched the "first open only" reproduction.
+   Body scroll-lock: iOS Safari does NOT auto-lock body scroll when a
+   <dialog> is in the top layer, so app.js toggles html.modal-open
+   from open/close paths and the single rule below pins the page. */
+html.modal-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
 
-   Keeping the modals in layout from page load shifts that cost to the
-   initial render (where it's masked by everything else) and makes
-   every modal open a cheap visibility/opacity flip from then on. */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
+dialog.modal {
+  /* Reset UA dialog styling so existing .modal interior rules apply
+     unchanged. Inset + margin auto centers the dialog by default;
+     mobile media query below overrides for bottom-anchored sheets. */
+  background: var(--night-2);
+  color: inherit;
+  border: 1px solid var(--moss-2);
+  border-radius: var(--radius-lg);
+  max-width: 580px;
+  width: calc(100% - 48px);
+  max-height: 90lvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 26px 28px;
+  box-shadow: var(--shadow-2);
+}
+
+/* Opaque backdrop on mobile (semi-transparent dimming lets bright
+   tag chips and event titles bleed through the safe-area strip);
+   translucent + blurred on desktop where there's more breathing
+   room around the dialog. */
+dialog.modal::backdrop {
   background: var(--night-1);
-  display: flex;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 24px;
 }
 
 @media (min-width: 900px) {
-  .modal-backdrop {
+  dialog.modal::backdrop {
     background: rgba(4, 9, 12, 0.78);
     backdrop-filter: blur(8px) saturate(140%);
     -webkit-backdrop-filter: blur(8px) saturate(140%);
   }
 }
 
-.modal-backdrop.open {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Scroll-lock applied while any .modal-backdrop is open. Locking via
-   overflow: hidden on the document + body keeps the scroll position
-   intact natively — no `position: fixed` toggle, no scrollTo() — so
-   open/close are constant-time on the document layout. iOS rubber-
-   banding is contained by overscroll-behavior on both elements and
-   on .modal itself (see below). */
-html.modal-open,
-body.modal-open {
-  overflow: hidden;
-  overscroll-behavior: none;
-}
-
-/* Force the fixed page header invisible while a modal is open. The
-   header sits behind the modal anyway (z-index 20 vs 50), so this is
-   a no-op visually while the modal is up — but it neutralises an iOS
-   Safari quirk where toggling root overflow can re-animate the
-   header's `transform: translateY(...)` transition, surfacing on
-   close as a half-revealed header (just the day-tabs strip peeking
-   above the schedule). visibility is discrete, doesn't transition,
-   and short-circuits any in-flight transform animation. */
-html.modal-open header,
-body.modal-open header {
-  visibility: hidden;
-}
-
-.modal {
-  overscroll-behavior: contain;
-}
-
-.modal {
-  background: var(--night-2);
-  border: 1px solid var(--moss-2);
-  border-radius: var(--radius-lg);
-  max-width: 580px;
-  width: 100%;
-  /* Use lvh (large viewport height) instead of vh. On iOS Safari, vh
-     was supposed to be stable but in practice resolves differently
-     around the URL-bar-collapse `resize` event that fires ~110ms
-     after a modal opens — re-laying out the modal at a new height
-     and surfacing as a visible jump. lvh is explicitly the
-     URL-bar-hidden height so it doesn't budge across that resize.
-     Browsers without lvh fall back to vh, which keeps desktop
-     unchanged. */
-  max-height: 90vh;
-  max-height: 90lvh;
-  overflow: auto;
-  padding: 26px 28px;
-  box-shadow: var(--shadow-2);
-}
-
-/* Slide-up animation on every modal — matches the native iOS
-   sheet feel. transform-only so no layout thrash.
-   Disabled on mobile (see media query below): on phones the
-   bottom-anchored modals contain heavier content (map preview, long
-   chip grids) and the open frame is GPU-bound — the 0.22s slide
-   renders as a visible jump rather than a smooth transition. The
-   modal still appears instantly, just without the fade-and-slide. */
-.modal-backdrop.open .modal {
-  animation: sheet-up 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-}
-
-@keyframes sheet-up {
-  from {
-    transform: translateY(18px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* On phones, the Filters modal anchors to the bottom as a card
-   (close to thumb reach for the many small chips), but the Search
-   modal centers on screen since it's mostly a single input that
-   fits comfortably mid-viewport. All cards stay rounded on 4 sides. */
+/* On phones, the Filters / Settings dialogs anchor to the bottom as
+   sheets (close to thumb reach for the many small chips); Search
+   centers but lifts above the iOS keyboard; event / camp / backup
+   center vertically with internal scroll. All cards stay rounded on
+   4 sides. */
 @media (max-width: 640px) {
-  .modal-backdrop {
-    align-items: flex-end;
-    /* Static 34px instead of max(10px, env(safe-area-inset-bottom)).
-       On iOS Safari the bottom safe-area-inset is 0 while the URL bar
-       is visible and ~34px once it collapses; the URL bar collapses
-       ~110ms after the user taps to open a modal, firing a resize +
-       full re-layout that shifts the centered modal noticeably. A
-       static value makes the backdrop padding immune to that
-       transition. 34px is the home-indicator height on iPhones; on
-       devices without a home indicator we waste 24px of bottom
-       padding but the modal still looks clean. */
-    padding: 8px 8px 34px;
+  /* Event / camp / backup: full-width vertically-centered with
+     internal scroll. margin-block:auto centers the dialog up to
+     max-height; if content exceeds max-height the dialog hits the
+     ceiling and scrolls internally via overflow:auto. margin-inline
+     is the 8px side gutter. */
+  dialog#modal,
+  dialog#camp-modal,
+  dialog#backup-modal {
+    margin: auto 8px;
+    width: calc(100% - 16px);
+    max-width: none;
+    max-height: calc(100lvh - 16px);
+    overflow: auto;
   }
 
-  /* Event / camp / backup modals on phones: center the card and let
-     the BACKDROP own the scroll. Previously the modal element had
-     `overflow: auto` with `max-height: 90vh`, which made it
-     internally scrollable when content ran taller than the visible
-     viewport (very common on iOS Safari where the URL bar shrinks
-     the visible area). iOS Safari then auto-scrolled the modal on
-     open to bring an interactive element into view, hiding the
-     title row at the top.
+  /* Search dialog: centered horizontally, near-centered vertically.
+     --keyboard-inset is set by JS from visualViewport when iOS opens
+     the on-screen keyboard. We apply half of it on inset-block-end so
+     margin:auto lifts the card by ~¼ of the keyboard height — matching
+     the old search backdrop's `padding-bottom: calc(16px + inset / 2)`
+     flex-centering trick (full inset on inset-block-end overshoots and
+     shoves the card into the status bar when the input is focused).
 
-     Making the backdrop scrollable and the modal `overflow: visible`
-     eliminates that target: the modal renders at its natural height,
-     short content centers via flex, long content lets the user
-     scroll the dim backdrop area. `justify-content: center` keeps
-     short content vertically centered, and `min-height: 100%` plus
-     `margin: auto` on the modal handles the centering-while-
-     scrollable trick. */
-  #modal-backdrop,
-  #camp-modal-backdrop,
-  #backup-modal-backdrop {
-    align-items: center;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-
-  #modal,
-  #camp-modal,
-  #backup-modal {
-    max-height: none;
-    overflow: visible;
-    /* `margin: auto` inside a scrollable flex container keeps the
-       modal vertically centered when the content fits, and naturally
-       collapses to top-anchored when it doesn't (so the title row
-       stays the first thing visible at the top of the scroll). */
-    margin: auto 0;
-  }
-
-  /* Kill the sheet-up animation on phones. The 0.22s transform +
-     opacity transition is cheap on desktop but renders sluggishly on
-     iOS Safari / PWA when the modal contains heavier content (e.g.
-     the event modal's map preview), surfacing as a perceived jump
-     from a low/dim position to the final position. Snapping the
-     modal in is faster and avoids the artefact entirely. */
-  .modal-backdrop.open .modal {
-    animation: none;
-  }
-
-  /* Search modal: center vertically, smaller card. The bottom
-     padding includes half the --keyboard-inset (set in JS from
-     window.visualViewport) so the card rises just enough to
-     clear the iOS on-screen keyboard without snapping all the
-     way to the top of the visible area. (align-items: center
-     on the flex backdrop means extra bottom padding shifts the
-     card up by half that padding.) */
-  #search-modal-backdrop {
-    align-items: center;
-    padding: 16px 16px calc(16px + var(--keyboard-inset, 0px) / 2);
-  }
-
-  /* Filters and Settings are bottom-anchored sheets that float on the
-     sides (8px) with a tiny bottom gap so iOS paints the rounded sheet
-     edge cleanly. The close-row still absorbs the home-indicator safe
-     area in its own padding-bottom so actions remain tappable above
-     the gesture pill. */
-  #filters-modal-backdrop,
-  #settings-modal-backdrop {
-    padding: 8px 8px 6px;
-  }
-
-  .modal.search-modal {
-    /* lvh, not dvh, so the modal height doesn't re-resolve when iOS
-       Safari fires its URL-bar-collapse resize ~110ms after open. */
-    max-height: 70vh;
+     The [open] guard is critical: `display: flex` would otherwise
+     override the UA's `dialog:not([open]) { display: none }` rule
+     and leak the dialog into the page flow before showModal() is
+     called. */
+  dialog#search-modal[open] {
+    margin-inline: 16px;
+    inset-block-end: calc(var(--keyboard-inset, 0px) / 2);
     max-height: 70lvh;
     max-width: 480px;
-    width: 100%;
-    border-radius: var(--radius-lg);
+    width: calc(100% - 32px);
     padding: 16px 18px 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
-  .modal.filters-modal,
-  .modal.settings-modal {
-    /* Bottom-anchored card with all 4 corners rounded. Max-height
-       subtracts the top safe area + 8px backdrop top padding so the
-       sheet never collides with the OS clock. Bottom safe area lives
-       in the close-row, not here.
-       Uses 100lvh (large viewport) instead of 100dvh so the modal
-       doesn't re-layout when iOS Safari fires the URL-bar-collapse
-       resize ~110ms after open. */
-    max-height: calc(100lvh - max(24px, env(safe-area-inset-top)) - 8px);
+  /* Filters / Settings: bottom-anchored sheet with 8px side gutters
+     and a 6px bottom gap so iOS paints the rounded sheet edge
+     cleanly. The close-row inside still absorbs the home-indicator
+     safe area in its own padding-bottom so actions remain tappable
+     above the gesture pill. margin-top:auto pushes the dialog down
+     against margin-bottom:6px; with default inset-block:0 this is
+     stable across the iOS URL-bar-collapse resize because lvh-based
+     max-height resolves to the URL-bar-hidden viewport height.
+
+     The [open] guard prevents `display: flex` from overriding the
+     UA `dialog:not([open]) { display: none }` rule. */
+  dialog#filters-modal[open],
+  dialog#settings-modal[open] {
+    margin: auto 8px 6px 8px;
+    width: calc(100% - 16px);
     max-width: none;
-    width: 100%;
-    border-radius: var(--radius-lg);
+    max-height: calc(100lvh - max(24px, env(safe-area-inset-top)) - 8px);
     padding: 16px 18px 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+  }
+
+  /* iOS Safari tab only (not home-screen PWA). Top-layer <dialog> often
+     sees env(safe-area-inset-top)=0; 100lvh overshoots while the URL
+     bar is visible — reserve notch space and cap to the small viewport. */
+  html:not(.is-standalone-app) dialog#filters-modal[open],
+  html:not(.is-standalone-app) dialog#settings-modal[open] {
+    padding-top: max(16px, env(safe-area-inset-top));
+    max-height: calc(
+      min(100lvh, 100svh) - max(47px, env(safe-area-inset-top)) - 8px
+    );
   }
 
   .modal.search-modal .modal-head,
@@ -2220,7 +2198,7 @@ body.modal-open header {
     flex-shrink: 0;
   }
 
-  .modal.settings-modal .settings-card:last-child {
+  .modal.settings-modal .sheet-body > .settings-panel:last-child {
     margin-bottom: 0;
   }
 }
@@ -2294,6 +2272,18 @@ body.modal-open header {
   color: var(--cream-soft);
   font-size: 15px;
   line-height: 1.6;
+}
+
+.modal p.setting-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--cream-dim);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.modal p.setting-hint.tight {
+  margin-bottom: 12px;
 }
 
 .modal .flags-block {

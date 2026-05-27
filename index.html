@@ -10,9 +10,9 @@
        MOIST logo with its mushroom decorations — clean square mark that
        reads well at 16px. Apple touch icon is the iOS home screen tile;
        the manifest powers Android/PWA installs. -->
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=7">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png?v=7">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=7">
   <link rel="manifest" href="site.webmanifest">
   <meta name="theme-color" content="#0a1620">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -24,7 +24,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260527-prewarm">
+  <link rel="stylesheet" href="styles.css?v=20260527-safari-safearea">
 </head>
 
 <body>
@@ -86,155 +86,145 @@
   </button>
   <main id="view"></main>
 
-  <div class="modal-backdrop" id="modal-backdrop">
-    <div class="modal" id="modal">
-      <div class="modal-head">
-        <h2 id="m-title"></h2>
-        <button type="button" class="fav-btn" id="m-fav" aria-label="Toggle favorite">☆</button>
-      </div>
-      <div class="meta">
-        <span id="m-owner"></span>
-        <span class="dot"></span>
-        <span id="m-day"></span>
-        <span class="dot"></span>
-        <span class="time" id="m-time"></span>
-        <span id="m-neighbourhood"></span>
-      </div>
-      <div class="map-preview" id="m-map-preview"></div>
-      <p id="m-desc"></p>
-      <div class="tags-block" id="m-tags"></div>
-      <div class="flags-block" id="m-flags"></div>
-      <div class="close-row"><button id="m-close">Close</button></div>
+  <dialog class="modal" id="modal" aria-labelledby="m-title">
+    <div class="modal-head">
+      <h2 id="m-title"></h2>
+      <button type="button" class="fav-btn" id="m-fav" aria-label="Toggle favorite">☆</button>
     </div>
-  </div>
+    <div class="meta">
+      <span id="m-owner"></span>
+      <span class="dot"></span>
+      <span id="m-day"></span>
+      <span class="dot"></span>
+      <span class="time" id="m-time"></span>
+      <span id="m-neighbourhood"></span>
+    </div>
+    <div class="map-preview" id="m-map-preview"></div>
+    <p id="m-desc"></p>
+    <div class="tags-block" id="m-tags"></div>
+    <div class="flags-block" id="m-flags"></div>
+    <div class="close-row"><button id="m-close">Close</button></div>
+  </dialog>
 
-  <div class="modal-backdrop" id="search-modal-backdrop">
-    <div class="modal search-modal" id="search-modal" role="dialog" aria-labelledby="search-title">
-      <div class="modal-head">
-        <h2 id="search-title">Search</h2>
-        <button type="button" class="modal-close" id="search-close" aria-label="Close">✕</button>
-      </div>
-      <input id="search" type="search" placeholder="Search events, camps, descriptions…" autocomplete="off" />
-      <div class="sheet-body">
-        <div class="modal-section">
-          <h3>Type</h3>
-          <div class="chip-group" id="type-chips">
-            <button type="button" class="chip active" data-type="all">All</button>
-            <button type="button" class="chip" data-type="camp">Camps</button>
-            <button type="button" class="chip" data-type="sound_stage">Sound stages</button>
-            <button type="button" class="chip" data-type="art_installation">Art installations</button>
-            <button type="button" class="chip" data-type="mutant_vehicle">Mutant vehicles</button>
-          </div>
+  <dialog class="modal search-modal" id="search-modal" aria-labelledby="search-title">
+    <div class="modal-head">
+      <h2 id="search-title">Search</h2>
+      <button type="button" class="modal-close" id="search-close" aria-label="Close">✕</button>
+    </div>
+    <input id="search" type="search" placeholder="Search events, camps, descriptions…" autocomplete="off" />
+    <div class="sheet-body">
+      <div class="modal-section">
+        <h3>Type</h3>
+        <div class="chip-group" id="type-chips">
+          <button type="button" class="chip active" data-type="all">All</button>
+          <button type="button" class="chip" data-type="camp">Camps</button>
+          <button type="button" class="chip" data-type="sound_stage">Sound stages</button>
+          <button type="button" class="chip" data-type="art_installation">Art installations</button>
+          <button type="button" class="chip" data-type="mutant_vehicle">Mutant vehicles</button>
         </div>
-      </div>
-      <div class="close-row">
-        <button type="button" class="btn-ghost" id="search-clear">Clear</button>
-        <button type="button" id="search-done"><span id="search-results">Done</span></button>
       </div>
     </div>
-  </div>
+    <div class="close-row">
+      <button type="button" class="btn-ghost" id="search-clear">Clear</button>
+      <button type="button" id="search-done"><span id="search-results">Done</span></button>
+    </div>
+  </dialog>
 
-  <div class="modal-backdrop" id="filters-modal-backdrop">
-    <div class="modal filters-modal" id="filters-modal" role="dialog" aria-labelledby="filters-title">
-      <div class="modal-head">
-        <h2 id="filters-title">Filters</h2>
-        <button type="button" class="modal-close" id="filters-close" aria-label="Close">✕</button>
-      </div>
-      <div class="sheet-body">
-        <div class="modal-section">
-          <h3>Quick</h3>
-          <div class="chip-group quick-chips" id="quick-chips">
-            <button type="button" class="chip quick" data-quick="now">Happening now</button>
-            <button type="button" class="chip quick" data-quick="next">Up next</button>
-          </div>
-        </div>
-        <div class="modal-section">
-          <h3>Time of day</h3>
-          <div class="chip-group" id="time-of-day-chips">
-            <button type="button" class="chip" data-tod="morning">Morning</button>
-            <button type="button" class="chip" data-tod="afternoon">Afternoon</button>
-            <button type="button" class="chip" data-tod="evening">Evening</button>
-            <button type="button" class="chip" data-tod="late">Late night</button>
-          </div>
-        </div>
-        <div class="modal-section">
-          <h3>Duration</h3>
-          <div class="chip-group" id="duration-chips">
-            <button type="button" class="chip" data-dur="short">Up to 2h</button>
-            <button type="button" class="chip" data-dur="medium">2–6h</button>
-            <button type="button" class="chip" data-dur="long">Over 6h</button>
-          </div>
-        </div>
-        <div class="modal-section">
-          <h3>Tags</h3>
-          <div class="chip-group" id="tag-chips"></div>
-        </div>
-        <div class="modal-section" id="neighbourhoods-section">
-          <h3>Neighbourhoods</h3>
-          <div class="chip-group" id="neighbourhood-chips"></div>
+  <dialog class="modal filters-modal" id="filters-modal" aria-labelledby="filters-title">
+    <div class="modal-head">
+      <h2 id="filters-title">Filters</h2>
+      <button type="button" class="modal-close" id="filters-close" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="modal-section">
+        <h3>Quick</h3>
+        <div class="chip-group quick-chips" id="quick-chips">
+          <button type="button" class="chip quick" data-quick="now">Happening now</button>
+          <button type="button" class="chip quick" data-quick="next">Up next</button>
         </div>
       </div>
-      <div class="close-row">
-        <button type="button" class="btn-ghost" id="filters-clear">Clear all</button>
-        <button type="button" id="filters-done"><span id="filters-results">Done</span></button>
+      <div class="modal-section">
+        <h3>Time of day</h3>
+        <div class="chip-group" id="time-of-day-chips">
+          <button type="button" class="chip" data-tod="morning">Morning</button>
+          <button type="button" class="chip" data-tod="afternoon">Afternoon</button>
+          <button type="button" class="chip" data-tod="evening">Evening</button>
+          <button type="button" class="chip" data-tod="late">Late night</button>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h3>Duration</h3>
+        <div class="chip-group" id="duration-chips">
+          <button type="button" class="chip" data-dur="short">Up to 2h</button>
+          <button type="button" class="chip" data-dur="medium">2–6h</button>
+          <button type="button" class="chip" data-dur="long">Over 6h</button>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h3>Tags</h3>
+        <div class="chip-group" id="tag-chips"></div>
+      </div>
+      <div class="modal-section" id="neighbourhoods-section">
+        <h3>Neighbourhoods</h3>
+        <div class="chip-group" id="neighbourhood-chips"></div>
       </div>
     </div>
-  </div>
+    <div class="close-row">
+      <button type="button" class="btn-ghost" id="filters-clear">Clear all</button>
+      <button type="button" id="filters-done"><span id="filters-results">Done</span></button>
+    </div>
+  </dialog>
 
-  <div class="modal-backdrop" id="settings-modal-backdrop">
-    <div class="modal settings-modal" id="settings-modal" role="dialog" aria-labelledby="settings-title">
-      <div class="modal-head">
-        <h2 id="settings-title">Settings</h2>
-        <button type="button" class="modal-close" id="settings-close" aria-label="Close">✕</button>
-      </div>
+  <dialog class="modal settings-modal" id="settings-modal" aria-labelledby="settings-title">
+    <div class="modal-head">
+      <h2 id="settings-title">Settings</h2>
+      <button type="button" class="modal-close" id="settings-close" aria-label="Close">✕</button>
+    </div>
 
-      <div class="sheet-body">
-        <div class="settings-card">
-          <h3>Display</h3>
-          <label class="setting-toggle" for="setting-hide-ongoing">
-            <span class="setting-toggle-text">
-              <span class="setting-toggle-title">Hide ongoing cards</span>
-              <span class="setting-toggle-hint">Hides events that started in a previous hour so each row only shows what's starting then.</span>
-            </span>
-            <input type="checkbox" id="setting-hide-ongoing" class="setting-toggle-input" />
-            <span class="setting-toggle-switch" aria-hidden="true"></span>
-          </label>
-          <label class="setting-toggle" for="setting-hide-desc">
-            <span class="setting-toggle-text">
-              <span class="setting-toggle-title">Hide event descriptions</span>
-              <span class="setting-toggle-hint">Keeps cards compact so more events fit on screen.</span>
-            </span>
-            <input type="checkbox" id="setting-hide-desc" class="setting-toggle-input" />
-            <span class="setting-toggle-switch" aria-hidden="true"></span>
-          </label>
-          <label class="setting-toggle" for="setting-cant-miss">
-            <span class="setting-toggle-text">
-              <span class="setting-toggle-title">Allow Favourites double tab</span>
-              <span class="setting-toggle-hint">Tap a favorited star again to turn it red for events you can't miss.</span>
-            </span>
-            <input type="checkbox" id="setting-cant-miss" class="setting-toggle-input" />
-            <span class="setting-toggle-switch" aria-hidden="true"></span>
-          </label>
-        </div>
-
-        <div class="settings-card">
-          <h3>Favorites backup</h3>
-          <p class="setting-hint">
-            Back up in case your browser clears storage.
-          </p>
+    <div class="sheet-body">
+      <div class="settings-panel">
+        <label class="setting-toggle" for="setting-hide-ongoing">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Hide ongoing cards</span>
+            <span class="setting-toggle-hint">Hides events that started in a previous hour so each row only shows what's starting then.</span>
+          </span>
+          <input type="checkbox" id="setting-hide-ongoing" class="setting-toggle-input" />
+          <span class="setting-toggle-switch" aria-hidden="true"></span>
+        </label>
+        <label class="setting-toggle" for="setting-hide-desc">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Hide event descriptions</span>
+            <span class="setting-toggle-hint">Keeps cards compact so more events fit on screen.</span>
+          </span>
+          <input type="checkbox" id="setting-hide-desc" class="setting-toggle-input" />
+          <span class="setting-toggle-switch" aria-hidden="true"></span>
+        </label>
+        <label class="setting-toggle" for="setting-cant-miss">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Red-star favorites</span>
+            <span class="setting-toggle-hint">Double-tap a favorited star to mark events you can't miss in red.</span>
+          </span>
+          <input type="checkbox" id="setting-cant-miss" class="setting-toggle-input" />
+          <span class="setting-toggle-switch" aria-hidden="true"></span>
+        </label>
+        <div class="settings-row-block">
+          <div class="settings-row-text">
+            <span class="setting-toggle-title">Backup favorites</span>
+            <span class="setting-toggle-hint">If your browser clears storage, you can paste a code to get them back.</span>
+          </div>
           <div class="backup-row">
-            <button type="button" class="backup-btn" id="fav-backup">Backup <span id="fav-backup-count"></span></button>
-            <button type="button" class="backup-btn" id="fav-restore">Restore</button>
+            <button type="button" class="backup-btn backup-btn-primary" id="fav-backup">Backup <span id="fav-backup-count"></span></button>
+            <button type="button" class="backup-btn btn-ghost" id="fav-restore">Restore</button>
           </div>
           <div class="backup-status" id="fav-backup-status" hidden></div>
         </div>
+      </div>
 
-        <details class="settings-card settings-card-foldable">
-          <summary><h3>About</h3></summary>
+      <details class="settings-panel settings-foldable">
+        <summary class="settings-foldable-summary"><span class="settings-section-label">About</span></summary>
+        <div class="settings-foldable-body">
           <div class="settings-stats" id="stats"></div>
-          <p>
-            Built by one silly goose 🪿.
-          </p>
+          <p>Built by one silly goose 🪿.</p>
           <p>
             This is a <a href="https://github.com/gustavogarci/Otherworld2026" target="_blank" rel="noopener">fork →</a>
             of <a href="https://github.com/Isaiiaas/OtherworldWWW" target="_blank" rel="noopener">Isaiiaas/OtherworldWWW →</a>.
@@ -242,63 +232,61 @@
           <p>
             To have your events displayed here,
             <a href="https://docs.google.com/spreadsheets/d/1o9Ue218Yx8mMa9OGyPfd66NoofYI3O1ewkN8NB-qnVc/edit?gid=1785212198#gid=1785212198"
-              target="_blank" rel="noopener">add them to the shared spreadsheet →</a>
-            or <a href="dashboard.php">claim your camp to edit them on the site →</a>.
+              target="_blank" rel="noopener">add them to the shared spreadsheet →</a>.
           </p>
           <p class="settings-disclaimer">
-            <strong>
-              This website is not affiliated with Kindle Arts Society or Otherworld.
-            </strong>
+            This website is not affiliated with
+            <strong>Kindle Arts Society</strong> or <strong>Otherworld</strong>.
           </p>
-        </details>
+        </div>
+      </details>
 
-        <details class="settings-card settings-card-foldable">
-          <summary><h3>Dev tools</h3></summary>
-          <p class="setting-hint">
-            Simulate current time.
-          </p>
+      <details class="settings-panel settings-foldable settings-foldable-dev">
+        <summary class="settings-foldable-summary"><span class="settings-section-label">Dev tools</span></summary>
+        <div class="settings-foldable-body">
+          <div class="settings-row-text">
+            <span class="setting-toggle-title">Simulate current time</span>
+            <span class="setting-toggle-hint">Preview the schedule as if it were another moment.</span>
+          </div>
           <div class="dev-now-row">
             <input type="datetime-local" id="dev-now-input"
                    min="2026-06-04T00:00" max="2026-06-08T23:59"
                    step="60" class="dev-now-input" />
-            <button type="button" class="backup-btn" id="dev-now-clear">Use real time</button>
+            <button type="button" class="backup-btn btn-ghost" id="dev-now-clear">Use real time</button>
           </div>
-        </details>
-      </div>
-
-      <div class="close-row"><button id="settings-close-btn">Close</button></div>
+        </div>
+      </details>
     </div>
-  </div>
 
-  <div class="modal-backdrop" id="camp-modal-backdrop">
-    <div class="modal" id="camp-modal">
-      <h2 id="cm-title"></h2>
-      <div class="meta"><span id="cm-meta"></span></div>
-      <div class="event-list" id="cm-events"></div>
-      <div class="close-row"><button id="cm-close">Close</button></div>
-    </div>
-  </div>
+    <div class="close-row"><button id="settings-close-btn">Close</button></div>
+  </dialog>
 
-  <div class="modal-backdrop" id="backup-modal-backdrop">
-    <div class="modal backup-modal" id="backup-modal" role="dialog" aria-labelledby="backup-modal-title">
-      <h2 id="backup-modal-title">Your backup code</h2>
-      <p class="setting-hint tight" id="fav-backup-hint">
-        Paste it into Notes (or email it to yourself) so you can Restore later.
-      </p>
-      <div class="code-wrap">
-        <code class="backup-code" id="fav-backup-code"></code>
-      </div>
-      <div class="close-row">
-        <button type="button" class="btn-secondary" id="fav-backup-copy" aria-label="Copy backup code">
-          <span class="label">Copy</span>
-        </button>
-        <button type="button" id="backup-modal-close">Done</button>
-      </div>
+  <dialog class="modal" id="camp-modal" aria-labelledby="cm-title">
+    <h2 id="cm-title"></h2>
+    <div class="meta"><span id="cm-meta"></span></div>
+    <div class="event-list" id="cm-events"></div>
+    <div class="close-row"><button id="cm-close">Close</button></div>
+  </dialog>
+
+  <dialog class="modal backup-modal" id="backup-modal" aria-labelledby="backup-modal-title">
+    <h2 id="backup-modal-title">Your backup code</h2>
+    <p class="setting-hint tight" id="fav-backup-hint">
+      Paste it into Notes (or email it to yourself) so you can Restore later.
+    </p>
+    <div class="code-wrap">
+      <textarea class="backup-code" id="fav-backup-code" rows="4" readonly
+        aria-label="Backup code"></textarea>
     </div>
-  </div>
+    <div class="close-row">
+      <button type="button" class="btn-secondary" id="fav-backup-copy" aria-label="Copy backup code">
+        <span class="label">Copy</span>
+      </button>
+      <button type="button" id="backup-modal-close">Done</button>
+    </div>
+  </dialog>
 
   <script src="./map-data.js?v=ecc635dd102f"></script>
-  <script src="./app.js?v=20260527-prewarm"></script>
+  <script src="./app.js?v=20260527-dialog"></script>
 </body>
 
 </html>
