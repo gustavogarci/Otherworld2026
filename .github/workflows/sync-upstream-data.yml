@@ -58,6 +58,18 @@ jobs:
             fi
           done
 
+      - name: Patch map-data.js to reference our webp (not upstream's png)
+        # Upstream ships map.png; this fork ships an optimised map.webp.
+        # The pin coordinates are calibrated to the same source PDF so
+        # they line up perfectly — we just need to swap the filename
+        # reference. Without this, the map view would 404 on the image
+        # after every sync. Idempotent: no-op if already webp.
+        run: |
+          if [[ -f map-data.js ]]; then
+            sed -i 's/"imagePath":"map\.png"/"imagePath":"map.webp"/g' map-data.js
+            echo "  patched map.png -> map.webp in map-data.js"
+          fi
+
       - name: Commit and push if changed
         run: |
           git config user.name  "Data Sync"
