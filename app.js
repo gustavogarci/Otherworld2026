@@ -23,6 +23,17 @@
     bind(fullscreenQuery);
   })();
 
+  // Register the service worker for offline support. Deferred to
+  // window.load so it never competes with the critical-path
+  // events.json fetch on the first visit. Silent update model —
+  // a new SW activates on the next reload, no user-facing toast.
+  // See sw.js for the cache strategies.
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
+
   // Use the HTTP cache with default heuristic freshness. The static
   // server sends Last-Modified on these files, which is enough for
   // the browser to short-circuit re-downloads — events.json is ~800
