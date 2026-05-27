@@ -30,8 +30,11 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Logs
+# Logs (textual + the JSON reconcile snapshots that the cron writes
+# every hour into admin/logs/reconcile/ — useful for debugging on the
+# server, not useful in git history)
 *.log
+admin/logs/
 
 # Local-only screenshot output from scripts/mobile-screenshots.js
 screenshots/
