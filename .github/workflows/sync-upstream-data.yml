@@ -1,0 +1,63 @@
+name: Sync data files from upstream
+
+# Pulls just the data files (events.json, map data, etc.) from
+# Isaiiaas/OtherworldWWW on a schedule. Never touches index.html,
+# vercel.json, .vercelignore, or any source files — this fork has
+# diverged on UI/config and we want to keep that divergence.
+#
+# Vercel auto-deploys on every push to master, so a successful sync
+# here triggers a fresh deploy of the mirror within ~60 seconds.
+
+on:
+  schedule:
+    # Hourly, on the hour. Upstream's own sheet reconcile runs hourly
+    # too, so polling more often than this almost never finds new data.
+    - cron: "0 * * * *"
+  # Manual trigger from the Actions tab — useful for the first run and
+  # for forcing a refresh on demand.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Never let two sync runs race each other.
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need full history so git checkout from upstream/master works.
+          fetch-depth: 0
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/Isaiiaas/OtherworldWWW.git
+
+      - name: Fetch upstream
+        run: git fetch upstream master
+
+      - name: Pull data files only (never source)
+        # Allowlist of files to mirror. If upstream adds a new data file
+        # we care about, add it here. The `|| true` keeps us going if a
+        # file disappears upstream (e.g. one of the optional map JSONs).
+        run: |
+          git checkout upstream/master -- \
+            events.json data.js camp-aliases.json \
+            map-data.js map-locations.json map-labels.json map.webp \
+            || true
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "Data Sync"
+          git config user.email "actions@users.noreply.github.com"
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add -A
+            git commit -m "Auto sync data from upstream ($(date -u +%Y-%m-%dT%H:%MZ))"
+            git push
+          else
+            echo "No upstream data changes."
+          fi

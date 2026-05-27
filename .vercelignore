@@ -1,0 +1,9 @@
+admin/
+scripts/
+screenshots/
+.github/
+*.php
+*.pdf
+node_modules/
+package*.json
+README.md
