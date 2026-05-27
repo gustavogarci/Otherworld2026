@@ -54,6 +54,13 @@
   --amber-deep: #b76a14;
   --warn: #ffd24a;
 
+  /* Red — opt-in "can't miss" favorite tier. Warm coral-red picked
+     to sit in the same family as --amber/--pink rather than reading
+     as a system alert color. */
+  --red: #ff4d6a;
+  --red-soft: #ff8da3;
+  --red-deep: #c2334a;
+
   --type-camp: var(--lime);
   --type-camp-deep: var(--lime-deep);
   --type-stage: var(--pink);
@@ -209,6 +216,44 @@ header.header-hidden {
   }
 }
 
+/* iOS PWA home-indicator scrim — mirrors .status-bar-scrim but for the
+   bottom safe-area band. Needed because `position: fixed; inset: 0`
+   (e.g. .modal-backdrop) gets clamped to the layout viewport in
+   standalone PWA mode and does NOT extend into the env(safe-area-
+   inset-bottom) area — but an explicitly-sized fixed element at
+   `bottom: 0; height: env(safe-area-inset-bottom)` DOES. Without
+   this, the Filters/Settings bottom-sheet modals leave a visible
+   strip of body background showing through below them in PWA mode.
+   Transparent by default; tinted to match the close-row tray
+   (--night-3) only while those two modals are open. */
+.home-indicator-scrim {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom);
+  z-index: 51;
+  pointer-events: none;
+  background: transparent;
+  transition: background 0.18s ease-out;
+}
+
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  .home-indicator-scrim {
+    display: block;
+  }
+}
+
+html.is-standalone-app .home-indicator-scrim {
+  display: block;
+}
+
+body:has(#filters-modal-backdrop.open) .home-indicator-scrim,
+body:has(#settings-modal-backdrop.open) .home-indicator-scrim {
+  background: var(--night-3);
+}
+
 .header-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -254,7 +299,7 @@ h1.logo-h1 a {
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
 }
 
-.about-stats {
+.settings-stats {
   color: var(--moss-3);
   font-size: 12.5px;
   font-family: var(--font-mono);
@@ -270,7 +315,7 @@ h1.logo-h1 a {
 }
 
 
-.about-settings {
+.settings-card {
   margin: 0 0 14px;
   padding: 14px;
   background: var(--night-3);
@@ -278,13 +323,45 @@ h1.logo-h1 a {
   border-radius: 8px;
 }
 
-.about-settings h3 {
+.settings-card h3 {
   margin: 0 0 10px;
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--cream-dim);
   font-weight: 600;
+}
+
+.settings-card-foldable > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: -14px;
+  padding: 14px;
+  -webkit-tap-highlight-color: transparent;
+}
+.settings-card-foldable[open] > summary {
+  margin-bottom: 14px;
+}
+.settings-card-foldable > summary::-webkit-details-marker { display: none; }
+.settings-card-foldable > summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--cream-dim);
+  border-bottom: 2px solid var(--cream-dim);
+  transform: rotate(45deg);
+  margin-right: 4px;
+  transition: transform 0.15s;
+}
+.settings-card-foldable[open] > summary::after {
+  transform: rotate(-135deg);
+  margin-top: 4px;
+}
+.settings-card-foldable > summary h3 {
+  margin: 0;
 }
 
 .setting-hint {
@@ -298,12 +375,12 @@ h1.logo-h1 a {
   margin-bottom: 12px;
 }
 
-.about-disclaimer {
+.settings-disclaimer {
   font-size: 13px;
   color: var(--cream-dim);
 }
 
-.about-disclaimer strong {
+.settings-disclaimer strong {
   background: linear-gradient(90deg, var(--lime), var(--cyan), var(--pink), var(--amber));
   -webkit-background-clip: text;
   background-clip: text;
@@ -380,6 +457,83 @@ h1.logo-h1 a {
   border: 1px solid rgba(204, 232, 78, 0.5);
   border-radius: 6px;
 }
+
+/* Toggle rows in the Display settings card. Visible checkbox is hidden
+   off-screen (accessible) and the .setting-toggle-switch pill renders the
+   visual state via :has() on the parent label. */
+.setting-toggle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.setting-toggle + .setting-toggle {
+  border-top: 1px solid var(--moss-1);
+}
+.setting-toggle-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.setting-toggle-title {
+  font-size: 14px;
+  color: var(--cream);
+  font-weight: 500;
+}
+.setting-toggle-hint {
+  font-size: 12px;
+  color: var(--cream-dim);
+  line-height: 1.35;
+}
+.setting-toggle-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.setting-toggle-switch {
+  flex: 0 0 auto;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 999px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.setting-toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: var(--cream-dim);
+  border-radius: 50%;
+  transition: transform 0.15s, background 0.15s;
+}
+.setting-toggle:has(.setting-toggle-input:checked) .setting-toggle-switch {
+  background: var(--lime-deep);
+  border-color: var(--lime);
+}
+.setting-toggle:has(.setting-toggle-input:checked) .setting-toggle-switch::after {
+  transform: translateX(16px);
+  background: var(--cream);
+}
+.setting-toggle:has(.setting-toggle-input:focus-visible) .setting-toggle-switch {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
 .backup-status code {
   display: block;
   margin-top: 6px;
@@ -403,7 +557,7 @@ h1.logo-h1 a {
 }
 .backup-code {
   display: block;
-  padding: 10px 78px 10px 10px;
+  padding: 10px;
   font-size: 12px;
   background: var(--night-2);
   border-radius: 4px;
@@ -412,35 +566,9 @@ h1.logo-h1 a {
   user-select: all;
   word-break: break-all;
 }
-.backup-copy-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  font-size: 12px;
-  font-weight: 600;
+.modal.backup-modal #fav-backup-copy.copied {
+  background: var(--moss-2);
   color: var(--cream);
-  background: var(--night-2);
-  border: 1px solid var(--moss-1);
-  border-radius: 6px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-.backup-copy-btn:hover { background: var(--moss-1); }
-.backup-copy-btn:active { transform: translateY(1px); }
-.backup-copy-btn svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-.backup-copy-btn.copied {
-  background: var(--lime);
-  border-color: var(--lime);
-  color: var(--night-2);
 }
 
 /* ── Header CTAs (Search / Filters / About) ───────────────
@@ -838,6 +966,20 @@ h1.logo-h1 a {
   color: var(--lime);
 }
 
+/* Opt-in "can't miss" tier — gated behind the Settings toggle.
+   Source-order after .is-fav so the cascade wins when both classes
+   are present on the same button. */
+.fav-btn.is-red {
+  color: var(--red);
+}
+
+@media (hover: hover) {
+  .fav-btn.is-red:hover {
+    color: var(--red-soft);
+    background: rgba(255, 77, 106, 0.10);
+  }
+}
+
 .fav-btn:active {
   transform: scale(0.85);
 }
@@ -892,7 +1034,12 @@ h1.logo-h1 a {
   padding: 0 12px;
   overflow-x: auto;
   border-bottom: 1px solid var(--moss-1);
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 640px) {
@@ -1771,35 +1918,89 @@ footer.site-footer a:hover {
 }
 
 /* ── Modal ───────────────────────────────────────────────── */
+/* On phones we use a fully opaque backdrop. A semi-transparent dim
+   (even at 88%) lets bright tag chips and event titles bleed through
+   from the busy day-view, especially in the safe-area strip below
+   the modal — and a small blur radius wasn't enough to fully mask
+   them. Going opaque keeps the modal feeling like a modal regardless
+   of what's underneath, and lets us drop backdrop-filter entirely
+   on mobile (it's the GPU-expensive bit). Larger screens keep the
+   translucent + blurred treatment because there's more breathing
+   room around the modal so the dimming reads as a visual frame
+   rather than a leak. */
+/* Every modal backdrop stays in the layout tree from page load
+   (display: flex) but starts invisible (visibility: hidden + opacity 0
+   + pointer-events: none). Toggling `.open` only flips those three
+   properties — no display change, no first-time render-tree
+   transition.
+
+   This matters because iOS Safari pays a real one-shot cost the first
+   time a previously-display:none element becomes display:flex: font
+   shaping for any text instance not previously laid out, image decode
+   pipeline setup, layout cache priming. On the user's first card tap
+   that cost surfaced as a one-paint layout adjustment (the modal-head
+   row going from 0 to its full height, pushing all content down) —
+   visible as a jump. Once iOS had cached the work, subsequent opens
+   were instant, which matched the "first open only" reproduction.
+
+   Keeping the modals in layout from page load shifts that cost to the
+   initial render (where it's masked by everything else) and makes
+   every modal open a cheap visibility/opacity flip from then on. */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(4, 9, 12, 0.78);
-  backdrop-filter: blur(8px) saturate(140%);
-  -webkit-backdrop-filter: blur(8px) saturate(140%);
-  display: none;
+  background: var(--night-1);
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
   align-items: center;
   justify-content: center;
   z-index: 50;
   padding: 24px;
 }
 
-.modal-backdrop.open {
-  display: flex;
+@media (min-width: 900px) {
+  .modal-backdrop {
+    background: rgba(4, 9, 12, 0.78);
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+  }
 }
 
-/* Scroll-lock applied to <body> while any .modal-backdrop is open.
-   position: fixed + preserved scroll offset is the iOS-safe pattern
-   that fully stops the underlying page from scrolling or rubber-
-   banding when the dimmed backdrop area is tapped/dragged. */
+.modal-backdrop.open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Scroll-lock applied while any .modal-backdrop is open. Locking via
+   overflow: hidden on the document + body keeps the scroll position
+   intact natively — no `position: fixed` toggle, no scrollTo() — so
+   open/close are constant-time on the document layout. iOS rubber-
+   banding is contained by overscroll-behavior on both elements and
+   on .modal itself (see below). */
+html.modal-open,
 body.modal-open {
-  position: fixed;
-  top: var(--scroll-lock-top, 0);
-  left: 0;
-  right: 0;
-  width: 100%;
   overflow: hidden;
   overscroll-behavior: none;
+}
+
+/* Force the fixed page header invisible while a modal is open. The
+   header sits behind the modal anyway (z-index 20 vs 50), so this is
+   a no-op visually while the modal is up — but it neutralises an iOS
+   Safari quirk where toggling root overflow can re-animate the
+   header's `transform: translateY(...)` transition, surfacing on
+   close as a half-revealed header (just the day-tabs strip peeking
+   above the schedule). visibility is discrete, doesn't transition,
+   and short-circuits any in-flight transform animation. */
+html.modal-open header,
+body.modal-open header {
+  visibility: hidden;
+}
+
+.modal {
+  overscroll-behavior: contain;
 }
 
 .modal {
@@ -1815,7 +2016,12 @@ body.modal-open {
 }
 
 /* Slide-up animation on every modal — matches the native iOS
-   sheet feel. transform-only so no layout thrash. */
+   sheet feel. transform-only so no layout thrash.
+   Disabled on mobile (see media query below): on phones the
+   bottom-anchored modals contain heavier content (map preview, long
+   chip grids) and the open frame is GPU-bound — the 0.22s slide
+   renders as a visible jump rather than a smooth transition. The
+   modal still appears instantly, just without the fade-and-slide. */
 .modal-backdrop.open .modal {
   animation: sheet-up 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
@@ -1841,6 +2047,53 @@ body.modal-open {
     padding: 8px 8px max(10px, env(safe-area-inset-bottom));
   }
 
+  /* Event / camp / backup modals on phones: center the card and let
+     the BACKDROP own the scroll. Previously the modal element had
+     `overflow: auto` with `max-height: 90vh`, which made it
+     internally scrollable when content ran taller than the visible
+     viewport (very common on iOS Safari where the URL bar shrinks
+     the visible area). iOS Safari then auto-scrolled the modal on
+     open to bring an interactive element into view, hiding the
+     title row at the top.
+
+     Making the backdrop scrollable and the modal `overflow: visible`
+     eliminates that target: the modal renders at its natural height,
+     short content centers via flex, long content lets the user
+     scroll the dim backdrop area. `justify-content: center` keeps
+     short content vertically centered, and `min-height: 100%` plus
+     `margin: auto` on the modal handles the centering-while-
+     scrollable trick. */
+  #modal-backdrop,
+  #camp-modal-backdrop,
+  #backup-modal-backdrop {
+    align-items: center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  #modal,
+  #camp-modal,
+  #backup-modal {
+    max-height: none;
+    overflow: visible;
+    /* `margin: auto` inside a scrollable flex container keeps the
+       modal vertically centered when the content fits, and naturally
+       collapses to top-anchored when it doesn't (so the title row
+       stays the first thing visible at the top of the scroll). */
+    margin: auto 0;
+  }
+
+  /* Kill the sheet-up animation on phones. The 0.22s transform +
+     opacity transition is cheap on desktop but renders sluggishly on
+     iOS Safari / PWA when the modal contains heavier content (e.g.
+     the event modal's map preview), surfacing as a perceived jump
+     from a low/dim position to the final position. Snapping the
+     modal in is faster and avoids the artefact entirely. */
+  .modal-backdrop.open .modal {
+    animation: none;
+  }
+
   /* Search modal: center vertically, smaller card. The bottom
      padding includes half the --keyboard-inset (set in JS from
      window.visualViewport) so the card rises just enough to
@@ -1851,6 +2104,16 @@ body.modal-open {
   #search-modal-backdrop {
     align-items: center;
     padding: 16px 16px calc(16px + var(--keyboard-inset, 0px) / 2);
+  }
+
+  /* Filters and Settings are bottom-anchored sheets that float on the
+     sides (8px) with a tiny bottom gap so iOS paints the rounded sheet
+     edge cleanly. The close-row still absorbs the home-indicator safe
+     area in its own padding-bottom so actions remain tappable above
+     the gesture pill. */
+  #filters-modal-backdrop,
+  #settings-modal-backdrop {
+    padding: 8px 8px 6px;
   }
 
   .modal.search-modal {
@@ -1865,9 +2128,13 @@ body.modal-open {
     overflow: hidden;
   }
 
-  .modal.filters-modal {
-    max-height: 86vh;
-    max-height: 86dvh;
+  .modal.filters-modal,
+  .modal.settings-modal {
+    /* Bottom-anchored card with all 4 corners rounded. Max-height
+       subtracts the top safe area + 8px backdrop top padding so the
+       sheet never collides with the OS clock. Bottom safe area lives
+       in the close-row, not here. */
+    max-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - 8px);
     max-width: none;
     width: 100%;
     border-radius: var(--radius-lg);
@@ -1878,7 +2145,8 @@ body.modal-open {
   }
 
   .modal.search-modal .modal-head,
-  .modal.filters-modal .modal-head {
+  .modal.filters-modal .modal-head,
+  .modal.settings-modal .modal-head {
     margin-bottom: 10px;
     flex-shrink: 0;
   }
@@ -1894,7 +2162,8 @@ body.modal-open {
 
   /* Scrollable content region between head and sticky action bar */
   .modal.search-modal .sheet-body,
-  .modal.filters-modal .sheet-body {
+  .modal.filters-modal .sheet-body,
+  .modal.settings-modal .sheet-body {
     flex: 1 1 auto;
     overflow-y: auto;
     margin: 0 -18px;
@@ -1902,13 +2171,34 @@ body.modal-open {
     -webkit-overflow-scrolling: touch;
   }
 
-  .modal.search-modal .close-row,
-  .modal.filters-modal .close-row {
+  .modal.search-modal .close-row {
     margin: 0 -18px;
     padding: 12px 18px 14px;
     border-top: 1px solid var(--moss-1);
     background: var(--night-2);
     flex-shrink: 0;
+  }
+
+  /* Filters and Settings action bars use --night-3 (slightly lighter
+     than the modal body) so the row reads as a deliberate tray. The padding-
+     bottom absorbs the iOS home-indicator safe area (~34px in PWA
+     standalone) so the Done button stays tappable above the gesture
+     pill — the contrasting tray bg makes that band read as part of
+     the action row, not wasted modal space. The bottom-right and
+     bottom-left of this row are rounded to match the modal's own
+     border-radius (the close-row is the last child of the modal). */
+  .modal.filters-modal .close-row,
+  .modal.settings-modal .close-row {
+    margin: 0 -18px;
+    padding: 12px 18px max(14px, calc(10px + env(safe-area-inset-bottom)));
+    border-top: 1px solid var(--moss-1);
+    background: var(--night-3);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    flex-shrink: 0;
+  }
+
+  .modal.settings-modal .settings-card:last-child {
+    margin-bottom: 0;
   }
 }
 
@@ -1927,6 +2217,20 @@ body.modal-open {
 
 .modal .close-row .btn-ghost {
   flex: 0 0 auto;
+}
+
+.modal .close-row > button.btn-secondary {
+  background: var(--night-4);
+  color: var(--cream);
+  border: 1px solid var(--moss-1);
+}
+
+@media (hover: hover) {
+  .modal .close-row > button.btn-secondary:hover {
+    background: var(--moss-1);
+    color: var(--cream);
+    border-color: var(--moss-2);
+  }
 }
 
 .modal h2 {

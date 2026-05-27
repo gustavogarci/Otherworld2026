@@ -186,11 +186,11 @@ async function run() {
   await wait(400);
   await shot(page, "16-back-to-schedule");
 
-  console.log("\n[17] About modal");
-  await page.locator("#about-open").click();
+  console.log("\n[17] Settings modal");
+  await page.locator("#settings-open").click();
   await wait(300);
-  await shot(page, "17-about-modal");
-  await page.locator("#about-close").click({ force: true });
+  await shot(page, "17-settings-modal");
+  await page.locator("#settings-close").click({ force: true });
   await wait(200);
 
   console.log("\n[18] Header Favorites star toggle (no favorites yet)");
@@ -241,11 +241,11 @@ async function run() {
   await page.locator("#filters-close").click({ force: true });
   await wait(200);
 
-  console.log("\n[23] About modal with festival countdown");
-  await page.locator("#about-open").click();
+  console.log("\n[23] Settings modal with festival countdown");
+  await page.locator("#settings-open").click();
   await wait(350);
-  await shot(page, "23-about-with-settings");
-  await page.locator("#about-close").click({ force: true });
+  await shot(page, "23-settings-with-stats");
+  await page.locator("#settings-close").click({ force: true });
   await wait(200);
 
   console.log("\n[25] Time-of-day chips in filters modal");

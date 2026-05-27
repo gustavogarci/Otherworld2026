@@ -1,7 +1,38 @@
 (async () => {
+  // iOS standalone PWAs do not always match CSS display-mode queries
+  // consistently, so expose the launch mode as a root class for safe-area
+  // fixes that must only apply outside regular Safari.
+  (function bindStandaloneAppClass() {
+    const root = document.documentElement;
+    const standaloneQuery = window.matchMedia?.("(display-mode: standalone)");
+    const fullscreenQuery = window.matchMedia?.("(display-mode: fullscreen)");
+    const isStandalone = () =>
+      window.navigator?.standalone === true ||
+      standaloneQuery?.matches === true ||
+      fullscreenQuery?.matches === true;
+    const update = () => {
+      root.classList.toggle("is-standalone-app", isStandalone());
+    };
+    const bind = query => {
+      if (!query) return;
+      if (typeof query.addEventListener === "function") query.addEventListener("change", update);
+      else if (typeof query.addListener === "function") query.addListener(update);
+    };
+    update();
+    bind(standaloneQuery);
+    bind(fullscreenQuery);
+  })();
+
+  // Use the HTTP cache with default heuristic freshness. The static
+  // server sends Last-Modified on these files, which is enough for
+  // the browser to short-circuit re-downloads — events.json is ~800
+  // KB, so re-fetching the full body on every load (the old
+  // `no-store`) was a visible cold-start tax. When the cron updates
+  // events.json the new Last-Modified invalidates the cached copy
+  // automatically; until then the browser serves it from disk.
   const [_eventsResp, _aliasResp] = await Promise.all([
-    fetch('./events.json',       { cache: 'no-store' }),
-    fetch('./camp-aliases.json', { cache: 'no-store' }).catch(() => null),
+    fetch('./events.json'),
+    fetch('./camp-aliases.json').catch(() => null),
   ]);
   if (!_eventsResp.ok) throw new Error('Failed to load events.json: ' + _eventsResp.status);
   window.OTHERWORLD_DATA = await _eventsResp.json();
@@ -253,6 +284,30 @@
     try { localStorage.setItem(FAV_KEY, JSON.stringify([...set])); } catch {}
   }
 
+  // ── Can't-miss favorites (red tier) ───────────────────────
+  // Stored as a separate localStorage key so older cached app.js
+  // builds keep seeing all favorites under FAV_KEY and don't lose
+  // anything if a user has the old code in another tab. Invariant:
+  // favoritesRed ⊆ favorites (enforced on load + every toggle).
+  const FAV_RED_KEY = "otherworld:favorites:red:v1";
+  function loadRedFavorites() {
+    try {
+      const raw = localStorage.getItem(FAV_RED_KEY);
+      if (!raw) return new Set();
+      const arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return new Set();
+      // Lift through the same normaliser so any legacy 4-part keys
+      // restored from a pre-migration backup match the current shape.
+      return migrateLegacyFavorites(arr);
+    } catch { return new Set(); }
+  }
+  function saveRedFavorites(set) {
+    try {
+      if (!set || set.size === 0) localStorage.removeItem(FAV_RED_KEY);
+      else localStorage.setItem(FAV_RED_KEY, JSON.stringify([...set]));
+    } catch {}
+  }
+
   const state = {
     mode: "day",
     // Placeholder — overwritten by initialDay() once devNowOverride
@@ -280,7 +335,20 @@
     // OR semantics, AND-combined with other filters.
     durations: new Set(),
     favorites: loadFavorites(),
+    // Subset of `favorites` flagged as red ("can't miss"). Only
+    // reachable when the Settings toggle `cantMissEnabled` is on,
+    // but the data is preserved either way so disabling/re-enabling
+    // the feature doesn't lose user intent.
+    favoritesRed: loadRedFavorites(),
   };
+
+  // Enforce favoritesRed ⊆ favorites. Defensive: prevents a stale
+  // red key (e.g. one removed from favorites by an older app.js in
+  // another tab) from resurrecting a deleted favorite on render.
+  for (const _k of [...state.favoritesRed]) {
+    if (!state.favorites.has(_k)) state.favoritesRed.delete(_k);
+  }
+  saveRedFavorites(state.favoritesRed);
 
   // Map a time-of-day key to a predicate that takes an event's start
   // hour (0..23) and returns true if it falls in that period. Mirrors
@@ -353,6 +421,41 @@
       else localStorage.removeItem(DEV_NOW_KEY);
     } catch {}
   }
+
+  // Display-preference toggles in Settings. Stored as "1" / absent so a
+  // missing localStorage value cleanly defaults to false (= show everything).
+  const HIDE_DESC_KEY = "ow_hide_desc";
+  const HIDE_ONGOING_KEY = "ow_hide_ongoing";
+  const MAP_PINS_HIDDEN_KEY = "ow_map_pins_hidden";
+  // Opt-in "can't miss" favorite tier. When off, the star is a binary
+  // toggle (☆ ↔ ★) and any pre-existing red flags render as regular
+  // favorites — but the data stays put in localStorage so flipping
+  // this back on restores them.
+  const CANT_MISS_KEY = "ow_cant_miss_enabled";
+  function loadBoolPref(k) {
+    try { return localStorage.getItem(k) === "1"; } catch { return false; }
+  }
+  function saveBoolPref(k, v) {
+    try {
+      if (v) localStorage.setItem(k, "1");
+      else localStorage.removeItem(k);
+    } catch {}
+  }
+  function loadMapPinsHiddenPref() {
+    try {
+      const raw = localStorage.getItem(MAP_PINS_HIDDEN_KEY);
+      return raw === null ? true : raw === "1";
+    } catch {
+      return true;
+    }
+  }
+  function saveMapPinsHiddenPref(v) {
+    try { localStorage.setItem(MAP_PINS_HIDDEN_KEY, v ? "1" : "0"); } catch {}
+  }
+  let hideDescriptions = loadBoolPref(HIDE_DESC_KEY);
+  let hideOngoing = loadBoolPref(HIDE_ONGOING_KEY);
+  let cantMissEnabled = loadBoolPref(CANT_MISS_KEY);
+  let mapPinsHidden = loadMapPinsHiddenPref();
   let devNowOverride = (() => {
     const v = loadDevNow();
     if (!v) return null;
@@ -417,6 +520,13 @@
   }
   function eventIsFavorite(ev) {
     return state.favorites.has(eventFavKey(ev));
+  }
+  // Tier-2 ("can't miss") membership. Only meaningful when
+  // cantMissEnabled is true — callers should still gate visual
+  // treatment on the flag so disabled-but-data-present users see
+  // their reds render as regular favorites.
+  function eventIsRedFav(ev) {
+    return state.favoritesRed.has(eventFavKey(ev));
   }
 
   function discoverDefaultDay() {
@@ -685,6 +795,9 @@
       const startBucket = Math.floor(toMinutes(ev.startTime) / 60);
       if (byHour.has(startBucket)) byHour.get(startBucket).starting.push(ev);
       if (!ev.endTime) continue;
+      // Settings toggle: skip spreading long events into every hour they
+      // overlap. They still show up in their starting hour above.
+      if (hideOngoing) continue;
       const startFest = festivalMinutes(ev.startTime);
       const endFest = festivalMinutes(ev.endTime);
       if (endFest <= startFest) continue;
@@ -900,8 +1013,9 @@
 
     const desc = (ev.description || "").trim();
     // Only show the full description on starting events — ongoing cards stay
-    // compact so the eye is drawn to what's beginning at this hour.
-    const showDesc = !ongoing && desc;
+    // compact so the eye is drawn to what's beginning at this hour. The
+    // hideDescriptions Settings toggle suppresses it everywhere when on.
+    const showDesc = !ongoing && desc && !hideDescriptions;
     const descNeedsClamp = desc.length > 320;
 
     // Tags are constrained to a small set of known labels from the
@@ -914,8 +1028,11 @@
       : "";
 
     const isFav = eventIsFavorite(ev);
+    // Red tier is purely visual — gated on the Settings flag, never
+    // changes the favorites filter behaviour upstream.
+    const isRed = isFav && cantMissEnabled && eventIsRedFav(ev);
     card.innerHTML = `
-    <button class="fav-btn${isFav ? " is-fav" : ""}" aria-label="${isFav ? "Unfavorite" : "Favorite"}" aria-pressed="${isFav ? "true" : "false"}">${isFav ? "★" : "☆"}</button>
+    <button class="fav-btn${isFav ? " is-fav" : ""}${isRed ? " is-red" : ""}" aria-label="${isFav ? "Unfavorite" : "Favorite"}" aria-pressed="${isFav ? "true" : "false"}">${isFav ? "★" : "☆"}</button>
     <div class="meta-row">
       <span class="time">${ev.startTime}–${ev.endTime}${cross}</span>
       <span class="meta-right">${tag}${tag ? " · " : ""}${typeLabel(ev.ownerType)}${dur ? " · " : ""}${dur}</span>
@@ -1094,8 +1211,7 @@
       `${ev.startTime || "?"}–${ev.endTime || "?"}${ev.crossesMidnight ? " (→ next day)" : ""}`;
     const mFav = document.getElementById("m-fav");
     const isFav = eventIsFavorite(ev);
-    mFav.textContent = isFav ? "★" : "☆";
-    mFav.classList.toggle("is-fav", isFav);
+    applyFavBtnState(mFav, isFav, eventIsRedFav(ev));
     const nbEl = document.getElementById("m-neighbourhood");
     nbEl.innerHTML = "";
     if (ev._entry.neighbourhood) {
@@ -1127,7 +1243,15 @@
     document.getElementById("m-raw").textContent =
       `Raw: "${ev.rawTimeText || ""}"  ·  duration: ${ev.durationHours != null ? ev.durationHours + " h" : "?"}`;
     renderModalMapPreview(ev._entry);
-    document.getElementById("modal-backdrop").classList.add("open");
+    const backdrop = document.getElementById("modal-backdrop");
+    backdrop.classList.add("open");
+    // Reset scroll on both the modal element and the backdrop. On
+    // mobile the modal is short-circuited (overflow: visible) and the
+    // backdrop is the scroll container, so we reset the backdrop's
+    // scrollTop. On desktop the modal scrolls internally. Both resets
+    // are cheap and idempotent.
+    document.getElementById("modal").scrollTop = 0;
+    backdrop.scrollTop = 0;
   }
   function hideModal() { document.getElementById("modal-backdrop").classList.remove("open"); }
 
@@ -1137,21 +1261,103 @@
   // existing open/close path (button, Esc, backdrop click, Done,
   // and any future modal that follows the same convention) is
   // covered without touching individual show/hide helpers.
+  //
+  // We deliberately avoid `position: fixed` on <body> here. With a
+  // ~67 000-px-tall day view containing hundreds of cards, taking the
+  // body in/out of layout flow forced a full-page reflow on both open
+  // and close — which surfaced as a multi-hundred-ms freeze when
+  // dismissing an event card on phones. `overflow: hidden` on <html>
+  // is a constant-time toggle that doesn't move the body in/out of
+  // flow, so layout stays put.
+  //
+  // overflow: hidden DOES collapse the scrollable extent, which on
+  // most browsers also pins the scroll offset to 0 while locked. We
+  // save the offset on lock and restore it on unlock — but unlike the
+  // old position:fixed path, the unlock-time scrollTo runs against an
+  // already-correctly-laid-out document, so it's a cheap scroll-only
+  // update, not a relayout of every card.
   let savedScrollY = 0;
+  // Snapshot of the header's hidden state at lock time, used to
+  // re-assert that exact state on unlock so the header can never end
+  // up in a partial transform on iOS Safari (see applyScrollLock).
+  let _savedHeaderHidden = false;
+  // Set briefly during the unlock-time scroll restore so the
+  // auto-hide-header handler can ignore the synthetic scroll events
+  // it would otherwise see (a transient 0 → savedScrollY pair). Read
+  // by bindHeaderAutoHide.
+  let _suppressScrollHandler = false;
   function anyModalOpen() {
     return !!document.querySelector(".modal-backdrop.open");
+  }
+  // Pin the header to a known-stable transform during the lock. iOS
+  // Safari re-runs compositing on fixed-position elements when the
+  // root overflow toggles, and with `transition: transform 0.18s` on
+  // <header> that re-layout can briefly animate the transform —
+  // surfacing as a half-revealed header (just the bottom day-tabs
+  // peeking above the schedule) after the modal dismisses. We zero
+  // the transition for the duration of the lock toggle so no spurious
+  // animation can play, then restore it on the frame after unlock.
+  function freezeHeaderTransition() {
+    const headerEl = document.querySelector("header");
+    if (!headerEl) return;
+    headerEl.style.transition = "none";
+  }
+  function thawHeaderTransition() {
+    const headerEl = document.querySelector("header");
+    if (!headerEl) return;
+    // Force a reflow so the inline-style override commits before we
+    // clear it; otherwise some browsers batch and skip our intent.
+    void headerEl.offsetHeight;
+    headerEl.style.transition = "";
   }
   function applyScrollLock() {
     const locked = document.body.classList.contains("modal-open");
     const shouldLock = anyModalOpen();
     if (shouldLock && !locked) {
+      // Suppress the auto-hide scroll handler across the lock toggle.
+      // overflow:hidden can transiently snap scrollY to 0, which the
+      // handler would otherwise read as "back at the top" and reveal
+      // the header underneath the modal. The header would then show
+      // on close even though the user was deep in the page.
+      _suppressScrollHandler = true;
       savedScrollY = window.scrollY || window.pageYOffset || 0;
-      document.body.style.setProperty("--scroll-lock-top", `-${savedScrollY}px`);
+      _savedHeaderHidden = !!document.querySelector("header.header-hidden");
+      freezeHeaderTransition();
+      document.documentElement.classList.add("modal-open");
       document.body.classList.add("modal-open");
+      requestAnimationFrame(() => {
+        thawHeaderTransition();
+        requestAnimationFrame(() => { _suppressScrollHandler = false; });
+      });
     } else if (!shouldLock && locked) {
+      // Mirror of the open path: suppress the auto-hide scroll
+      // handler across the unlock + the potential scrollTo restore.
+      // Without this, browsers that snapped to 0 while locked fire a
+      // y=0 event (reveal) immediately followed by a y=savedScrollY
+      // event (hide) — visible as a momentary header flash on close.
+      _suppressScrollHandler = true;
+      freezeHeaderTransition();
+      document.documentElement.classList.remove("modal-open");
       document.body.classList.remove("modal-open");
-      document.body.style.removeProperty("--scroll-lock-top");
-      window.scrollTo(0, savedScrollY);
+      // Some browsers preserve the scroll offset across the overflow
+      // toggle, others snap to 0. Restoring unconditionally is safe:
+      // a no-op when already correct.
+      if (window.scrollY !== savedScrollY) window.scrollTo(0, savedScrollY);
+      // Re-assert the snapshotted header-hidden state. iOS Safari can
+      // mutate the effective transform during the overflow toggle;
+      // forcing the class back to its pre-lock value (with transition
+      // disabled, set above) guarantees a clean discrete state.
+      const headerEl = document.querySelector("header");
+      if (headerEl) {
+        headerEl.classList.toggle("header-hidden", _savedHeaderHidden);
+      }
+      // Clear the suppress flag and re-enable transitions after the
+      // next frame, by which time any synchronous scroll events and
+      // the discrete transform commit have flushed.
+      requestAnimationFrame(() => {
+        thawHeaderTransition();
+        requestAnimationFrame(() => { _suppressScrollHandler = false; });
+      });
     }
   }
   const lockObserver = new MutationObserver(applyScrollLock);
@@ -1421,27 +1627,28 @@
     const backPill = document.getElementById("map-back");
     if (backPill) backPill.addEventListener("click", () => switchMode("day"));
 
-    // About modal
-    document.getElementById("about-open").addEventListener("click", () => {
-      document.getElementById("about-modal-backdrop").classList.add("open");
+    // Settings modal
+    document.getElementById("settings-open").addEventListener("click", () => {
+      document.getElementById("settings-modal-backdrop").classList.add("open");
     });
-    document.getElementById("about-modal-backdrop").addEventListener("click", e => {
-      if (e.target.id === "about-modal-backdrop") hideAboutModal();
+    document.getElementById("settings-modal-backdrop").addEventListener("click", e => {
+      if (e.target.id === "settings-modal-backdrop") hideSettingsModal();
     });
-    document.getElementById("about-close").addEventListener("click", hideAboutModal);
+    document.getElementById("settings-close").addEventListener("click", hideSettingsModal);
+    document.getElementById("settings-close-btn").addEventListener("click", hideSettingsModal);
 
     // Single Escape dispatcher. Walks the modal-backdrop nodes in
     // priority order (innermost / most-recently-opened first) and
     // closes the topmost one only. Avoids the old "close every modal
     // at once" behaviour where closing the backup popup also yanked
-    // the About modal underneath it.
+    // the Settings modal underneath it.
     const escTargets = [
       ["backup-modal-backdrop",  () => document.getElementById("backup-modal-close").click()],
       ["search-modal-backdrop",  cancelSearch],
       ["filters-modal-backdrop", cancelFilters],
       ["modal-backdrop",         hideModal],
       ["camp-modal-backdrop",    hideCampModal],
-      ["about-modal-backdrop",   hideAboutModal],
+      ["settings-modal-backdrop", hideSettingsModal],
     ];
     document.addEventListener("keydown", e => {
       if (e.key !== "Escape") return;
@@ -1455,17 +1662,18 @@
     });
   }
 
-  function hideAboutModal() {
-    document.getElementById("about-modal-backdrop").classList.remove("open");
+  function hideSettingsModal() {
+    document.getElementById("settings-modal-backdrop").classList.remove("open");
   }
 
   function bindSettings() {
     bindFavoritesBackup();
+    bindDisplaySettings();
     bindDevNow();
   }
 
   // ── Dev tool: pretend it's a different moment ─────────────
-  // Lives in the About modal so it's discoverable but out of the
+  // Lives in the Settings modal so it's discoverable but out of the
   // way. Writes to localStorage via saveDevNow() and to the module
   // scoped `devNowOverride` so all the festival time helpers pick
   // it up on the next render. Format matches <input type="datetime-local">
@@ -1473,35 +1681,18 @@
   function bindDevNow() {
     const input = document.getElementById("dev-now-input");
     const clearBtn = document.getElementById("dev-now-clear");
-    const statusEl = document.getElementById("dev-now-status");
-    if (!input || !clearBtn || !statusEl) return;
-
-    function refreshStatus() {
-      if (!devNowOverride) {
-        statusEl.hidden = true;
-        statusEl.textContent = "";
-        return;
-      }
-      const label = devNowOverride.toLocaleString(undefined, {
-        weekday: "short", month: "short", day: "numeric",
-        hour: "numeric", minute: "2-digit"
-      });
-      statusEl.hidden = false;
-      statusEl.textContent = "Pretending it's " + label + ".";
-    }
+    if (!input || !clearBtn) return;
 
     const stored = loadDevNow();
     if (stored) input.value = stored;
-    refreshStatus();
 
     input.addEventListener("change", () => {
       const v = input.value;
-      if (!v) { devNowOverride = null; saveDevNow(""); refreshStatus(); renderAll(); return; }
+      if (!v) { devNowOverride = null; saveDevNow(""); renderAll(); return; }
       const d = new Date(v);
       if (isNaN(d)) return;
       devNowOverride = d;
       saveDevNow(v);
-      refreshStatus();
       renderAll();
     });
 
@@ -1509,13 +1700,49 @@
       input.value = "";
       devNowOverride = null;
       saveDevNow("");
-      refreshStatus();
+      renderAll();
+    });
+  }
+
+  // ── Display-preference toggles ────────────────────────────
+  // Wire the display preference checkboxes in Settings. Each one flips
+  // a module-scoped flag, persists to localStorage, and
+  // re-renders so the change shows up immediately.
+  function bindDisplaySettings() {
+    const hideDescEl = document.getElementById("setting-hide-desc");
+    const hideOngoingEl = document.getElementById("setting-hide-ongoing");
+    const cantMissEl = document.getElementById("setting-cant-miss");
+    if (!hideDescEl || !hideOngoingEl || !cantMissEl) return;
+    hideDescEl.checked = hideDescriptions;
+    hideOngoingEl.checked = hideOngoing;
+    cantMissEl.checked = cantMissEnabled;
+    hideDescEl.addEventListener("change", () => {
+      hideDescriptions = hideDescEl.checked;
+      saveBoolPref(HIDE_DESC_KEY, hideDescriptions);
+      renderAll();
+    });
+    hideOngoingEl.addEventListener("change", () => {
+      hideOngoing = hideOngoingEl.checked;
+      saveBoolPref(HIDE_ONGOING_KEY, hideOngoing);
+      renderAll();
+    });
+    cantMissEl.addEventListener("change", () => {
+      cantMissEnabled = cantMissEl.checked;
+      saveBoolPref(CANT_MISS_KEY, cantMissEnabled);
+      // Re-render so every visible star reflects the new rules
+      // (off: any reds render as regular green; on: they pop again).
+      // Also repaint an open modal star — applyFavBtnState gates
+      // is-red on the live flag, so this is the cheapest sync path.
+      if (_modalEvent) {
+        const mFav = document.getElementById("m-fav");
+        if (mFav) applyFavBtnState(mFav, eventIsFavorite(_modalEvent), eventIsRedFav(_modalEvent));
+      }
       renderAll();
     });
   }
 
   // ── Favorites backup / restore ────────────────────────────
-  // Two-button UI in the About modal. Backup serialises the favorites
+  // Two-button UI in the Settings modal. Backup serialises the favorites
   // set into a compact base64 JSON blob and (a) tries to copy it to the
   // clipboard, (b) shows it inline as a fallback. Restore parses a
   // pasted blob back into the set, merging with whatever's already
@@ -1536,7 +1763,6 @@
     const copyBtn = document.getElementById("fav-backup-copy");
     if (!backupBtn || !restoreBtn || !statusEl) return;
     const DEFAULT_HINT = "Paste it into Notes (or email it to yourself) so you can Restore later.";
-    const MANUAL_HINT = "Tap and hold the code to copy.";
     let copyResetTimer = null;
 
     function refreshCount() {
@@ -1544,8 +1770,8 @@
       if (countEl) countEl.textContent = n ? "(" + n + ")" : "";
     }
     refreshCount();
-    // Keep the (N) badge fresh whenever the About modal opens.
-    document.getElementById("about-modal-backdrop")
+    // Keep the (N) badge fresh whenever the Settings modal opens.
+    document.getElementById("settings-modal-backdrop")
       .addEventListener("transitionend", refreshCount);
 
     function showStatus(html, kind) {
@@ -1553,8 +1779,15 @@
       statusEl.className = "backup-status" + (kind ? " " + kind : "");
       statusEl.innerHTML = html;
     }
-    function encodeBlob(set) {
-      const payload = { v: 1, t: "otherworld-favs", favs: [...set] };
+    function encodeBlob(set, redSet) {
+      // Additive schema: v1 readers ignore unknown fields and only
+      // see `favs`, so a v=2 blob restored on an older cached app.js
+      // round-trips losslessly minus the red tier. We bump `v` to 2
+      // only when there's actually a red set worth carrying.
+      const hasRed = redSet && redSet.size > 0;
+      const payload = hasRed
+        ? { v: 2, t: "otherworld-favs", favs: [...set], red: [...redSet] }
+        : { v: 1, t: "otherworld-favs", favs: [...set] };
       const json = JSON.stringify(payload);
       // btoa needs latin-1; TextEncoder + per-byte String.fromCharCode is
       // the modern unicode-safe path (replaces the deprecated
@@ -1582,7 +1815,12 @@
       if (!payload || payload.t !== "otherworld-favs" || !Array.isArray(payload.favs)) {
         throw new Error("Backup code is for something else.");
       }
-      return payload.favs.filter(k => typeof k === "string");
+      return {
+        favs: payload.favs.filter(k => typeof k === "string"),
+        red: Array.isArray(payload.red)
+          ? payload.red.filter(k => typeof k === "string")
+          : [],
+      };
     }
 
     function resetCopyBtn() {
@@ -1614,7 +1852,7 @@
         return;
       }
       statusEl.hidden = true;
-      const code = encodeBlob(state.favorites);
+      const code = encodeBlob(state.favorites, state.favoritesRed);
       if (codeEl) codeEl.textContent = code;
       if (hintEl) hintEl.textContent = DEFAULT_HINT;
       resetCopyBtn();
@@ -1634,12 +1872,8 @@
           if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(code);
             flashCopied();
-            return;
           }
-          throw new Error("no clipboard");
-        } catch {
-          if (hintEl) hintEl.textContent = MANUAL_HINT;
-        }
+        } catch { /* silent */ }
       });
     }
 
@@ -1658,17 +1892,27 @@
         "Paste your backup code below.\n\nRestoring merges with any favorites you already have on this device — nothing is deleted."
       );
       if (input == null) return;
-      let keys;
-      try { keys = decodeBlob(input); }
+      let parsed;
+      try { parsed = decodeBlob(input); }
       catch (err) { showStatus(err.message, "err"); return; }
       const before = state.favorites.size;
       // Run restored keys through the legacy migrator so backups
       // created with the old 4-part format (camp|day|time|title)
-      // upgrade in-place to the new normalised 3-part shape.
-      const normalised = migrateLegacyFavorites(keys);
+      // upgrade in-place to the new normalised 3-part shape. Same
+      // pass for the red set keeps the favoritesRed ⊆ favorites
+      // invariant after the merge.
+      const normalised = migrateLegacyFavorites(parsed.favs);
+      const normalisedRed = migrateLegacyFavorites(parsed.red);
       for (const k of normalised) state.favorites.add(k);
+      // Only adopt red flags whose key is actually in favorites — both
+      // because of the invariant and because a stale red key with no
+      // matching favorite would surface as a phantom on later toggles.
+      for (const k of normalisedRed) {
+        if (state.favorites.has(k)) state.favoritesRed.add(k);
+      }
       const added = state.favorites.size - before;
       saveFavorites(state.favorites);
+      saveRedFavorites(state.favoritesRed);
       refreshCount();
       if (typeof renderAll === "function") renderAll();
       const total = normalised.size;
@@ -1727,6 +1971,13 @@
 
     window.addEventListener("scroll", () => {
       const y = window.scrollY;
+      // Skip the synthetic scroll events from modal-close scroll
+      // restore (see applyScrollLock). We still keep lastY in sync so
+      // the next *real* scroll computes a correct delta.
+      if (_suppressScrollHandler) {
+        lastY = y;
+        return;
+      }
       // Toggle the floating shadow once content sits under the header.
       document.body.classList.toggle("is-scrolled", y > 4);
 
@@ -1758,6 +2009,7 @@
       if (t && t.clientY <= 30) reveal();
     }, { passive: true });
   }
+
   function hideSearchModal() {
     document.getElementById("search-modal-backdrop").classList.remove("open");
   }
@@ -1813,32 +2065,55 @@
   function toggleFavorite(ev, srcEl) {
     const k = eventFavKey(ev);
     const wasFav = state.favorites.has(k);
-    if (wasFav) state.favorites.delete(k);
-    else state.favorites.add(k);
+    const wasRed = state.favoritesRed.has(k);
+
+    // State machine:
+    //   cantMissEnabled OFF → binary ☆ ↔ ★ (original behaviour).
+    //   cantMissEnabled ON  → ☆ → ★ → ★red → ☆ on each tap.
+    // Invariant kept everywhere: favoritesRed ⊆ favorites. When the
+    // feature is off and the user demotes a star that happens to be
+    // red in storage, we drop the red flag too so the data stays
+    // consistent with what's visible.
+    let nextFav, nextRed;
+    if (!cantMissEnabled) {
+      nextFav = !wasFav;
+      nextRed = false;
+    } else if (!wasFav) {
+      nextFav = true;
+      nextRed = false;
+    } else if (!wasRed) {
+      nextFav = true;
+      nextRed = true;
+    } else {
+      nextFav = false;
+      nextRed = false;
+    }
+
+    if (nextFav) state.favorites.add(k);
+    else state.favorites.delete(k);
+    if (nextRed) state.favoritesRed.add(k);
+    else state.favoritesRed.delete(k);
     saveFavorites(state.favorites);
+    saveRedFavorites(state.favoritesRed);
 
     // 1. Update the source button in place — no re-render needed.
     if (srcEl) {
-      const nowFav = !wasFav;
-      srcEl.classList.toggle("is-fav", nowFav);
-      srcEl.textContent = nowFav ? "★" : "☆";
-      srcEl.setAttribute("aria-pressed", nowFav ? "true" : "false");
-      srcEl.setAttribute("aria-label", nowFav ? "Unfavorite" : "Favorite");
-      if (nowFav) {
+      applyFavBtnState(srcEl, nextFav, nextRed);
+      // Pop animation only on tier *increases* (off→1, 1→2).
+      // Demotions (red→off) feel better as a quiet color change.
+      const increased = (nextFav && !wasFav) || (nextRed && !wasRed);
+      if (increased) {
         srcEl.classList.remove("just-favorited");
         void srcEl.offsetWidth; // restart animation if re-tapped fast
         srcEl.classList.add("just-favorited");
       }
     }
 
-    const favCount = state.favorites.size;
-
-    // Modal star (if open on this event).
+    // 2. Mirror to the modal star (if open on this event and not the
+    // element we just updated above).
     if (_modalEvent && eventFavKey(_modalEvent) === k) {
       const mFav = document.getElementById("m-fav");
-      const isFav = state.favorites.has(k);
-      mFav.textContent = isFav ? "★" : "☆";
-      mFav.classList.toggle("is-fav", isFav);
+      if (mFav && mFav !== srcEl) applyFavBtnState(mFav, nextFav, nextRed);
     }
 
     // 3. Full schedule re-render ONLY if it would actually change what's
@@ -1846,6 +2121,20 @@
     if (state.favoritesOnly) {
       renderAll();
     }
+  }
+
+  // Single source of truth for what a star button should look like
+  // for a given (isFav, isRed) pair. Used by toggleFavorite for live
+  // updates and by the setting toggle to repaint open modals.
+  // Visual gating: is-red only paints when the Settings flag is on,
+  // so disabling the feature gracefully reverts existing reds to
+  // regular favorites without touching their storage.
+  function applyFavBtnState(el, isFav, isRed) {
+    el.textContent = isFav ? "★" : "☆";
+    el.classList.toggle("is-fav", isFav);
+    el.classList.toggle("is-red", !!(isFav && isRed && cantMissEnabled));
+    el.setAttribute("aria-pressed", isFav ? "true" : "false");
+    el.setAttribute("aria-label", isFav ? "Unfavorite" : "Favorite");
   }
 
   // ── Camp modal (events for a camp, opened from a map pin) ──
@@ -1887,7 +2176,10 @@
         }
       }
     }
-    document.getElementById("camp-modal-backdrop").classList.add("open");
+    const campBackdrop = document.getElementById("camp-modal-backdrop");
+    campBackdrop.classList.add("open");
+    document.getElementById("camp-modal").scrollTop = 0;
+    campBackdrop.scrollTop = 0;
   }
   function hideCampModal() {
     document.getElementById("camp-modal-backdrop").classList.remove("open");
@@ -1974,10 +2266,17 @@
       root.querySelector('[data-act="out"]').addEventListener("click", () => setZoom(zoom / 1.3));
       root.querySelector('[data-act="fit"]').addEventListener("click", fit);
       const pinsBtn = root.querySelector('[data-act="pins"]');
+      function syncPinsToggle() {
+        root.classList.toggle("pins-hidden", mapPinsHidden);
+        pinsBtn.classList.toggle("active", mapPinsHidden);
+        pinsBtn.title = mapPinsHidden ? "Show pins" : "Hide pins";
+        pinsBtn.setAttribute("aria-pressed", mapPinsHidden ? "true" : "false");
+      }
+      syncPinsToggle();
       pinsBtn.addEventListener("click", () => {
-        const hidden = root.classList.toggle("pins-hidden");
-        pinsBtn.classList.toggle("active", hidden);
-        pinsBtn.title = hidden ? "Show pins" : "Hide pins";
+        mapPinsHidden = !mapPinsHidden;
+        saveMapPinsHiddenPref(mapPinsHidden);
+        syncPinsToggle();
       });
 
       stage.addEventListener("wheel", e => {
@@ -2270,7 +2569,7 @@
     if (updated) parts.push(updated);
     document.getElementById("stats").textContent = parts.join(" · ");
   }
-  // Short relative time for the About modal stats line — must stay
+  // Short relative time for the Settings modal stats line — must stay
   // compact ("3h ago", "2d ago") so the whole line fits on one row on
   // mobile. Falls back to a short date for anything older than a week.
   function formatRelativeUpdated(iso) {
