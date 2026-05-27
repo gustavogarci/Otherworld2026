@@ -2009,7 +2009,16 @@ body.modal-open header {
   border-radius: var(--radius-lg);
   max-width: 580px;
   width: 100%;
+  /* Use lvh (large viewport height) instead of vh. On iOS Safari, vh
+     was supposed to be stable but in practice resolves differently
+     around the URL-bar-collapse `resize` event that fires ~110ms
+     after a modal opens — re-laying out the modal at a new height
+     and surfacing as a visible jump. lvh is explicitly the
+     URL-bar-hidden height so it doesn't budge across that resize.
+     Browsers without lvh fall back to vh, which keeps desktop
+     unchanged. */
   max-height: 90vh;
+  max-height: 90lvh;
   overflow: auto;
   padding: 26px 28px;
   box-shadow: var(--shadow-2);
@@ -2044,7 +2053,16 @@ body.modal-open header {
 @media (max-width: 640px) {
   .modal-backdrop {
     align-items: flex-end;
-    padding: 8px 8px max(10px, env(safe-area-inset-bottom));
+    /* Static 34px instead of max(10px, env(safe-area-inset-bottom)).
+       On iOS Safari the bottom safe-area-inset is 0 while the URL bar
+       is visible and ~34px once it collapses; the URL bar collapses
+       ~110ms after the user taps to open a modal, firing a resize +
+       full re-layout that shifts the centered modal noticeably. A
+       static value makes the backdrop padding immune to that
+       transition. 34px is the home-indicator height on iPhones; on
+       devices without a home indicator we waste 24px of bottom
+       padding but the modal still looks clean. */
+    padding: 8px 8px 34px;
   }
 
   /* Event / camp / backup modals on phones: center the card and let
@@ -2117,8 +2135,10 @@ body.modal-open header {
   }
 
   .modal.search-modal {
+    /* lvh, not dvh, so the modal height doesn't re-resolve when iOS
+       Safari fires its URL-bar-collapse resize ~110ms after open. */
     max-height: 70vh;
-    max-height: 70dvh;
+    max-height: 70lvh;
     max-width: 480px;
     width: 100%;
     border-radius: var(--radius-lg);
@@ -2133,8 +2153,11 @@ body.modal-open header {
     /* Bottom-anchored card with all 4 corners rounded. Max-height
        subtracts the top safe area + 8px backdrop top padding so the
        sheet never collides with the OS clock. Bottom safe area lives
-       in the close-row, not here. */
-    max-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - 8px);
+       in the close-row, not here.
+       Uses 100lvh (large viewport) instead of 100dvh so the modal
+       doesn't re-layout when iOS Safari fires the URL-bar-collapse
+       resize ~110ms after open. */
+    max-height: calc(100lvh - max(24px, env(safe-area-inset-top)) - 8px);
     max-width: none;
     width: 100%;
     border-radius: var(--radius-lg);
@@ -2292,15 +2315,6 @@ body.modal-open header {
 .modal .tags-block .tag-chip {
   font-size: 12px;
   padding: 4px 10px;
-}
-
-.modal .raw {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--moss-3);
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--moss-1);
 }
 
 .modal .close-row {

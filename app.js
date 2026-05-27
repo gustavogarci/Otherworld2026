@@ -1207,8 +1207,15 @@
     document.getElementById("m-title").textContent = ev.title || "(untitled)";
     document.getElementById("m-owner").textContent = `${ev._entry.name} · ${typeLabel(ev.ownerType)}`;
     document.getElementById("m-day").textContent = ev.day || "?";
-    document.getElementById("m-time").textContent =
-      `${ev.startTime || "?"}–${ev.endTime || "?"}${ev.crossesMidnight ? " (→ next day)" : ""}`;
+    const mTime = document.getElementById("m-time");
+    mTime.textContent = `${ev.startTime || "?"}–${ev.endTime || "?"}`;
+    if (ev.crossesMidnight) {
+      const sup = document.createElement("span");
+      sup.className = "cross-midnight";
+      sup.title = "Ends the next day";
+      sup.textContent = "⁺¹";
+      mTime.appendChild(sup);
+    }
     const mFav = document.getElementById("m-fav");
     const isFav = eventIsFavorite(ev);
     applyFavBtnState(mFav, isFav, eventIsRedFav(ev));
@@ -1240,8 +1247,6 @@
     } else {
       flagsEl.style.display = "none";
     }
-    document.getElementById("m-raw").textContent =
-      `Raw: "${ev.rawTimeText || ""}"  ·  duration: ${ev.durationHours != null ? ev.durationHours + " h" : "?"}`;
     renderModalMapPreview(ev._entry);
     const backdrop = document.getElementById("modal-backdrop");
     backdrop.classList.add("open");
@@ -2795,6 +2800,40 @@
   bindHeaderAutoHide();
   bindSettings();
   renderAll();
+
+  // Pre-decode the map image into the browser's image cache so the
+  // first event-modal open doesn't pay the decode cost on the main
+  // thread. The map.webp is ~2.4MB and the Web Inspector trace showed
+  // ~107ms of the first-paint work was renderModalMapPreview setting
+  // `img.src = <2.4MB data URL>` — iOS Safari then did a second paint
+  // pass ~85ms later that the user perceived as a flicker/jump.
+  //
+  // We Image()-decode the data URL eagerly and pin a reference to the
+  // resulting Image object so the browser's image-pixel cache keeps
+  // the decoded bitmap warm. When showModal later sets the same data
+  // URL as an <img>'s src, the cache hits and the decode is a no-op.
+  //
+  // Deferred behind two RAFs so it doesn't compete with the initial
+  // schedule render for main-thread time.
+  let _prewarmedMapImage = null;
+  function prewarmMapImage() {
+    if (typeof Image === "undefined") return;
+    MapImage.get()
+      .then(src => {
+        const img = new Image();
+        img.src = src;
+        if (typeof img.decode === "function") {
+          return img.decode().catch(() => {}).then(() => img);
+        }
+        return new Promise(resolve => {
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(img);
+        });
+      })
+      .then(img => { _prewarmedMapImage = img; })
+      .catch(() => {});
+  }
+  requestAnimationFrame(() => requestAnimationFrame(prewarmMapImage));
 
   // First-load snap to now. Instant scroll (no smooth) so we don't
   // pan during initial paint, which fights the scroll-hide header
