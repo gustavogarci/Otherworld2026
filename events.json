@@ -3,11 +3,11 @@
         "source": "www2026.pdf",
         "extractedAt": "2026-05-26T03:36:44.798Z",
         "entryCount": 269,
-        "eventCount": 991,
+        "eventCount": 992,
         "unassignedEventCount": 0,
         "countsByType": {
             "camp": 203,
-            "camp_events": 936,
+            "camp_events": 937,
             "sound_stage": 8,
             "sound_stage_events": 44,
             "mutant_vehicle": 6,
@@ -15,7 +15,7 @@
             "art_installation": 52,
             "art_installation_events": 11
         },
-        "lastReconciledAt": "2026-05-27T23:02:02+00:00",
+        "lastReconciledAt": "2026-05-28T02:02:02+00:00",
         "reconciledFromSheet": "1o9Ue218Yx8mMa9OGyPfd66NoofYI3O1ewkN8NB-qnVc"
     },
     "entries": [
@@ -1658,13 +1658,13 @@
                     "ownerType": "camp",
                     "title": "Late Night Vegan Mushroom Miso Ramen",
                     "description": "Late Night Vegan Mushroom Miso Ramen: Come for fresh noods in a creamy vegan mushroom miso broth. BYO vessel & fork/ chopsticks. Have your ramen tarot read, embody a human noodle in the plounge, or commune with the interactive Celestial Ramen Bowl while you slurrrrp away your problems.",
-                    "day": "Friday",
+                    "day": "Saturday",
                     "startTime": "00:00",
                     "endTime": "02:00",
                     "durationHours": 2,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Friday 00:00 - 02:00"
+                    "rawTimeText": "Saturday 00:00 - 02:00"
                 },
                 {
                     "owner": "Camp UMAMI",
@@ -1735,14 +1735,14 @@
                     "owner": "Camp UMAMI",
                     "ownerType": "camp",
                     "title": "Dommy U-MAMI’s Nood Takeover",
-                    "description": "Come for fresh noods in a creamy vegan mushroom miso broth. BYO vessel and fork/chopsticks. Our resident dommy U-MAMI crew will be present to add some optional spice to your ramen experience. 19+!",
-                    "day": "Saturday",
+                    "description": "Come for fresh noods in a creamy vegan mushroom miso broth. BYO vessel and fork/chopsticks. Our resident dommy UMAMI crew will be present to add some optional spice to your ramen experience. 19+!",
+                    "day": "Sunday",
                     "startTime": "00:00",
                     "endTime": "02:00",
                     "durationHours": 2,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Saturday 00:00 - 02:00"
+                    "rawTimeText": "Sunday 00:00 - 02:00"
                 }
             ],
             "claimed": true,
@@ -2763,9 +2763,22 @@
                         "Food / Drink",
                         "Music / Dance"
                     ]
+                },
+                {
+                    "owner": "Cathartic Cantina",
+                    "ownerType": "camp",
+                    "title": "Dim Sum Brunch",
+                    "description": "Start the Sunday right with some Dim Sum, drinks and amazing DJs.",
+                    "day": "Sunday",
+                    "startTime": "12:30",
+                    "endTime": "02:30",
+                    "durationHours": 14,
+                    "crossesMidnight": true,
+                    "normalizationFlags": [],
+                    "rawTimeText": "Sunday 12:30 - 02:30"
                 }
             ],
-            "claimed": false,
+            "claimed": true,
             "neighbourhood": "SPARK"
         },
         {
@@ -5835,7 +5848,8 @@
                     "rawTimeText": "Friday 21:00 - 00:00",
                     "tags": [
                         "Food / Drink",
-                        "Music / Dance"
+                        "Music / Dance",
+                        "Alcohol Involved"
                     ]
                 },
                 {
@@ -11594,55 +11608,43 @@
                     "owner": "Slut Camp",
                     "ownerType": "camp",
                     "title": "Spank Jousting",
-                    "description": "Backwards butt slap jousting on hobby horsesback",
-                    "day": "Sunday",
-                    "startTime": "16:00",
-                    "endTime": "17:00",
+                    "description": "Backwards butt slap jousting on hobby horses!",
+                    "day": "Friday",
+                    "startTime": "15:00",
+                    "endTime": "16:00",
                     "durationHours": 1,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Sunday 16:00 - 17:00",
-                    "tags": [
-                        "Game / Activity",
-                        "19+"
-                    ]
+                    "rawTimeText": "Friday 15:00 - 16:00"
                 },
                 {
                     "owner": "Slut Camp",
                     "ownerType": "camp",
                     "title": "Lube Slip and Slide",
-                    "description": "Have you ever had the urge to penguin slide down a river of lube? What about boot scoot like a snail? Whatever your sliding fantasies, come slip and slide at the most moist camp at OW.",
+                    "description": "Have you ever had the urge to penguin slide down a river of lube? What about boot scoot like a snail? Whatever your sliding fantasies, come slip and slide at the most moist camp at OW. Bring a towel!",
                     "day": "Sunday",
                     "startTime": "16:00",
                     "endTime": "17:00",
                     "durationHours": 1,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Sunday 16:00 - 17:00",
-                    "tags": [
-                        "Game / Activity",
-                        "19+"
-                    ]
+                    "rawTimeText": "Sunday 16:00 - 17:00"
                 },
                 {
                     "owner": "Slut Camp",
                     "ownerType": "camp",
                     "title": "Thighs vs. Melons",
-                    "description": "Compete in the watermelon crushing contest! Sticky, sweaty, strong, n slutty! BYOM! 19+",
+                    "description": "Compete in the watermelon crushing contest! Sticky, sweaty, strong, n slutty! BYOM! 19+ LNT Cake Sitting Rules Apply!",
                     "day": "Sunday",
                     "startTime": "16:00",
                     "endTime": "17:00",
                     "durationHours": 1,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Sunday 16:00 - 17:00",
-                    "tags": [
-                        "Performance / Show",
-                        "19+"
-                    ]
+                    "rawTimeText": "Sunday 16:00 - 17:00"
                 }
             ],
-            "claimed": false,
+            "claimed": true,
             "neighbourhood": "SIDEQUEST"
         },
         {
@@ -12860,7 +12862,7 @@
                     ]
                 }
             ],
-            "claimed": false,
+            "claimed": true,
             "neighbourhood": "DOACRACY"
         },
         {
