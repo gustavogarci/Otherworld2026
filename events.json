@@ -15,7 +15,7 @@
             "art_installation": 52,
             "art_installation_events": 11
         },
-        "lastReconciledAt": "2026-05-28T20:02:02+00:00",
+        "lastReconciledAt": "2026-05-28T23:02:02+00:00",
         "reconciledFromSheet": "1o9Ue218Yx8mMa9OGyPfd66NoofYI3O1ewkN8NB-qnVc"
     },
     "entries": [
@@ -6226,12 +6226,12 @@
                     "title": "Couples Somatic Coregulation with Tany",
                     "description": "Explore Tao and Tantra body-based practices to deepen intimacy, presence, and nervous system attunement. Leave with hands-on tools to nurture connection with yourself and your partner long after the festival ends.",
                     "day": "Friday",
-                    "startTime": "10:00",
-                    "endTime": "11:00",
+                    "startTime": "13:00",
+                    "endTime": "14:00",
                     "durationHours": 1,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Friday 10:00 - 11:00",
+                    "rawTimeText": "Friday 13:00 - 14:00",
                     "tags": [
                         "Workshop / Class",
                         "Refuge / Introspective"
@@ -14907,14 +14907,10 @@
                     "day": "Thursday",
                     "startTime": "00:01",
                     "endTime": "11:59",
-                    "durationHours": 11.97,
+                    "durationHours": 5.98,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Thursday 00:01 - 11:59",
-                    "tags": [
-                        "Interactive / Crafts",
-                        "Game / Activity"
-                    ]
+                    "rawTimeText": "Thursday 00:01 - 11:59"
                 },
                 {
                     "owner": "Yarnia",
@@ -14927,11 +14923,7 @@
                     "durationHours": 11.97,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Friday 00:01 - 11:59",
-                    "tags": [
-                        "Interactive / Crafts",
-                        "Game / Activity"
-                    ]
+                    "rawTimeText": "Friday 00:01 - 11:59"
                 },
                 {
                     "owner": "Yarnia",
@@ -14941,14 +14933,10 @@
                     "day": "Saturday",
                     "startTime": "00:01",
                     "endTime": "11:59",
-                    "durationHours": 11.97,
+                    "durationHours": 5.98,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Saturday 00:01 - 11:59",
-                    "tags": [
-                        "Interactive / Crafts",
-                        "Game / Activity"
-                    ]
+                    "rawTimeText": "Saturday 00:01 - 11:59"
                 },
                 {
                     "owner": "Yarnia",
@@ -14985,12 +14973,12 @@
                     "title": "Longest Scarf Competition",
                     "description": "Mr. Tumnus needs a new scarf and wants all the creatures of Yarnia to help him make the longest one. \r\n\r\nWho will win? Knitters or crocheters?",
                     "day": "Friday",
-                    "startTime": "00:00",
+                    "startTime": "06:00",
                     "endTime": "22:30",
-                    "durationHours": 46.5,
+                    "durationHours": 40.5,
                     "crossesMidnight": true,
                     "normalizationFlags": [],
-                    "rawTimeText": "Friday 00:00 - 22:30"
+                    "rawTimeText": "Friday 06:00 - 22:30"
                 },
                 {
                     "owner": "Yarnia",
