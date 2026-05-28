@@ -1,0 +1,1129 @@
+<!doctype html>
+<html lang="en">
+<!-- ───────────────────────────────────────────────────────────────────
+     Theme Lab — Otherworld 2026
+
+     A standalone playground for iterating on themes WITHOUT touching
+     the live app. Loads themes.css + styles.css so every component
+     here is rendered with the same CSS the app uses; click a theme
+     in the top tab bar to swap <html data-theme="…"> live.
+
+     This file is intentionally not added to the service-worker shell
+     cache (sw.js) — it's a dev/design tool and shouldn't bloat
+     installed PWA copies.
+
+     Open at:  /themes.html
+     ─────────────────────────────────────────────────────────────── -->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Theme Lab — Otherworld 2026</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- All theme display fonts (default + drafts). The lab loads them
+       all so any theme renders correctly here regardless of whether
+       it's been promoted to the in-app picker yet. -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Audiowide&family=Bowlby+One&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Bungee&family=Bungee+Inline&family=Cinzel:wght@400..900&family=Comfortaa:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fraunces:opsz,wght@9..144,300..700&family=IM+Fell+English:ital@0;1&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@400..800&family=Italiana&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..800&family=Monoton&family=Nunito:wght@400;700;800;900&family=Outfit:wght@400..800&family=Pirata+One&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@400;500;600;700&family=Righteous&family=Rye&family=Space+Grotesk:wght@400..700&family=Tilt+Prism&family=UnifrakturMaguntia&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="themes.css?v=20260527-fonts-1">
+  <link rel="stylesheet" href="styles.css?v=20260527-fonts-1">
+
+  <style>
+    /* Lab-only chrome. Uses theme tokens where possible so the
+       lab itself reflects the active theme — that's part of the
+       point. Custom layout (no app header). */
+
+    /* Override the app header padding-top — the lab has no fixed
+       header, so the body shouldn't reserve space for one. */
+    body {
+      padding-top: 0;
+    }
+
+    .lab-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    .lab-title {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.05;
+      margin: 0 0 6px;
+      color: var(--cream);
+      letter-spacing: -0.02em;
+    }
+
+    .lab-subtitle {
+      margin: 0 0 28px;
+      color: var(--cream-dim);
+      font-size: 14px;
+      max-width: 60ch;
+      line-height: 1.5;
+    }
+
+    /* Theme switcher — sticky at the top so it's always reachable. */
+    .lab-theme-bar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      margin: 0 -24px 32px;
+      padding: 16px 24px;
+      background: linear-gradient(
+        180deg,
+        var(--night-1) 0%,
+        var(--night-1) 70%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .lab-theme-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .lab-theme-tab {
+      font: 600 13px/1 var(--font-sans);
+      letter-spacing: 0.02em;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: var(--night-3);
+      color: var(--cream-dim);
+      border: 1px solid var(--moss-1);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .lab-theme-tab:hover {
+      background: var(--night-4);
+      color: var(--cream);
+    }
+    .lab-theme-tab.active {
+      background: rgba(204, 232, 78, 0.18);
+      color: var(--lime);
+      border-color: var(--lime);
+      box-shadow: 0 0 0 1px var(--lime) inset;
+    }
+    .lab-theme-tab .draft-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 6px;
+      font: 600 9px/1.4 var(--font-mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--moss-3);
+      background: var(--night-2);
+      border: 1px solid var(--moss-1);
+      border-radius: 999px;
+      vertical-align: 1px;
+    }
+
+    /* Font picker — secondary tab row underneath the theme tabs.
+       Each chip is rendered IN the candidate font itself, so you
+       can preview the type before clicking. Clicking applies the
+       candidate font as a live override of --font-display on
+       <html>. Reset when the theme changes. */
+    .lab-font-bar {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .lab-font-bar-label {
+      font: 600 10px/1 var(--font-sans);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      margin-right: 4px;
+    }
+    .lab-font-tab {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--night-2);
+      color: var(--cream-soft);
+      border: 1px solid var(--moss-1);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      /* font-family is set inline per-tab so each chip previews
+         in its own candidate font. Size is fixed here. */
+      font-size: 14px;
+      line-height: 1.1;
+    }
+    .lab-font-tab:hover {
+      background: var(--night-3);
+      color: var(--cream);
+    }
+    .lab-font-tab.active {
+      background: rgb(var(--lime-rgb) / 0.16);
+      color: var(--lime);
+      border-color: var(--lime);
+    }
+    .lab-font-tab-num {
+      /* Number stays in the lab body font so it reads consistently
+         regardless of which candidate the chip is previewing. */
+      font: 700 10px/1 var(--font-mono);
+      letter-spacing: 0;
+      color: var(--cream-dim);
+      flex: 0 0 auto;
+    }
+    .lab-font-tab.active .lab-font-tab-num {
+      color: var(--lime);
+    }
+
+    /* Section blocks */
+    .lab-section {
+      margin: 36px 0 0;
+      padding-top: 24px;
+      border-top: 1px solid var(--moss-1);
+    }
+    .lab-section:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+    .lab-section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .lab-section-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: -0.01em;
+    }
+    .lab-section-hint {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--cream-dim);
+      font-style: italic;
+    }
+
+    /* Palette swatches */
+    .lab-palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    .lab-swatch {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px;
+      background: var(--night-2);
+      border: 1px solid var(--moss-1);
+      border-radius: 10px;
+    }
+    .lab-swatch-chip {
+      width: 100%;
+      height: 56px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .lab-swatch-name {
+      font: 600 11px/1.2 var(--font-mono);
+      color: var(--cream);
+      letter-spacing: 0;
+      word-break: break-all;
+    }
+    .lab-swatch-value {
+      font: 400 10px/1.2 var(--font-mono);
+      color: var(--cream-dim);
+      letter-spacing: 0;
+      word-break: break-all;
+    }
+    .lab-palette-group {
+      margin-top: 14px;
+    }
+    .lab-palette-group:first-child {
+      margin-top: 0;
+    }
+    .lab-palette-group h3 {
+      margin: 0 0 8px;
+      font: 600 10px/1 var(--font-sans);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+    }
+
+    /* Typography specimens */
+    .lab-type-block {
+      padding: 18px 20px;
+      background: var(--night-2);
+      border: 1px solid var(--moss-1);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .lab-type-label {
+      font: 600 10px/1 var(--font-sans);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--cream-dim);
+      margin: 0 0 8px;
+    }
+    .lab-type-display {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--cream);
+      margin: 0 0 4px;
+      letter-spacing: -0.02em;
+    }
+    .lab-type-display-small {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.15;
+      color: var(--cream);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    .lab-type-sans {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.55;
+      color: var(--cream-soft);
+      margin: 0;
+    }
+    .lab-type-mono {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--cyan);
+      margin: 0;
+      letter-spacing: 0;
+    }
+
+    /* Side-by-side sub-grid — cards, hour rows, etc. */
+    .lab-grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
+    @media (min-width: 760px) {
+      .lab-grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* Tighter button cluster for the buttons section */
+    .lab-button-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Fake hour-row container (no header sticky offset) */
+    .lab-hour-host {
+      padding: 8px 16px;
+      background: var(--night-2);
+      border: 1px solid var(--moss-1);
+      border-radius: 12px;
+    }
+    .lab-hour-host .hour-row {
+      grid-template-columns: 56px 1fr;
+    }
+    .lab-hour-host .hour-label {
+      position: static;
+      top: auto;
+    }
+
+    /* Camp block standalone (no auto-margins from the app body) */
+    .lab-camp-host {
+      max-width: 100%;
+    }
+
+    /* Settings panel preview */
+    .lab-settings-host {
+      padding: 14px 16px;
+      background: var(--night-3);
+      border: 1px solid var(--moss-1);
+      border-radius: 12px;
+    }
+    .lab-settings-host .setting-toggle:first-child {
+      padding-top: 4px;
+    }
+
+    /* Modal preview — visual only, not a real <dialog>. */
+    .lab-modal-host {
+      max-width: 580px;
+      padding: 24px 26px;
+      background: var(--night-2);
+      color: inherit;
+      border: 1px solid var(--moss-2);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-2);
+    }
+    .lab-modal-host h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0 0 6px;
+      color: var(--cream);
+      letter-spacing: -0.01em;
+    }
+    .lab-modal-host .meta {
+      color: var(--cream-dim);
+      font-size: 13px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .lab-modal-host .meta .time {
+      color: var(--lime);
+      font-family: var(--font-mono);
+    }
+    .lab-modal-host .meta .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--moss-2);
+      flex-shrink: 0;
+    }
+    .lab-modal-host p {
+      color: var(--cream-soft);
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 12px 0;
+    }
+    .lab-modal-host .close-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .lab-modal-host .close-row > button:not(.btn-ghost) {
+      background: var(--lime);
+      color: var(--night-0);
+      border: 0;
+      padding: 9px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-family: inherit;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Lab-only event-card grid; reuses .event-card / etc. */
+    .lab-event-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+    @media (min-width: 720px) {
+      .lab-event-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="lab-shell">
+
+    <h1 class="lab-title">Theme Lab</h1>
+    <p class="lab-subtitle">
+      Live preview of every Otherworld 2026 component, rendered against
+      whichever theme is selected. Iterate here before promoting a draft
+      theme into the in-app Settings picker.
+    </p>
+
+    <!-- Theme switcher. Tabs are populated from the LAB_THEMES list in
+         the script below; click one to set <html data-theme="…">.
+         Below it: a font-candidate row for the active theme, populated
+         from FONT_CANDIDATES. Click a font chip to live-swap the
+         display face. Switching theme resets the font to that theme's
+         default. -->
+    <div class="lab-theme-bar">
+      <div class="lab-theme-tabs" id="lab-theme-tabs" role="tablist"></div>
+      <div class="lab-font-bar" id="lab-font-bar" hidden>
+        <span class="lab-font-bar-label">Display font</span>
+        <div class="lab-font-tabs" id="lab-font-tabs"
+             style="display:contents;" role="tablist"></div>
+      </div>
+    </div>
+
+    <!-- ── Palette ──────────────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Palette</h2>
+        <p class="lab-section-hint">Live values read from the active theme.</p>
+      </div>
+      <div id="lab-palette-root"></div>
+    </section>
+
+    <!-- ── Typography ──────────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Typography</h2>
+        <p class="lab-section-hint">Display, body, and mono faces in this theme.</p>
+      </div>
+
+      <div class="lab-type-block">
+        <p class="lab-type-label">Display — <code style="font-family:var(--font-mono);">--font-display</code></p>
+        <p class="lab-type-display">Otherworld 2026</p>
+        <p class="lab-type-display-small">A schedule for the playa-bound</p>
+      </div>
+
+      <div class="lab-type-block">
+        <p class="lab-type-label">Sans — <code style="font-family:var(--font-mono);">--font-sans</code></p>
+        <p class="lab-type-sans">
+          The quick brown fox jumps over the lazy dog. Body copy for
+          event descriptions, settings hints, and the long form. ABC abc 0123.
+        </p>
+      </div>
+
+      <div class="lab-type-block">
+        <p class="lab-type-label">Mono — <code style="font-family:var(--font-mono);">--font-mono</code></p>
+        <p class="lab-type-mono">21:00–22:30  ·  ART INSTALLATION  ·  90m</p>
+      </div>
+    </section>
+
+    <!-- ── Buttons ─────────────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Buttons & controls</h2>
+      </div>
+      <div class="lab-button-cluster">
+        <button type="button" class="cta-btn">
+          <span class="label">Filters</span>
+        </button>
+        <button type="button" class="cta-btn has-active">
+          <span class="label">Active</span>
+        </button>
+        <button type="button" class="backup-btn backup-btn-primary">Backup</button>
+        <button type="button" class="backup-btn">Restore</button>
+        <button type="button" class="backup-btn btn-ghost">Discard</button>
+        <span class="active-filter-pill">
+          Camp <button type="button" aria-label="remove">×</button>
+        </span>
+        <span class="active-filter-pill clear-all">Clear</span>
+      </div>
+    </section>
+
+    <!-- ── Chips & tags ────────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Chips, pills & tags</h2>
+      </div>
+
+      <div class="modal-section" style="margin:0;">
+        <h3 style="margin:0 0 8px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--cream-dim);font-weight:600;">Filter chips</h3>
+        <div class="chip-group">
+          <button type="button" class="chip">All</button>
+          <button type="button" class="chip active">Tonight <span class="count">42</span></button>
+          <button type="button" class="chip">Late night <span class="count">18</span></button>
+          <button type="button" class="chip">Tomorrow</button>
+        </div>
+      </div>
+
+      <div class="modal-section" style="margin-top:18px;">
+        <h3 style="margin:0 0 8px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--cream-dim);font-weight:600;">Type pills</h3>
+        <div class="chip-group">
+          <span class="type-pill" data-type="camp">CAMP</span>
+          <span class="type-pill" data-type="sound_stage">SOUND STAGE</span>
+          <span class="type-pill" data-type="art_installation">ART INSTALLATION</span>
+          <span class="type-pill" data-type="mutant_vehicle">MUTANT VEHICLE</span>
+        </div>
+      </div>
+
+      <div class="modal-section" style="margin-top:18px;">
+        <h3 style="margin:0 0 8px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--cream-dim);font-weight:600;">Tag chips</h3>
+        <div class="chip-group">
+          <span class="tag-chip">Workshop</span>
+          <span class="tag-chip" data-tag="19+">19+</span>
+          <span class="tag-chip" data-tag="Alcohol Involved">Alcohol Involved</span>
+          <span class="tag-chip" data-tag="Music / Dance">Music / Dance</span>
+          <span class="tag-chip" data-tag="Performance / Show">Performance / Show</span>
+          <span class="tag-chip" data-tag="Food / Drink">Food / Drink</span>
+        </div>
+      </div>
+
+      <div class="modal-section" style="margin-top:18px;">
+        <h3 style="margin:0 0 8px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--cream-dim);font-weight:600;">Misc</h3>
+        <div class="chip-group" style="align-items:center;">
+          <span class="neighbourhood-chip">Mid Plaza</span>
+          <span class="verified-pill">✓ Verified</span>
+          <span class="quiet-pill">Quiet hours</span>
+          <span class="active-filter-pill">Tag: Workshop <button type="button">×</button></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Event cards ─────────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Event cards</h2>
+        <p class="lab-section-hint">One per type, plus an "is-ongoing" variant.</p>
+      </div>
+
+      <div class="lab-event-grid">
+        <article class="event-card" data-type="camp">
+          <button type="button" class="fav-btn is-fav" aria-label="Unfavorite">★</button>
+          <div class="meta-row">
+            <span class="time">14:00–16:00</span>
+            <span class="meta-right">CAMP · 2h</span>
+          </div>
+          <h3 class="title">Mother Tree morning circle</h3>
+          <div class="owner">
+            <span class="dot"></span>
+            <span class="n">Mother Tree</span>
+            <span class="neighbourhood-chip">North Grove</span>
+            <span class="verified-pill" title="Verified">✓</span>
+          </div>
+          <p class="description">
+            Drop in for breath, song, and a slow start to the day.
+            Tea provided. No experience needed — just show up barefoot
+            and leave the watch behind.
+          </p>
+          <div class="tags">
+            <span class="tag-chip">Workshop</span>
+            <span class="tag-chip" data-tag="Music / Dance">Music / Dance</span>
+          </div>
+        </article>
+
+        <article class="event-card" data-type="sound_stage">
+          <button type="button" class="fav-btn" aria-label="Favorite">☆</button>
+          <div class="meta-row">
+            <span class="time">22:00–02:30<sup class="cross-midnight">⁺¹</sup></span>
+            <span class="meta-right">SOUND STAGE · 4h 30m</span>
+          </div>
+          <h3 class="title">Ripple Effect — closing set</h3>
+          <div class="owner">
+            <span class="dot"></span>
+            <span class="n">Ripple Effect</span>
+            <span class="neighbourhood-chip">Coast</span>
+          </div>
+          <p class="description">
+            Five-hour underwater dub set into the small hours. Bring
+            something to dance in.
+          </p>
+          <div class="tags">
+            <span class="tag-chip" data-tag="19+">19+</span>
+            <span class="tag-chip" data-tag="Music / Dance">Music / Dance</span>
+            <span class="tag-chip" data-tag="Alcohol Involved">Alcohol Involved</span>
+          </div>
+        </article>
+
+        <article class="event-card" data-type="art_installation">
+          <button type="button" class="fav-btn is-fav is-red" aria-label="Can't miss">★</button>
+          <div class="meta-row">
+            <span class="time">19:30–23:00</span>
+            <span class="meta-right">ART · 3h 30m</span>
+          </div>
+          <h3 class="title">Chromatic Tide — projection mapping</h3>
+          <div class="owner">
+            <span class="dot"></span>
+            <span class="n">Sky Camp</span>
+            <span class="neighbourhood-chip">Mid Plaza</span>
+            <span class="verified-pill" title="Verified">✓</span>
+          </div>
+          <p class="description">
+            Generative color storm reactive to crowd movement. Best
+            viewed from the dunes; bring layers and a friend.
+          </p>
+          <div class="tags">
+            <span class="tag-chip" data-tag="Performance / Show">Performance / Show</span>
+          </div>
+        </article>
+
+        <article class="event-card" data-type="mutant_vehicle">
+          <button type="button" class="fav-btn" aria-label="Favorite">☆</button>
+          <div class="meta-row">
+            <span class="time">18:00–22:00</span>
+            <span class="meta-right">MUTANT VEHICLE · 4h</span>
+          </div>
+          <h3 class="title">Caravan of Lost Hours</h3>
+          <div class="owner">
+            <span class="dot"></span>
+            <span class="n">Circus Eternal</span>
+            <span class="neighbourhood-chip">Loop Road</span>
+          </div>
+          <p class="description">
+            Roving art car with brass band onboard. Flag it down for
+            a ride to the deep playa.
+          </p>
+          <div class="tags">
+            <span class="tag-chip" data-tag="Food / Drink">Food / Drink</span>
+          </div>
+        </article>
+
+        <article class="event-card is-ongoing" data-type="camp">
+          <button type="button" class="fav-btn" aria-label="Favorite">☆</button>
+          <div class="meta-row">
+            <span class="time">11:00–13:00</span>
+            <span class="meta-right">
+              <span class="ongoing-tag">ongoing</span> · CAMP · 2h
+            </span>
+          </div>
+          <h3 class="title">Slow brunch & soft music</h3>
+          <div class="owner">
+            <span class="dot"></span>
+            <span class="n">Some Camp Name</span>
+          </div>
+          <p class="description">
+            An ongoing event card — already in progress, dimmed and
+            dashed so the eye sees it clearly as background context.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── Hour row + NOW indicator ────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Hour row + NOW indicator</h2>
+      </div>
+
+      <div class="lab-hour-host">
+        <div class="hour-row">
+          <div class="hour-label"><span class="time">19:00</span></div>
+          <div class="hour-events">
+            <div class="event-grid">
+              <article class="event-card" data-type="camp">
+                <div class="meta-row">
+                  <span class="time">19:00–20:00</span>
+                  <span class="meta-right">CAMP · 1h</span>
+                </div>
+                <h3 class="title">Sunset welcome</h3>
+                <div class="owner"><span class="dot"></span><span class="n">Mother Tree</span></div>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class="hour-row is-now-hour">
+          <div class="now-line"></div>
+          <div class="hour-label"><span class="time">20:00</span></div>
+          <div class="hour-events">
+            <div class="event-grid">
+              <article class="event-card" data-type="art_installation">
+                <div class="meta-row">
+                  <span class="time">20:00–22:00</span>
+                  <span class="meta-right">ART · 2h</span>
+                </div>
+                <h3 class="title">Tide projection — premiere</h3>
+                <div class="owner"><span class="dot"></span><span class="n">Sky Camp</span></div>
+              </article>
+            </div>
+          </div>
+        </div>
+        <div class="hour-row quiet-run">
+          <div class="hour-label"><span class="time">21:00</span></div>
+          <div class="hour-events">
+            <span class="quiet-pill">No events between 21:00 and 22:00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Camp block ──────────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Camp block</h2>
+        <p class="lab-section-hint">Collapsible camp summary — open by default here.</p>
+      </div>
+
+      <div class="lab-camp-host">
+        <details class="camp-block" open>
+          <summary>
+            <span class="name" title="Mother Tree">Mother Tree</span>
+            <span class="neighbourhood-chip">North Grove</span>
+            <span class="verified-pill" title="Verified">✓ Verified</span>
+            <span class="type-pill" data-type="camp">CAMP</span>
+            <span class="count">3</span>
+          </summary>
+          <div class="body">
+            <div class="camp-day">
+              <h3>Friday</h3>
+              <div class="camp-day-event">
+                <span class="time">10:00–11:00</span>
+                <span class="title">Morning circle</span>
+              </div>
+              <div class="camp-day-event">
+                <span class="time">14:00–15:30</span>
+                <span class="title">Tea ceremony</span>
+              </div>
+            </div>
+            <div class="camp-day">
+              <h3>Saturday</h3>
+              <div class="camp-day-event">
+                <span class="time">10:00–11:00</span>
+                <span class="title">Morning circle</span>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ── Settings panel ──────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Settings panel</h2>
+      </div>
+
+      <div class="lab-settings-host">
+        <label class="setting-toggle">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Hide ongoing cards</span>
+            <span class="setting-toggle-hint">Hides events that started in a previous hour.</span>
+          </span>
+          <input type="checkbox" class="setting-toggle-input" />
+          <span class="setting-toggle-switch" aria-hidden="true"></span>
+        </label>
+        <label class="setting-toggle">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Red-star favorites</span>
+            <span class="setting-toggle-hint">Double-tap a favorited star to mark events you can't miss.</span>
+          </span>
+          <input type="checkbox" class="setting-toggle-input" checked />
+          <span class="setting-toggle-switch" aria-hidden="true"></span>
+        </label>
+        <label class="setting-row">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Theme</span>
+            <span class="setting-toggle-hint">Colors and fonts.</span>
+          </span>
+          <select class="setting-select" id="lab-settings-theme-mirror"></select>
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Modal preview ───────────────────────────────────────── -->
+    <section class="lab-section">
+      <div class="lab-section-head">
+        <h2 class="lab-section-title">Modal</h2>
+        <p class="lab-section-hint">Visual only — not a real &lt;dialog&gt;.</p>
+      </div>
+      <div class="lab-modal-host">
+        <h2>Ripple Effect — closing set</h2>
+        <div class="meta">
+          <span class="time">22:00–02:30</span>
+          <span class="dot"></span>
+          <span>Ripple Effect</span>
+          <span class="dot"></span>
+          <span class="neighbourhood-chip">Coast</span>
+        </div>
+        <p>
+          Five-hour underwater dub set. Crew rotates every 90 minutes.
+          Bring something to dance in and don't forget water — it goes
+          deep and the deep playa runs cold by 3 a.m.
+        </p>
+        <div class="tags-block">
+          <span class="tag-chip" data-tag="19+">19+</span>
+          <span class="tag-chip" data-tag="Music / Dance">Music / Dance</span>
+        </div>
+        <div class="close-row">
+          <button type="button" class="btn-ghost">Close</button>
+          <button type="button">Done</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    /* ─────────────────────────────────────────────────────────────
+       Lab logic — kept inline + tiny on purpose. No app.js coupling.
+       ───────────────────────────────────────────────────────────── */
+
+    // Themes shown in the lab. The order here is the tab order.
+    // `inApp: true` = currently selectable from the in-app Settings
+    // picker; `inApp: false` = draft (themes.css block exists, but
+    // not yet promoted to the app). Adding a new theme to the lab is
+    // just adding a row here AND a [data-theme="…"] block in
+    // themes.css.
+    const LAB_THEMES = [
+      { id: "isaias",      label: "Isaiiaas",    inApp: true },
+      { id: "mother-tree", label: "Mother Tree", inApp: true },
+      { id: "ripple",      label: "Ripple",      inApp: true },
+      { id: "sky",         label: "Sky",         inApp: true },
+      { id: "circus",      label: "Circus",      inApp: true },
+      { id: "thirrrst",    label: "Thirrrst",    inApp: true },
+      { id: "spin",        label: "Spin",        inApp: true },
+      { id: "kink",        label: "Kink",        inApp: true },
+    ];
+
+    /* Per-theme display-font candidates. Index 0 of each array is
+       the theme's CURRENT shipped default (so clicking "1" reverts
+       to whatever themes.css has). Indexes 1..N are alternates the
+       designer might want to audition.
+
+       Each entry is { label, family, opsz?, opszSmall? }. The
+       label is used as the chip's preview text (rendered IN the
+       candidate font). The family string is applied directly to
+       --font-display via inline style. opsz/opszSmall override
+       --font-display-opsz / --font-display-opsz-small when the
+       candidate's font supports the optical-size axis. Leave them
+       undefined to inherit whatever the theme's default opsz is. */
+    const FONT_CANDIDATES = {
+      isaias: [
+        { label: "Bricolage Grotesque", family: '"Bricolage Grotesque", -apple-system, system-ui, sans-serif' },
+        { label: "Inter Tight",         family: '"Inter Tight", -apple-system, system-ui, sans-serif' },
+        { label: "Space Grotesk",       family: '"Space Grotesk", -apple-system, system-ui, sans-serif' },
+        { label: "Manrope",             family: '"Manrope", -apple-system, system-ui, sans-serif' },
+      ],
+      "mother-tree": [
+        { label: "Fraunces",          family: '"Fraunces", Georgia, serif',          opsz: 14, opszSmall: 12 },
+        { label: "Lora",              family: '"Lora", Georgia, serif' },
+        { label: "EB Garamond",       family: '"EB Garamond", Georgia, serif' },
+        { label: "Instrument Serif",  family: '"Instrument Serif", Georgia, serif' },
+      ],
+      ripple: [
+        { label: "Nunito",    family: '"Nunito", -apple-system, system-ui, sans-serif' },
+        { label: "Outfit",    family: '"Outfit", -apple-system, system-ui, sans-serif' },
+        { label: "Manrope",   family: '"Manrope", -apple-system, system-ui, sans-serif' },
+        { label: "Comfortaa", family: '"Comfortaa", -apple-system, system-ui, sans-serif' },
+      ],
+      sky: [
+        { label: "Quicksand", family: '"Quicksand", -apple-system, system-ui, sans-serif' },
+        { label: "Outfit",    family: '"Outfit", -apple-system, system-ui, sans-serif' },
+        { label: "Manrope",   family: '"Manrope", -apple-system, system-ui, sans-serif' },
+        { label: "Comfortaa", family: '"Comfortaa", -apple-system, system-ui, sans-serif' },
+      ],
+      circus: [
+        { label: "Bungee",        family: '"Bungee", -apple-system, system-ui, sans-serif' },
+        { label: "Bungee Inline", family: '"Bungee Inline", -apple-system, system-ui, sans-serif' },
+        { label: "Rye",           family: '"Rye", Georgia, serif' },
+        { label: "Bowlby One",    family: '"Bowlby One", -apple-system, system-ui, sans-serif' },
+      ],
+      thirrrst: [
+        { label: "Pirata One",        family: '"Pirata One", Georgia, serif' },
+        { label: "IM Fell English",   family: '"IM Fell English", Georgia, serif' },
+        { label: "Cinzel",            family: '"Cinzel", Georgia, serif' },
+        { label: "UnifrakturMaguntia",family: '"UnifrakturMaguntia", Georgia, serif' },
+      ],
+      spin: [
+        { label: "Monoton",     family: '"Monoton", -apple-system, system-ui, sans-serif' },
+        { label: "Audiowide",   family: '"Audiowide", -apple-system, system-ui, sans-serif' },
+        { label: "Righteous",   family: '"Righteous", -apple-system, system-ui, sans-serif' },
+        { label: "Tilt Prism",  family: '"Tilt Prism", -apple-system, system-ui, sans-serif' },
+      ],
+      kink: [
+        { label: "Playfair Display",   family: '"Playfair Display", Georgia, serif' },
+        { label: "Cormorant Garamond", family: '"Cormorant Garamond", Georgia, serif' },
+        { label: "Cinzel",             family: '"Cinzel", Georgia, serif' },
+        { label: "Italiana",           family: '"Italiana", Georgia, serif' },
+      ],
+    };
+    const DEFAULT_ID = "isaias";
+    const LAB_THEME_KEY = "ow_theme_lab";
+
+    function readSavedTheme() {
+      try {
+        const v = localStorage.getItem(LAB_THEME_KEY);
+        if (v && LAB_THEMES.some(t => t.id === v)) return v;
+      } catch {}
+      return DEFAULT_ID;
+    }
+    function saveTheme(id) {
+      try {
+        if (id && id !== DEFAULT_ID) localStorage.setItem(LAB_THEME_KEY, id);
+        else localStorage.removeItem(LAB_THEME_KEY);
+      } catch {}
+    }
+    function applyTheme(id) {
+      const root = document.documentElement;
+      if (!id || id === DEFAULT_ID) root.removeAttribute("data-theme");
+      else root.setAttribute("data-theme", id);
+      // Sync UI
+      document.querySelectorAll(".lab-theme-tab").forEach(el => {
+        el.classList.toggle("active", el.dataset.themeId === id);
+        el.setAttribute("aria-selected", el.dataset.themeId === id ? "true" : "false");
+      });
+      const mirror = document.getElementById("lab-settings-theme-mirror");
+      if (mirror) mirror.value = id;
+      // Reset any inline font override and re-render the font picker
+      // for the new theme. Index 0 = the theme's shipped default, so
+      // selecting it removes the inline override and lets the
+      // [data-theme] block's --font-display win again.
+      clearFontOverride();
+      renderFontTabs(id);
+      // Repaint live palette swatches whenever the theme changes —
+      // computed --token values come from the new active block.
+      renderPalette();
+      renderTypeBlockMonoCaption();
+    }
+
+    // ── Font picker ─────────────────────────────────────────────
+    function clearFontOverride() {
+      const s = document.documentElement.style;
+      s.removeProperty("--font-display");
+      s.removeProperty("--font-display-opsz");
+      s.removeProperty("--font-display-opsz-small");
+    }
+    function applyFontCandidate(c) {
+      const s = document.documentElement.style;
+      if (!c) return clearFontOverride();
+      s.setProperty("--font-display", c.family);
+      if (c.opsz !== undefined) s.setProperty("--font-display-opsz", String(c.opsz));
+      else s.removeProperty("--font-display-opsz");
+      if (c.opszSmall !== undefined) s.setProperty("--font-display-opsz-small", String(c.opszSmall));
+      else s.removeProperty("--font-display-opsz-small");
+    }
+    function renderFontTabs(themeId) {
+      const bar = document.getElementById("lab-font-bar");
+      const host = document.getElementById("lab-font-tabs");
+      const candidates = FONT_CANDIDATES[themeId] || [];
+      host.innerHTML = "";
+      if (!candidates.length) {
+        bar.hidden = true;
+        return;
+      }
+      bar.hidden = false;
+      candidates.forEach((c, idx) => {
+        const el = document.createElement("button");
+        el.type = "button";
+        el.className = "lab-font-tab" + (idx === 0 ? " active" : "");
+        el.setAttribute("role", "tab");
+        // Preview the chip itself in the candidate's font family.
+        el.style.fontFamily = c.family;
+        el.innerHTML =
+          `<span class="lab-font-tab-num">${idx + 1}</span>` +
+          `<span class="lab-font-tab-name">${c.label}</span>`;
+        el.addEventListener("click", () => {
+          // idx 0 = theme default, so remove the inline override.
+          if (idx === 0) clearFontOverride();
+          else applyFontCandidate(c);
+          host.querySelectorAll(".lab-font-tab").forEach(t => {
+            t.classList.toggle("active", t === el);
+          });
+        });
+        host.appendChild(el);
+      });
+    }
+
+    // Build the tab bar
+    const tabsHost = document.getElementById("lab-theme-tabs");
+    LAB_THEMES.forEach(t => {
+      const el = document.createElement("button");
+      el.type = "button";
+      el.className = "lab-theme-tab";
+      el.dataset.themeId = t.id;
+      el.setAttribute("role", "tab");
+      el.innerHTML = t.label + (t.inApp ? "" : ` <span class="draft-badge">draft</span>`);
+      el.addEventListener("click", () => {
+        applyTheme(t.id);
+        saveTheme(t.id);
+      });
+      tabsHost.appendChild(el);
+    });
+
+    // Build the mirror <select> in the Settings panel preview
+    const mirror = document.getElementById("lab-settings-theme-mirror");
+    if (mirror) {
+      LAB_THEMES.forEach(t => {
+        const o = document.createElement("option");
+        o.value = t.id;
+        o.textContent = t.label + (t.inApp ? "" : " (draft)");
+        mirror.appendChild(o);
+      });
+      mirror.addEventListener("change", () => {
+        applyTheme(mirror.value);
+        saveTheme(mirror.value);
+      });
+    }
+
+    // ── Palette renderer ────────────────────────────────────────
+    // Reads computed values of every theme token from <html> so the
+    // swatches always reflect the *active* theme — no hardcoded hex
+    // values in the lab itself.
+    const PALETTE_GROUPS = [
+      {
+        label: "Surfaces",
+        tokens: ["--night-0", "--night-1", "--night-2", "--night-3", "--night-4", "--moss-1", "--moss-2", "--moss-3"],
+      },
+      {
+        label: "Ink",
+        tokens: ["--cream", "--cream-soft", "--cream-dim"],
+      },
+      {
+        label: "Primary accent (camp)",
+        tokens: ["--lime", "--lime-soft", "--lime-deep"],
+      },
+      {
+        label: "Sound stage",
+        tokens: ["--pink", "--pink-soft", "--pink-deep"],
+      },
+      {
+        label: "Art installation",
+        tokens: ["--cyan", "--cyan-soft", "--cyan-deep"],
+      },
+      {
+        label: "Mutant vehicle",
+        tokens: ["--amber", "--amber-soft", "--amber-deep"],
+      },
+      {
+        label: "Status",
+        tokens: ["--warn", "--red", "--red-soft", "--red-deep"],
+      },
+    ];
+
+    function renderPalette() {
+      const root = document.getElementById("lab-palette-root");
+      if (!root) return;
+      const cs = getComputedStyle(document.documentElement);
+      root.innerHTML = "";
+      PALETTE_GROUPS.forEach(group => {
+        const wrap = document.createElement("div");
+        wrap.className = "lab-palette-group";
+        const h = document.createElement("h3");
+        h.textContent = group.label;
+        wrap.appendChild(h);
+        const grid = document.createElement("div");
+        grid.className = "lab-palette";
+        group.tokens.forEach(token => {
+          const value = cs.getPropertyValue(token).trim();
+          const swatch = document.createElement("div");
+          swatch.className = "lab-swatch";
+          const chip = document.createElement("div");
+          chip.className = "lab-swatch-chip";
+          chip.style.background = `var(${token})`;
+          const name = document.createElement("div");
+          name.className = "lab-swatch-name";
+          name.textContent = token;
+          const val = document.createElement("div");
+          val.className = "lab-swatch-value";
+          val.textContent = value || "(unset)";
+          swatch.appendChild(chip);
+          swatch.appendChild(name);
+          swatch.appendChild(val);
+          grid.appendChild(swatch);
+        });
+        wrap.appendChild(grid);
+        root.appendChild(wrap);
+      });
+    }
+
+    // The mono caption mirrors a real schedule line — purely cosmetic.
+    function renderTypeBlockMonoCaption() {
+      // No-op for now; placeholder if we want to inject computed font
+      // names into the type specimens later.
+    }
+
+    // ── Boot ────────────────────────────────────────────────────
+    applyTheme(readSavedTheme());
+  </script>
+</body>
+</html>

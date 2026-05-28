@@ -1,84 +1,7 @@
-/* ── Otherworld 2026 palette — gallery night edition ──────────────
-   Deep midnight-teal background like a moonlit lake, with neon
-   accents pulled straight from the cover's psychedelic mushrooms.
-   Each card is matted with a translucent wash of its type color, so
-   the whole grid feels like a curated wall of prints. Variable
-   names kept ("--night-N", "--cream") so the rest of the CSS just
-   picks up the new values. */
-:root {
-  /* Surfaces — deep teal-navy, rich and saturated */
-  --night-0: #04090c;
-  /* deepest void */
-  --night-1: #0a1620;
-  /* page bg */
-  --night-2: #122332;
-  /* card surface */
-  --night-3: #1a3045;
-  /* card hover */
-  --night-4: #244257;
-  /* deeper / focus */
-  --moss-1: rgba(120, 180, 200, 0.10);
-  /* soft divider */
-  --moss-2: rgba(120, 180, 200, 0.22);
-  /* strong border */
-  --moss-3: #6e8a9c;
-  /* dim ink */
-
-  /* Ink — bright warm cream against the navy for max contrast */
-  --cream: #f2ead0;
-  /* primary ink */
-  --cream-soft: #d4cea7;
-  --cream-dim: #95a3a9;
-
-  /* Accents — bright neon, full intensity, the cover's mushroom hues */
-  --lime: #cce84e;
-  /* camp neon */
-  --lime-soft: #e6f099;
-  /* highlight */
-  --lime-deep: #7ea529;
-  /* deep variant for filled buttons */
-
-  --pink: #ff86bd;
-  /* sound stage */
-  --pink-soft: #ffb5d4;
-  --pink-deep: #c44679;
-
-  --cyan: #74dce8;
-  /* art installation */
-  --cyan-soft: #a8ecf2;
-  --cyan-deep: #2a8c9a;
-
-  --amber: #ffae5a;
-  /* mutant vehicle */
-  --amber-soft: #ffcb8d;
-  --amber-deep: #b76a14;
-  --warn: #ffd24a;
-
-  /* Red — opt-in "can't miss" favorite tier. Warm coral-red picked
-     to sit in the same family as --amber/--pink rather than reading
-     as a system alert color. */
-  --red: #ff4d6a;
-  --red-soft: #ff8da3;
-  --red-deep: #c2334a;
-
-  --type-camp: var(--lime);
-  --type-camp-deep: var(--lime-deep);
-  --type-stage: var(--pink);
-  --type-stage-deep: var(--pink-deep);
-  --type-art: var(--cyan);
-  --type-art-deep: var(--cyan-deep);
-  --type-vehicle: var(--amber);
-  --type-vehicle-deep: var(--amber-deep);
-
-  --font-display: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  --radius: 10px;
-  --radius-lg: 14px;
-  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 4px 14px rgba(0, 0, 0, 0.35);
-  --shadow-2: 0 18px 50px rgba(0, 0, 0, 0.55), 0 6px 18px rgba(0, 0, 0, 0.35);
-}
+/* Design tokens (colors, fonts, radii, shadows) live in themes.css,
+   which is loaded BEFORE this file in index.html. To explore or
+   add a theme, edit that file — every var(--token) reference here
+   resolves against whichever theme is currently active. */
 
 * {
   box-sizing: border-box;
@@ -137,8 +60,8 @@ body::before {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(ellipse 80% 50% at 12% -10%, rgba(204, 232, 78, 0.07), transparent 60%),
-    radial-gradient(ellipse 70% 60% at 92% 10%, rgba(255, 134, 189, 0.05), transparent 60%);
+    radial-gradient(ellipse 80% 50% at 12% -10%, rgb(var(--lime-rgb) / 0.07), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 92% 10%, rgb(var(--pink-rgb) / 0.05), transparent 60%);
 }
 
 ::selection {
@@ -477,11 +400,11 @@ h1.logo-h1 a {
 .backup-btn:hover { background: var(--moss-1); }
 .backup-btn:active { transform: translateY(1px); }
 .backup-btn-primary {
-  border-color: rgba(204, 232, 78, 0.4);
+  border-color: rgb(var(--lime-rgb) / 0.4);
 }
 .backup-btn-primary:hover {
   border-color: var(--lime);
-  background: rgba(204, 232, 78, 0.08);
+  background: rgb(var(--lime-rgb) / 0.08);
 }
 .backup-btn.btn-ghost {
   font-size: 13px;
@@ -502,7 +425,7 @@ h1.logo-h1 a {
   border-radius: 6px;
   word-break: break-all;
 }
-.backup-status.ok { border-color: rgba(204, 232, 78, 0.5); }
+.backup-status.ok { border-color: rgb(var(--lime-rgb) / 0.5); }
 .backup-status.err { border-color: rgba(255, 120, 120, 0.5); color: #ffb4b4; }
 
 .dev-now-row {
@@ -533,7 +456,7 @@ h1.logo-h1 a {
   font-size: 12.5px;
   color: var(--cream);
   background: var(--night-4);
-  border: 1px solid rgba(204, 232, 78, 0.5);
+  border: 1px solid rgb(var(--lime-rgb) / 0.5);
   border-radius: 6px;
 }
 
@@ -604,6 +527,65 @@ h1.logo-h1 a {
   background: var(--cream);
 }
 .setting-toggle:has(.setting-toggle-input:focus-visible) .setting-toggle-switch {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+
+/* Non-toggle settings row (label + inline control like a <select>).
+   Shares the .setting-toggle layout — flex row with text on the
+   left, control on the right — and the same hairline divider rule
+   so it slots cleanly between toggles in the same panel. */
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  cursor: pointer;
+  user-select: none;
+}
+.setting-toggle + .setting-row,
+.setting-row + .setting-toggle,
+.setting-row + .setting-row {
+  border-top: 1px solid var(--moss-1);
+}
+
+/* Native <select> styled to match other dark inputs in Settings.
+   color-scheme: dark gives the popup menu a dark UA appearance on
+   browsers that honor it (Safari, Chrome). */
+.setting-select {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cream);
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 8px;
+  padding: 8px 32px 8px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  color-scheme: dark;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--cream-dim) 50%),
+    linear-gradient(135deg, var(--cream-dim) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.setting-select:hover {
+  background-color: var(--moss-1);
+}
+.setting-select:focus {
+  outline: none;
+  border-color: var(--lime);
+}
+.setting-select:focus-visible {
   outline: 2px solid var(--lime);
   outline-offset: 2px;
 }
@@ -726,10 +708,10 @@ dialog.modal.restore-modal {
   padding: 12px 14px;
   background: linear-gradient(
     180deg,
-    rgba(204, 232, 78, 0.10),
-    rgba(204, 232, 78, 0.03)
+    rgb(var(--lime-rgb) / 0.10),
+    rgb(var(--lime-rgb) / 0.03)
   );
-  border: 1px solid rgba(204, 232, 78, 0.30);
+  border: 1px solid rgb(var(--lime-rgb) / 0.30);
   border-radius: 8px;
 }
 .settings-notif-content {
@@ -763,8 +745,8 @@ dialog.modal.restore-modal {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--lime);
-  background: rgba(204, 232, 78, 0.08);
-  border: 1px solid rgba(204, 232, 78, 0.5);
+  background: rgb(var(--lime-rgb) / 0.08);
+  border: 1px solid rgb(var(--lime-rgb) / 0.5);
   border-radius: 999px;
   padding: 6px 12px;
   cursor: pointer;
@@ -772,7 +754,7 @@ dialog.modal.restore-modal {
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .settings-notif-action:hover {
-  background: rgba(204, 232, 78, 0.18);
+  background: rgb(var(--lime-rgb) / 0.18);
   border-color: var(--lime);
 }
 .settings-notif-action:active { transform: translateY(1px); }
@@ -879,7 +861,7 @@ dialog.modal.restore-modal {
 @media (hover: hover) {
   .cta-btn:hover {
     color: var(--lime);
-    border-color: rgba(204, 232, 78, 0.5);
+    border-color: rgb(var(--lime-rgb) / 0.5);
     background: var(--night-4);
   }
 }
@@ -894,8 +876,8 @@ dialog.modal.restore-modal {
 
 .cta-btn.has-active {
   color: var(--lime);
-  border-color: rgba(204, 232, 78, 0.55);
-  background: rgba(204, 232, 78, 0.12);
+  border-color: rgb(var(--lime-rgb) / 0.55);
+  background: rgb(var(--lime-rgb) / 0.12);
 }
 
 /* Favorites star fills with lime when active for an extra visual cue. */
@@ -1003,9 +985,9 @@ dialog.modal.restore-modal {
   font-weight: 600;
   padding: 3px 4px 3px 10px;
   border-radius: 999px;
-  background: rgba(204, 232, 78, 0.16);
+  background: rgb(var(--lime-rgb) / 0.16);
   color: var(--lime);
-  border: 1px solid rgba(204, 232, 78, 0.45);
+  border: 1px solid rgb(var(--lime-rgb) / 0.45);
   font-family: inherit;
 }
 
@@ -1171,10 +1153,10 @@ dialog.modal.restore-modal {
    Just a color fade via the existing .chip transition. No bounce
    or scale animation — keeps tapping calm and fast. */
 .chip.active {
-  background: rgba(204, 232, 78, 0.22);
+  background: rgb(var(--lime-rgb) / 0.22);
   color: var(--lime);
-  border-color: rgba(204, 232, 78, 0.7);
-  box-shadow: inset 0 0 0 1px rgba(204, 232, 78, 0.35);
+  border-color: rgb(var(--lime-rgb) / 0.7);
+  box-shadow: inset 0 0 0 1px rgb(var(--lime-rgb) / 0.35);
 }
 
 .chip .count {
@@ -1238,26 +1220,26 @@ dialog.modal.restore-modal {
 
 @media (hover: hover) {
   .fav-btn:hover {
-    color: var(--lime-soft);
-    background: rgba(204, 232, 78, 0.1);
+    color: var(--star-fav-soft);
+    background: rgb(var(--star-fav-rgb) / 0.1);
   }
 }
 
 .fav-btn.is-fav {
-  color: var(--lime);
+  color: var(--star-fav);
 }
 
 /* Opt-in "can't miss" tier — gated behind the Settings toggle.
    Source-order after .is-fav so the cascade wins when both classes
    are present on the same button. */
 .fav-btn.is-red {
-  color: var(--red);
+  color: var(--star-red);
 }
 
 @media (hover: hover) {
   .fav-btn.is-red:hover {
-    color: var(--red-soft);
-    background: rgba(255, 77, 106, 0.10);
+    color: var(--star-red-soft);
+    background: rgb(var(--star-red-rgb) / 0.10);
   }
 }
 
@@ -1391,7 +1373,7 @@ dialog.modal.restore-modal {
   height: 6px;
   border-radius: 50%;
   background: var(--lime);
-  box-shadow: 0 0 6px rgba(204, 232, 78, 0.7);
+  box-shadow: 0 0 6px rgb(var(--lime-rgb) / 0.7);
   margin-left: 8px;
   vertical-align: 1px;
 }
@@ -1475,7 +1457,7 @@ footer.site-footer a:hover {
   top: 0;
   height: 2px;
   background: var(--lime);
-  box-shadow: 0 0 8px rgba(204, 232, 78, 0.6);
+  box-shadow: 0 0 8px rgb(var(--lime-rgb) / 0.6);
 }
 
 .now-line::after {
@@ -1514,7 +1496,7 @@ footer.site-footer a:hover {
   color: var(--moss-3);
   letter-spacing: 0.04em;
   padding: 4px 10px;
-  background: rgba(120, 180, 200, 0.05);
+  background: rgb(var(--moss-rgb) / 0.05);
   border: 1px dashed var(--moss-2);
   border-radius: 999px;
 }
@@ -1544,7 +1526,7 @@ footer.site-footer a:hover {
   color: var(--moss-3);
   letter-spacing: 0.04em;
   padding: 6px 12px;
-  background: rgba(120, 180, 200, 0.06);
+  background: rgb(var(--moss-rgb) / 0.06);
   border: 1px dashed var(--moss-2);
   border-radius: 999px;
   cursor: pointer;
@@ -1599,7 +1581,7 @@ footer.site-footer a:hover {
    creates visual noise. */
 .hour-row.is-now-hour .hour-label .time {
   color: var(--lime);
-  text-shadow: 0 0 10px rgba(204, 232, 78, 0.55);
+  text-shadow: 0 0 10px rgb(var(--lime-rgb) / 0.55);
   font-weight: 700;
 }
 
@@ -1638,9 +1620,9 @@ footer.site-footer a:hover {
 .event-card {
   position: relative;
   background:
-    linear-gradient(180deg, rgba(204, 232, 78, 0.10) 0%, transparent 38%),
+    linear-gradient(180deg, rgb(var(--lime-rgb) / var(--card-wash-alpha)) 0%, transparent var(--card-wash-stop)),
     var(--night-2);
-  border: 1px solid rgba(204, 232, 78, 0.22);
+  border: 1px solid rgb(var(--lime-rgb) / 0.22);
   border-radius: var(--radius);
   padding: 16px 18px;
   padding-right: 48px;
@@ -1662,9 +1644,9 @@ footer.site-footer a:hover {
 
 .event-card[data-type="sound_stage"] {
   background:
-    linear-gradient(180deg, rgba(255, 134, 189, 0.10) 0%, transparent 38%),
+    linear-gradient(180deg, rgb(var(--pink-rgb) / var(--card-wash-alpha)) 0%, transparent var(--card-wash-stop)),
     var(--night-2);
-  border-color: rgba(255, 134, 189, 0.22);
+  border-color: rgb(var(--pink-rgb) / 0.22);
 }
 
 .event-card[data-type="sound_stage"]::before {
@@ -1673,9 +1655,9 @@ footer.site-footer a:hover {
 
 .event-card[data-type="art_installation"] {
   background:
-    linear-gradient(180deg, rgba(116, 220, 232, 0.10) 0%, transparent 38%),
+    linear-gradient(180deg, rgb(var(--cyan-rgb) / var(--card-wash-alpha)) 0%, transparent var(--card-wash-stop)),
     var(--night-2);
-  border-color: rgba(116, 220, 232, 0.22);
+  border-color: rgb(var(--cyan-rgb) / 0.22);
 }
 
 .event-card[data-type="art_installation"]::before {
@@ -1684,9 +1666,9 @@ footer.site-footer a:hover {
 
 .event-card[data-type="mutant_vehicle"] {
   background:
-    linear-gradient(180deg, rgba(255, 174, 90, 0.10) 0%, transparent 38%),
+    linear-gradient(180deg, rgb(var(--amber-rgb) / var(--card-wash-alpha)) 0%, transparent var(--card-wash-stop)),
     var(--night-2);
-  border-color: rgba(255, 174, 90, 0.22);
+  border-color: rgb(var(--amber-rgb) / 0.22);
 }
 
 .event-card[data-type="mutant_vehicle"]::before {
@@ -1696,32 +1678,32 @@ footer.site-footer a:hover {
 @media (hover: hover) {
   .event-card:hover {
     background:
-      linear-gradient(180deg, rgba(204, 232, 78, 0.16) 0%, transparent 42%),
+      linear-gradient(180deg, rgb(var(--lime-rgb) / var(--card-wash-alpha-hover)) 0%, transparent var(--card-wash-stop-hover)),
       var(--night-3);
-    border-color: rgba(204, 232, 78, 0.5);
+    border-color: rgb(var(--lime-rgb) / 0.5);
     transform: translateY(-2px);
     box-shadow: var(--shadow-2);
   }
 
   .event-card[data-type="sound_stage"]:hover {
     background:
-      linear-gradient(180deg, rgba(255, 134, 189, 0.16) 0%, transparent 42%),
+      linear-gradient(180deg, rgb(var(--pink-rgb) / var(--card-wash-alpha-hover)) 0%, transparent var(--card-wash-stop-hover)),
       var(--night-3);
-    border-color: rgba(255, 134, 189, 0.5);
+    border-color: rgb(var(--pink-rgb) / 0.5);
   }
 
   .event-card[data-type="art_installation"]:hover {
     background:
-      linear-gradient(180deg, rgba(116, 220, 232, 0.16) 0%, transparent 42%),
+      linear-gradient(180deg, rgb(var(--cyan-rgb) / var(--card-wash-alpha-hover)) 0%, transparent var(--card-wash-stop-hover)),
       var(--night-3);
-    border-color: rgba(116, 220, 232, 0.5);
+    border-color: rgb(var(--cyan-rgb) / 0.5);
   }
 
   .event-card[data-type="mutant_vehicle"]:hover {
     background:
-      linear-gradient(180deg, rgba(255, 174, 90, 0.16) 0%, transparent 42%),
+      linear-gradient(180deg, rgb(var(--amber-rgb) / var(--card-wash-alpha-hover)) 0%, transparent var(--card-wash-stop-hover)),
       var(--night-3);
-    border-color: rgba(255, 174, 90, 0.5);
+    border-color: rgb(var(--amber-rgb) / 0.5);
   }
 
   .event-card.is-ongoing:hover {
@@ -1822,7 +1804,7 @@ footer.site-footer a:hover {
 .event-card .title {
   font-family: var(--font-display);
   font-weight: 700;
-  font-variation-settings: "opsz" 96;
+  font-variation-settings: "opsz" var(--font-display-opsz);
   font-size: 19px;
   line-height: 1.2;
   color: var(--cream);
@@ -1869,8 +1851,8 @@ footer.site-footer a:hover {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--cyan);
-  background: rgba(116, 220, 232, 0.08);
-  border: 1px solid rgba(116, 220, 232, 0.28);
+  background: rgb(var(--cyan-rgb) / 0.08);
+  border: 1px solid rgb(var(--cyan-rgb) / 0.28);
   border-radius: 999px;
   padding: 1px 7px 1px 6px;
   font-family: var(--font-sans);
@@ -1946,8 +1928,8 @@ footer.site-footer a:hover {
   gap: 6px;
   align-items: center;
   padding: 3px 8px;
-  background: rgba(255, 210, 74, 0.10);
-  border: 1px solid rgba(255, 210, 74, 0.35);
+  background: rgb(var(--warn-rgb) / 0.10);
+  border: 1px solid rgb(var(--warn-rgb) / 0.35);
   border-radius: 999px;
 }
 
@@ -1964,30 +1946,30 @@ footer.site-footer a:hover {
   letter-spacing: 0.02em;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(204, 232, 78, 0.08);
+  background: rgb(var(--lime-rgb) / 0.08);
   color: var(--moss-3);
-  border: 1px solid rgba(204, 232, 78, 0.22);
+  border: 1px solid rgb(var(--lime-rgb) / 0.22);
   white-space: nowrap;
 }
 
 .tag-chip[data-tag="19+"],
 .tag-chip[data-tag="Alcohol Involved"] {
-  background: rgba(255, 134, 189, 0.10);
+  background: rgb(var(--pink-rgb) / 0.10);
   color: var(--type-stage);
-  border-color: rgba(255, 134, 189, 0.32);
+  border-color: rgb(var(--pink-rgb) / 0.32);
 }
 
 .tag-chip[data-tag="Music / Dance"],
 .tag-chip[data-tag="Performance / Show"] {
-  background: rgba(116, 220, 232, 0.10);
+  background: rgb(var(--cyan-rgb) / 0.10);
   color: var(--type-art);
-  border-color: rgba(116, 220, 232, 0.32);
+  border-color: rgb(var(--cyan-rgb) / 0.32);
 }
 
 .tag-chip[data-tag="Food / Drink"] {
-  background: rgba(255, 210, 74, 0.10);
+  background: rgb(var(--warn-rgb) / 0.10);
   color: var(--warn);
-  border-color: rgba(255, 210, 74, 0.32);
+  border-color: rgb(var(--warn-rgb) / 0.32);
 }
 
 
@@ -2055,7 +2037,7 @@ footer.site-footer a:hover {
 .camp-block .name {
   font-family: var(--font-display);
   font-weight: 600;
-  font-variation-settings: "opsz" 48;
+  font-variation-settings: "opsz" var(--font-display-opsz-small);
   font-size: 17px;
   color: var(--cream);
   flex: 1;
@@ -2077,27 +2059,27 @@ footer.site-footer a:hover {
   border-radius: 999px;
   font-weight: 700;
   font-family: var(--font-sans);
-  background: rgba(204, 232, 78, 0.14);
+  background: rgb(var(--lime-rgb) / 0.14);
   color: var(--type-camp);
-  border: 1px solid rgba(204, 232, 78, 0.45);
+  border: 1px solid rgb(var(--lime-rgb) / 0.45);
 }
 
 .type-pill[data-type="sound_stage"] {
-  background: rgba(255, 134, 189, 0.14);
+  background: rgb(var(--pink-rgb) / 0.14);
   color: var(--type-stage);
-  border-color: rgba(255, 134, 189, 0.45);
+  border-color: rgb(var(--pink-rgb) / 0.45);
 }
 
 .type-pill[data-type="art_installation"] {
-  background: rgba(116, 220, 232, 0.14);
+  background: rgb(var(--cyan-rgb) / 0.14);
   color: var(--type-art);
-  border-color: rgba(116, 220, 232, 0.45);
+  border-color: rgb(var(--cyan-rgb) / 0.45);
 }
 
 .type-pill[data-type="mutant_vehicle"] {
-  background: rgba(255, 174, 90, 0.14);
+  background: rgb(var(--amber-rgb) / 0.14);
   color: var(--type-vehicle);
-  border-color: rgba(255, 174, 90, 0.45);
+  border-color: rgb(var(--amber-rgb) / 0.45);
 }
 
 .camp-block .count {
@@ -2114,13 +2096,13 @@ footer.site-footer a:hover {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(204, 232, 78, 0.16);
+  background: rgb(var(--lime-rgb) / 0.16);
   color: var(--lime);
   font-size: 10px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(204, 232, 78, 0.45);
+  border: 1px solid rgb(var(--lime-rgb) / 0.45);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-family: var(--font-sans);
@@ -2472,8 +2454,8 @@ dialog.modal::backdrop {
   color: var(--warn);
   font-size: 13px;
   padding: 8px 12px;
-  background: rgba(255, 210, 74, 0.10);
-  border: 1px solid rgba(255, 210, 74, 0.35);
+  background: rgb(var(--warn-rgb) / 0.10);
+  border: 1px solid rgb(var(--warn-rgb) / 0.35);
   border-radius: 8px;
 }
 
@@ -2500,7 +2482,7 @@ dialog.modal::backdrop {
 .modal a {
   color: var(--lime);
   text-decoration: none;
-  border-bottom: 1px dashed rgba(204, 232, 78, 0.4);
+  border-bottom: 1px dashed rgb(var(--lime-rgb) / 0.4);
   transition: color 0.15s, border-color 0.15s;
 }
 
@@ -2874,7 +2856,7 @@ body.map-fullscreen .map-view .controls-overlay {
 }
 
 .map-view .controls-overlay button.pins-toggle.active {
-  background: rgba(204, 232, 78, 0.24);
+  background: rgb(var(--lime-rgb) / 0.24);
   color: var(--lime);
 }
 

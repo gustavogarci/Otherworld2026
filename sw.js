@@ -20,7 +20,7 @@
 
 // Bump this string to invalidate the shell cache on the next visit.
 // Format is just for humans; any change triggers a refill.
-const SW_VERSION = "v6-2026-05-27-fav-hardening-4";
+const SW_VERSION = "v14-2026-05-27-fonts-1";
 
 const SHELL_CACHE = "otherworld-shell-" + SW_VERSION;
 const DATA_CACHE = "otherworld-data";
@@ -32,6 +32,7 @@ const OWNED_CACHES = new Set([SHELL_CACHE, DATA_CACHE, FONTS_CACHE]);
 const SHELL_ASSETS = [
   "/",
   "/index.html",
+  "/themes.css",
   "/styles.css",
   "/app.js",
   "/site.webmanifest",

@@ -1,0 +1,789 @@
+/* ──────────────────────────────────────────────────────────────────
+   THEMES — Otherworld 2026
+   ──────────────────────────────────────────────────────────────────
+   Each theme is a block of CSS custom properties using the same
+   variable names. The "source" theme lives in :root; alternate
+   themes live in [data-theme="<slug>"] blocks below and override
+   the same slots.
+
+   To switch theme at runtime:
+
+       document.documentElement.dataset.theme = "ripple";
+       // and to revert to the default (Isaías):
+       delete document.documentElement.dataset.theme;
+
+   This file is loaded BEFORE styles.css in index.html, so every
+   var(--token) reference in styles.css resolves against whichever
+   theme is currently active.
+
+   ──────────────────────────────────────────────────────────────────
+   ROLE MAP — what each named slot plays as a role in styles.css.
+   The variable NAME (e.g. --lime) is just a slot label; the actual
+   hue is whatever the active theme assigns. Treat names as roles,
+   not literal colors, when designing new themes.
+   ──────────────────────────────────────────────────────────────────
+
+   Surfaces (deepest → lightest in the default dark theme):
+     --night-0   ink that sits on top of the primary accent button
+                 (lime "Done" buttons, cta-badge text, NOW badge,
+                 selection text). NOT used as a surface — keep DARK
+                 in light themes if the primary accent is bright,
+                 or LIGHT if the primary accent is dark.
+     --night-1   page background — body, header, status-bar scrim
+     --night-2   card surface — modals, event cards, camp blocks
+     --night-3   raised surface — card hover, settings panels, tray
+     --night-4   focus surface — toggles (off), inputs, backup btns
+     --moss-1    soft divider — 1px hairlines and subtle borders
+                 (always alpha; channel = --moss-rgb)
+     --moss-2    strong border — button outlines, dotted footer links
+                 (always alpha; channel = --moss-rgb)
+     --moss-3    dim ink — timestamps, secondary metadata, captions
+
+   Ink (brightest → dimmest, always readable on --night-1/--night-2):
+     --cream         primary ink
+     --cream-soft    secondary ink (modal body, settings hints)
+     --cream-dim     tertiary ink (settings labels, low-emphasis)
+
+   Accents — each hue slot doubles as a semantic role.
+   Each slot has THREE solid variants AND an --rgb channel
+   variant for use inside soft alpha tints.
+     --lime / --lime-soft / --lime-deep / --lime-rgb
+       PRIMARY brand accent. Camp type color. Focus rings, "NOW"
+       indicator, "Done" button, active filter pills, success.
+     --pink / --pink-soft / --pink-deep / --pink-rgb
+       Sound stage type color. 19+ / alcohol tag chips.
+     --cyan / --cyan-soft / --cyan-deep / --cyan-rgb
+       Art installation type color. Hour-row time labels,
+       neighbourhood pills, music/dance tag chips.
+     --amber / --amber-soft / --amber-deep / --amber-rgb
+       Mutant vehicle type color.
+     --warn / --warn-rgb
+       Caution + flag text (yellow). Food/drink tag chips.
+     --red / --red-soft / --red-deep / --red-rgb
+       Opt-in "can't miss" favorite tier (warm coral-red, NOT a
+       system alert color — should sit in the same family as
+       --amber/--pink so it reads as deliberate, not error-y).
+     --moss-rgb
+       The base channels used by --moss-1 and --moss-2.
+
+   Type aliases (semantic; leave alone unless you really mean it):
+     --type-camp / --type-stage / --type-art / --type-vehicle
+       Map directly onto the hue tokens above. styles.css uses
+       these in some selectors so the intent stays readable.
+
+   Typography:
+     --font-display   headlines, event titles, camp names
+     --font-sans      body text, UI controls (default font)
+     --font-mono      times, counts, technical labels, code
+
+   Geometry / depth (rarely changed by a theme, but available):
+     --radius / --radius-lg
+     --shadow-1 / --shadow-2
+
+   ──────────────────────────────────────────────────────────────────
+   CHANNEL TOKENS — `--<hue>-rgb`
+   ──────────────────────────────────────────────────────────────────
+   Each accent hue defines an `--<hue>-rgb` token whose value is
+   three space-separated numbers, e.g. `--lime-rgb: 204 232 78`.
+   Use them inside alpha tints like:
+
+       background: rgb(var(--lime-rgb) / 0.10);
+       border:     1px solid rgb(var(--lime-rgb) / 0.45);
+
+   This lets every soft tinted band (active filter chip washes,
+   card mat backgrounds, glow gradients, focus rings, etc.) follow
+   the theme automatically. Without channel tokens, alpha tints
+   would be locked to the default lime/pink/cyan hues regardless
+   of the active theme — see git history for the original setup.
+   ────────────────────────────────────────────────────────────── */
+
+
+/* ── DEFAULT — "Isaiiaas" ─────────────────────────────────────────
+   Named after the original developer of the app — the palette
+   they shipped with v1. Deep midnight-teal background like a
+   moonlit lake, with neon accents pulled from the cover's
+   psychedelic mushrooms.
+
+   This block lives in :root so it applies whenever no
+   [data-theme="…"] attribute is set on <html>. */
+:root {
+  /* Surfaces */
+  --night-0: #04090c;
+  --night-1: #0a1620;
+  --night-2: #122332;
+  --night-3: #1a3045;
+  --night-4: #244257;
+  --moss-rgb: 120 180 200;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #6e8a9c;
+
+  /* Ink */
+  --cream: #f2ead0;
+  --cream-soft: #d4cea7;
+  --cream-dim: #95a3a9;
+
+  /* Accents */
+  --lime: #cce84e;
+  --lime-soft: #e6f099;
+  --lime-deep: #7ea529;
+  --lime-rgb: 204 232 78;
+
+  --pink: #ff86bd;
+  --pink-soft: #ffb5d4;
+  --pink-deep: #c44679;
+  --pink-rgb: 255 134 189;
+
+  --cyan: #74dce8;
+  --cyan-soft: #a8ecf2;
+  --cyan-deep: #2a8c9a;
+  --cyan-rgb: 116 220 232;
+
+  --amber: #ffae5a;
+  --amber-soft: #ffcb8d;
+  --amber-deep: #b76a14;
+  --amber-rgb: 255 174 90;
+
+  --warn: #ffd24a;
+  --warn-rgb: 255 210 74;
+
+  --red: #ff4d6a;
+  --red-soft: #ff8da3;
+  --red-deep: #c2334a;
+  --red-rgb: 255 77 106;
+
+  /* Type aliases */
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  /* Typography */
+  --font-display: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Geometry / depth */
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 18px 50px rgba(0, 0, 0, 0.55), 0 6px 18px rgba(0, 0, 0, 0.35);
+
+  /* Event-card top-wash gradient — every card fades a translucent
+     type-color from the top edge down. Below are the knobs:
+       --card-wash-alpha       intensity at the top
+       --card-wash-stop        how far down the wash reaches
+       --card-wash-alpha-hover same, on hover
+       --card-wash-stop-hover  same, on hover
+     Higher alpha + longer stop = more "ambient neon glow" feel.
+     The defaults below are deliberately understated so analog/
+     natural themes don't look futuristic; explicitly neon themes
+     (e.g. spin) override these upward in their own block. */
+  --card-wash-alpha: 0.05;
+  --card-wash-stop: 24%;
+  --card-wash-alpha-hover: 0.08;
+  --card-wash-stop-hover: 28%;
+
+  /* Optical-size axis for variable display fonts (Fraunces,
+     Bricolage Grotesque, Bodoni Moda, etc.). The two slots match
+     the two contexts where font-variation-settings: "opsz" is
+     applied in styles.css:
+       --font-display-opsz       event-card titles + similar (~19px)
+       --font-display-opsz-small camp block names + section heads (~17px)
+     Higher values = sharper, more dramatic display optical size.
+     Lower values = softer, more humanist / body-like.
+     Defaults preserve the original Bricolage rendering behaviour. */
+  --font-display-opsz: 96;
+  --font-display-opsz-small: 48;
+
+  /* Favorite-star tier colors. The Settings toggle is literally
+     called "Red-star favorites", so by convention the can't-miss
+     (.is-red) tier should always read REDDER than the regular
+     (.is-fav) tier. By default these point at --lime (primary)
+     and --red (can't-miss); themes whose primary accent is itself
+     red (e.g. kink) should override these to swap roles. */
+  --star-fav: var(--lime);
+  --star-fav-soft: var(--lime-soft);
+  --star-fav-rgb: var(--lime-rgb);
+  --star-red: var(--red);
+  --star-red-soft: var(--red-soft);
+  --star-red-rgb: var(--red-rgb);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   DRAFT THEMES — preview-only, not yet wired into the in-app picker
+   ══════════════════════════════════════════════════════════════════
+   These blocks below exist so we can iterate on palette + typography
+   in isolation using themes.html (the "Theme Lab" page), without
+   surfacing half-baked options to actual users. To "ship" a draft:
+
+     1. Make sure its display font is loaded in index.html's Google
+        Fonts URL (themes.html already loads all of them).
+     2. Add { id: "<id>", label: "<Label>" } to the THEMES array
+        in app.js so it appears in the Settings picker.
+
+   Each draft is inspired by an Otherworld camp.
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ── DRAFT — "Mother Tree" — old-growth canopy at dusk ────────────
+   Mossy bark surfaces, lichen and dusty-rose accents. Desaturated
+   on purpose — earthy, not electric. Modulated serif (DM Serif
+   Display) for the headline type so it feels rooted.
+
+   Role mapping for this theme:
+     --lime  → moss sage             (primary / camp / "NOW")
+     --pink  → dusty wild rose       (sound stage)
+     --cyan  → canopy mist           (art installation, hour times)
+     --amber → honey umber           (mutant vehicle)
+     --red   → clay red              (can't-miss favorite tier) */
+[data-theme="mother-tree"] {
+  /* Surfaces — deep moss in shade, with enough green chroma to feel
+     like real woods (a touch greener than v2 but still less
+     fluorescent than v1). */
+  --night-0: #0a1310;
+  --night-1: #131c18;
+  --night-2: #1c2722;
+  --night-3: #283630;
+  --night-4: #344a3e;
+  --moss-rgb: 130 150 130;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #7a8a7c;
+
+  --cream: #e8e2d0;
+  --cream-soft: #c4bea8;
+  --cream-dim: #8a958a;
+
+  /* Accents — deeper sage / dusty rose / canopy mist. --*-soft kept
+     close to the parent so soft highlights read as a touch lighter,
+     not as a glowing halo. */
+  --lime: #6e8c50;
+  --lime-soft: #87a36b;
+  --lime-deep: #3f5a26;
+  --lime-rgb: 110 140 80;
+
+  --pink: #b07a7a;
+  --pink-soft: #c69898;
+  --pink-deep: #5e2e2e;
+  --pink-rgb: 176 122 122;
+
+  --cyan: #8aa5b0;
+  --cyan-soft: #a8bec6;
+  --cyan-deep: #4a6068;
+  --cyan-rgb: 138 165 176;
+
+  --amber: #b07c40;
+  --amber-soft: #c49866;
+  --amber-deep: #66401a;
+  --amber-rgb: 176 124 64;
+
+  --warn: #c49a55;
+  --warn-rgb: 196 154 85;
+
+  --red: #a04438;
+  --red-soft: #be7064;
+  --red-deep: #5e221c;
+  --red-rgb: 160 68 56;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  /* Fraunces — warm humanist variable serif. Designed explicitly to
+     feel soft and calm (its opsz axis was modeled on Cooper Old
+     Style's humanist warmth). Reads like the headline type used by
+     outdoor / craft brands like Fjällräven, Tofino Towel Co.,
+     Tentree — quiet, considered, made of natural materials. */
+  --font-display: "Fraunces", "Bricolage Grotesque", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Push Fraunces toward its softer / more humanist optical sizes
+     instead of its sharpest display setting — that's what makes
+     event-card titles read calm rather than fashion-magazine. */
+  --font-display-opsz: 14;
+  --font-display-opsz-small: 12;
+}
+
+
+/* ── DRAFT — "Ripple" — ocean depths, marine blues ────────────────
+   Deep open water: midnight teals and indigos for surfaces,
+   bioluminescent and coral accents. Display face is a soft
+   rounded sans (Nunito 800) so titles feel like rolling swells. */
+[data-theme="ripple"] {
+  --night-0: #03101a;
+  --night-1: #08283f;
+  --night-2: #0e3858;
+  --night-3: #134970;
+  --night-4: #1c5f8a;
+  --moss-rgb: 140 200 220;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #6f9bb5;
+
+  --cream: #e8f4f6;
+  --cream-soft: #b8d4dc;
+  --cream-dim: #7fa0ad;
+
+  --lime: #4fd9d2;
+  --lime-soft: #95e8e2;
+  --lime-deep: #1f8a8a;
+  --lime-rgb: 79 217 210;
+
+  --pink: #ff8a8c;
+  --pink-soft: #ffb5b6;
+  --pink-deep: #c44648;
+  --pink-rgb: 255 138 140;
+
+  --cyan: #7ec4e8;
+  --cyan-soft: #b0dbf0;
+  --cyan-deep: #2c6fa3;
+  --cyan-rgb: 126 196 232;
+
+  --amber: #f7c46b;
+  --amber-soft: #ffd99a;
+  --amber-deep: #b07d1a;
+  --amber-rgb: 247 196 107;
+
+  --warn: #ffcc66;
+  --warn-rgb: 255 204 102;
+
+  --red: #ff5a78;
+  --red-soft: #ff95a8;
+  --red-deep: #c43a52;
+  --red-rgb: 255 90 120;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Nunito", "Bricolage Grotesque", -apple-system, system-ui, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+
+/* ── DRAFT — "Circus" — aged velvet bigtop, brass + dust ──────────
+   Mahogany and crimson velvet curtains with a patina of years on
+   the brass. Deliberately desaturated vs. "circus poster neon" —
+   we're after the smell of sawdust and the dim of footlights, not
+   a clip-art primary palette. Display type is Rye — Western
+   saloon-poster wood-type letterforms with serif spurs that feel
+   period-correct for an old travelling show.
+
+   Role mapping for this theme:
+     --lime  → aged brass            (primary / camp / "NOW")
+     --pink  → dusty stage rose      (sound stage)
+     --cyan  → verdigris spotlight   (art installation, hour times)
+     --amber → terracotta ember      (mutant vehicle)
+     --red   → vintage poster red    (can't-miss favorite tier) */
+[data-theme="circus"] {
+  /* Surfaces — aged mahogany velvet, less ruby red. The original
+     surface red was a bit too saturated and was making the brass
+     accent feel like a stage spotlight. Now it reads more like a
+     dim backstage corridor. */
+  --night-0: #0a0608;
+  --night-1: #160c12;
+  --night-2: #221218;
+  --night-3: #2e1a22;
+  --night-4: #3c2230;
+  --moss-rgb: 200 165 110;
+  --moss-1: rgb(var(--moss-rgb) / 0.08);
+  --moss-2: rgb(var(--moss-rgb) / 0.20);
+  --moss-3: #948068;
+
+  --cream: #ead8a8;
+  --cream-soft: #c8b482;
+  --cream-dim: #a09474;
+
+  /* Accents — brass tarnished further, stage rose dustier, spotlight
+     teal more verdigris. Keeping the warm core but pulling the
+     "neon poster" out of the colors. */
+  --lime: #be9a3c;
+  --lime-soft: #d4b66a;
+  --lime-deep: #6e5012;
+  --lime-rgb: 190 154 60;
+
+  --pink: #ad5876;
+  --pink-soft: #c2849b;
+  --pink-deep: #5e2438;
+  --pink-rgb: 173 88 118;
+
+  --cyan: #4e8a94;
+  --cyan-soft: #7ea7af;
+  --cyan-deep: #284e54;
+  --cyan-rgb: 78 138 148;
+
+  --amber: #be5c34;
+  --amber-soft: #d4866a;
+  --amber-deep: #6e2810;
+  --amber-rgb: 190 92 52;
+
+  --warn: #be9a3c;
+  --warn-rgb: 190 154 60;
+
+  --red: #ae2e42;
+  --red-soft: #c66476;
+  --red-deep: #6e1622;
+  --red-rgb: 174 46 66;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Rye", "Bricolage Grotesque", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+
+/* ── DRAFT — "Sky" — true daytime light theme ─────────────────────
+   The first LIGHT theme. Pale sky-blue page, cumulus-white cards,
+   dark blue-grey ink. Accents are a deepened rainbow tuned for
+   readability against bright surfaces. Display face is Quicksand
+   for an airy, cumulus feel.
+
+   Notes for designers iterating on this:
+     - --night-0 stays DARK because it's used as the ink color on
+       top of the primary accent (--lime) button. The primary here
+       is a meadow green readable on light, so dark text on it.
+     - "cream" tokens are now DARK (the role is "primary ink", not
+       the literal color cream — the names lie in light themes).
+     - Soft tinted bands (chip.active, card hovers, body::before
+       gradient) follow the theme via --*-rgb channel tokens, so
+       they look like soft wash-color tints on white instead of
+       fighting the light surface.
+
+   Role mapping for this theme:
+     --lime  → meadow green          (primary / camp / "NOW")
+     --pink  → cherry blossom        (sound stage)
+     --cyan  → sky cerulean          (art installation, hour times)
+     --amber → sunset peach          (mutant vehicle)
+     --red   → kite red              (can't-miss favorite tier) */
+[data-theme="sky"] {
+  --night-0: #0a1820;
+  --night-1: #cfe2f1;
+  --night-2: #ffffff;
+  --night-3: #f0f8fd;
+  --night-4: #dfedf7;
+  --moss-rgb: 74 130 180;
+  --moss-1: rgb(var(--moss-rgb) / 0.14);
+  --moss-2: rgb(var(--moss-rgb) / 0.32);
+  --moss-3: #6a8aa5;
+
+  --cream: #1a2838;
+  --cream-soft: #3a4a5c;
+  --cream-dim: #6a7a8c;
+
+  --lime: #4a9968;
+  --lime-soft: #7ab895;
+  --lime-deep: #1f5d3a;
+  --lime-rgb: 74 153 104;
+
+  --pink: #d4658a;
+  --pink-soft: #e89bb4;
+  --pink-deep: #8a3052;
+  --pink-rgb: 212 101 138;
+
+  --cyan: #2a86c4;
+  --cyan-soft: #6cb0d8;
+  --cyan-deep: #144868;
+  --cyan-rgb: 42 134 196;
+
+  --amber: #e08549;
+  --amber-soft: #eca57a;
+  --amber-deep: #8a4318;
+  --amber-rgb: 224 133 73;
+
+  --warn: #d4a52a;
+  --warn-rgb: 212 165 42;
+
+  --red: #d4324a;
+  --red-soft: #e8758d;
+  --red-deep: #8a1828;
+  --red-rgb: 212 50 74;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Quicksand", "Bricolage Grotesque", -apple-system, system-ui, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+
+/* ── DRAFT — "Kink" — 19+, blackout + blood red ───────────────────
+   True-black surfaces with a faint warm red undertone, blood-red
+   primary accent, ash silver for the "cool" slot so the four
+   accents stay distinguishable. Display type is Italiana — a thin
+   elegant lapidary serif that reads as fashion editorial / film
+   title on glossy black. Single weight (400); the 700 weight
+   styles.css applies to titles will be browser-synthesized.
+
+   The "can't miss" favorite tier uses CHAMPAGNE GOLD as the --red
+   slot value, but the .fav-btn rules in styles.css read --star-fav
+   / --star-red, which this theme swaps so the can't-miss star
+   actually renders in --lime (blood crimson) — keeping the "double
+   star = redder" convention consistent across all themes.
+
+   Role mapping for this theme:
+     --lime  → blood crimson         (primary / camp / "NOW")
+     --pink  → hot pink              (sound stage)
+     --cyan  → ash silver            (art installation, hour times)
+     --amber → brass / warm metal    (mutant vehicle)
+     --red   → champagne gold        (sits behind --star-fav swap) */
+[data-theme="kink"] {
+  --night-0: #000000;
+  --night-1: #0a0606;
+  --night-2: #150a0c;
+  --night-3: #20100f;
+  --night-4: #2e1715;
+  --moss-rgb: 200 80 80;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #7a4848;
+
+  --cream: #f0e8e8;
+  --cream-soft: #b8a8a8;
+  --cream-dim: #6a5252;
+
+  --lime: #e30b3b;
+  --lime-soft: #f06980;
+  --lime-deep: #8c0421;
+  --lime-rgb: 227 11 59;
+
+  --pink: #ff2570;
+  --pink-soft: #ff70a0;
+  --pink-deep: #a01047;
+  --pink-rgb: 255 37 112;
+
+  --cyan: #a89e9e;
+  --cyan-soft: #cac0c0;
+  --cyan-deep: #6e6262;
+  --cyan-rgb: 168 158 158;
+
+  --amber: #c9a032;
+  --amber-soft: #e6c266;
+  --amber-deep: #7a5e15;
+  --amber-rgb: 201 160 50;
+
+  --warn: #ff8a4a;
+  --warn-rgb: 255 138 74;
+
+  --red: #f0c04a;
+  --red-soft: #ffd680;
+  --red-deep: #8a6918;
+  --red-rgb: 240 192 74;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Italiana", "Bricolage Grotesque", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Star tier swap — Kink's primary accent (--lime) is itself red,
+     so by default a "more emphatic red" tier doesn't read as
+     redder. Swap so the can't-miss star uses the blood crimson
+     primary, and the regular star uses the champagne gold of
+     --red. Matches the "double-tap = redder" convention from the
+     Settings toggle label. */
+  --star-fav: var(--red);
+  --star-fav-soft: var(--red-soft);
+  --star-fav-rgb: var(--red-rgb);
+  --star-red: var(--lime);
+  --star-red-soft: var(--lime-soft);
+  --star-red-rgb: var(--lime-rgb);
+}
+
+
+/* ── DRAFT — "Thirrrst" — weathered pirate, salt + tar + brass ────
+   Stormy ocean planking, oiled deck, parchment ink, faded sails.
+   Deliberately not "Disney pirate" — leaning into scurvy, salt
+   crust, and last-drop-of-rum desperation. Display face is Pirata
+   One, whose letterforms read as engraved into a treasure chest.
+
+   Role mapping for this theme:
+     --lime  → doubloon brass        (primary / camp / "NOW")
+     --pink  → sun-faded sail rose   (sound stage)
+     --cyan  → deep ocean fog teal   (art installation, hour times)
+     --amber → rum copper            (mutant vehicle)
+     --red   → tattered flag red     (can't-miss favorite tier) */
+[data-theme="thirrrst"] {
+  /* Surfaces — wet dark wood / oiled deck. Pulled the blue-teal
+     chroma down a notch so it stops reading "stormy electric" and
+     starts reading "tarred plank at midnight". */
+  --night-0: #060808;
+  --night-1: #0c1316;
+  --night-2: #161f22;
+  --night-3: #1f2c2f;
+  --night-4: #2a3a3d;
+  --moss-rgb: 140 120 90;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #8a7a5e;
+
+  --cream: #e6d4ae;
+  --cream-soft: #c0ac86;
+  --cream-dim: #948a76;
+
+  /* Accents — tarnished brass instead of polished doubloon, faded
+     scarves instead of bright sail roses, ocean fog instead of
+     teal neon. */
+  --lime: #b08a3a;
+  --lime-soft: #c4a25e;
+  --lime-deep: #5e4a14;
+  --lime-rgb: 176 138 58;
+
+  --pink: #a86878;
+  --pink-soft: #be8a98;
+  --pink-deep: #5e2c38;
+  --pink-rgb: 168 104 120;
+
+  --cyan: #4a7a8a;
+  --cyan-soft: #6e96a0;
+  --cyan-deep: #1f4248;
+  --cyan-rgb: 74 122 138;
+
+  --amber: #a85e26;
+  --amber-soft: #c08550;
+  --amber-deep: #5e2e0e;
+  --amber-rgb: 168 94 38;
+
+  --warn: #c4a040;
+  --warn-rgb: 196 160 64;
+
+  --red: #963024;
+  --red-soft: #ae5e58;
+  --red-deep: #4e1410;
+  --red-rgb: 150 48 36;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Pirata One", "Bricolage Grotesque", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+
+/* ── DRAFT — "Spin" — disco floor + vinyl gloss ───────────────────
+   Lacquered black with a club-velvet purple undertone, hot
+   magenta primary, electric blue and gold-record secondary.
+   Display face is Audiowide — curvy retro-futuristic letterforms
+   that read as 70s-disco-meets-arcade-game without sacrificing
+   readability the way Monoton's vinyl-groove letters did.
+
+   The "can't miss" tier uses CHARTREUSE / UV-blacklight green
+   instead of the usual coral red — magenta primary + cherry red
+   are too close at icon size to read as different tiers, and
+   chartreuse-on-magenta is canonically 70s nightclub.
+
+   Role mapping for this theme:
+     --lime  → hot magenta           (primary / camp / "NOW")
+     --pink  → bubblegum pink        (sound stage)
+     --cyan  → electric blue         (art installation, hour times)
+     --amber → gold record           (mutant vehicle)
+     --red   → UV chartreuse         (can't-miss favorite tier) */
+[data-theme="spin"] {
+  --night-0: #050309;
+  --night-1: #0e0814;
+  --night-2: #1a0f25;
+  --night-3: #281836;
+  --night-4: #3a224c;
+  --moss-rgb: 180 140 220;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #8a7aa0;
+
+  --cream: #f0e8f5;
+  --cream-soft: #c8b8d4;
+  --cream-dim: #8a7a9c;
+
+  --lime: #ec3da8;
+  --lime-soft: #f57ac4;
+  --lime-deep: #8a1a5a;
+  --lime-rgb: 236 61 168;
+
+  --pink: #ff5fb0;
+  --pink-soft: #ff95cc;
+  --pink-deep: #a81a6a;
+  --pink-rgb: 255 95 176;
+
+  --cyan: #3aaeff;
+  --cyan-soft: #7ac4ff;
+  --cyan-deep: #1a5a96;
+  --cyan-rgb: 58 174 255;
+
+  --amber: #e5b840;
+  --amber-soft: #f0d27a;
+  --amber-deep: #8a6e1a;
+  --amber-rgb: 229 184 64;
+
+  --warn: #ffd24a;
+  --warn-rgb: 255 210 74;
+
+  --red: #c8ff3f;
+  --red-soft: #dcff85;
+  --red-deep: #6e9015;
+  --red-rgb: 200 255 63;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Audiowide", "Bricolage Grotesque", -apple-system, system-ui, sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Spin leans deliberately neon — keep the dance-floor glow on the
+     event cards instead of the calmed-down default. */
+  --card-wash-alpha: 0.16;
+  --card-wash-stop: 42%;
+  --card-wash-alpha-hover: 0.22;
+  --card-wash-stop-hover: 46%;
+}

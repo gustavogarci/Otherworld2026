@@ -674,6 +674,56 @@
   // favorites — but the data stays put in localStorage so flipping
   // this back on restores them.
   const CANT_MISS_KEY = "ow_cant_miss_enabled";
+
+  // Theme picker. Each entry's `id` matches a CSS block in themes.css:
+  // the default theme lives in :root, every other id is a
+  // [data-theme="<id>"] block. To add a new theme:
+  //   1. Add a [data-theme="<id>"] { … } block to themes.css.
+  //   2. If it uses a new font, add the family to the Google Fonts
+  //      <link> in index.html so it's available before swap.
+  //   3. Push { id, label } into THEMES below.
+  // The inline FOUC script in index.html reads ow_theme from
+  // localStorage before stylesheets resolve, so initial paint
+  // already reflects the saved choice.
+  const THEME_KEY = "ow_theme";
+  const DEFAULT_THEME_ID = "isaias";
+  // Order in this array = order in the Settings dropdown. Roughly
+  // arranged calm → intense so the picker feels like a vibe spectrum.
+  const THEMES = [
+    { id: "isaias",      label: "Isaiiaas" },
+    { id: "mother-tree", label: "Mother Tree" },
+    { id: "ripple",      label: "Ripple" },
+    { id: "sky",         label: "Sky" },
+    { id: "circus",      label: "Circus" },
+    { id: "thirrrst",    label: "Thirrrst" },
+    { id: "spin",        label: "Spin" },
+    { id: "kink",        label: "Kink" },
+  ];
+  function loadThemePref() {
+    try {
+      const v = localStorage.getItem(THEME_KEY);
+      if (v && THEMES.some(t => t.id === v)) return v;
+      // Saved value is for a theme that no longer exists (e.g. an
+      // older draft that was removed). Clean it up so the inline
+      // FOUC script in index.html stops setting a dead attribute.
+      if (v) localStorage.removeItem(THEME_KEY);
+    } catch {}
+    return DEFAULT_THEME_ID;
+  }
+  function saveThemePref(id) {
+    try {
+      if (id && id !== DEFAULT_THEME_ID) localStorage.setItem(THEME_KEY, id);
+      else localStorage.removeItem(THEME_KEY);
+    } catch {}
+  }
+  // Apply by toggling <html data-theme>. Default theme = no attribute,
+  // so :root in themes.css wins. Any other id sets the attribute and
+  // its [data-theme="<id>"] block in themes.css overrides :root.
+  function applyTheme(id) {
+    const root = document.documentElement;
+    if (!id || id === DEFAULT_THEME_ID) root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", id);
+  }
   function loadBoolPref(k) {
     try { return localStorage.getItem(k) === "1"; } catch { return false; }
   }
@@ -697,7 +747,12 @@
   let hideDescriptions = loadBoolPref(HIDE_DESC_KEY);
   let hideOngoing = loadBoolPref(HIDE_ONGOING_KEY);
   let cantMissEnabled = loadBoolPref(CANT_MISS_KEY);
+  let activeThemeId = loadThemePref();
   let mapPinsHidden = loadMapPinsHiddenPref();
+  // Apply on boot. The inline <head> script already set the attribute
+  // synchronously to avoid FOUC; this re-assertion keeps things tidy
+  // if the inline script ever fails (e.g. localStorage blocked).
+  applyTheme(activeThemeId);
   let devNowOverride = (() => {
     const v = loadDevNow();
     if (!v) return null;
@@ -2026,6 +2081,28 @@
       }
       renderAll();
     });
+
+    // Theme picker. Populated from THEMES so adding a new entry to
+    // that array (and a [data-theme="…"] block in themes.css) is
+    // all that's needed to surface a new option here.
+    const themeEl = document.getElementById("setting-theme");
+    if (themeEl) {
+      themeEl.innerHTML = "";
+      THEMES.forEach(({ id, label }) => {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = label;
+        themeEl.appendChild(opt);
+      });
+      themeEl.value = activeThemeId;
+      themeEl.addEventListener("change", () => {
+        activeThemeId = themeEl.value;
+        saveThemePref(activeThemeId);
+        applyTheme(activeThemeId);
+        // No renderAll() needed — themes are pure CSS-variable swaps,
+        // the DOM doesn't change.
+      });
+    }
   }
 
   // ── In-Settings notification cards + gear dot ─────────────
