@@ -26,11 +26,11 @@
        all so any theme renders correctly here regardless of whether
        it's been promoted to the in-app picker yet. -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Audiowide&family=Bowlby+One&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Bungee&family=Bungee+Inline&family=Cinzel:wght@400..900&family=Comfortaa:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fraunces:opsz,wght@9..144,300..700&family=IM+Fell+English:ital@0;1&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@400..800&family=Italiana&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@400..800&family=Monoton&family=Nunito:wght@400;700;800;900&family=Outfit:wght@400..800&family=Pirata+One&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@400;500;600;700&family=Righteous&family=Rye&family=Space+Grotesk:wght@400..700&family=Tilt+Prism&family=UnifrakturMaguntia&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Aldrich&family=Audiowide&family=Bowlby+One&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Bungee&family=Bungee+Inline&family=Chakra+Petch:wght@400;500;600;700&family=Cinzel:wght@400..900&family=Comfortaa:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Fraunces:opsz,wght@9..144,300..700&family=IM+Fell+English:ital@0;1&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@400..800&family=Italiana&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400..700;1,400..700&family=Major+Mono+Display&family=Manrope:wght@400..800&family=Michroma&family=Monoton&family=Nunito:wght@400;700;800;900&family=Orbitron:wght@400..900&family=Outfit:wght@400..800&family=Pirata+One&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@400;500;600;700&family=Righteous&family=Rye&family=Share+Tech+Mono&family=Space+Grotesk:wght@400..700&family=Syncopate:wght@400;700&family=Tilt+Prism&family=UnifrakturMaguntia&family=VT323&display=swap"
     rel="stylesheet">
 
-  <link rel="stylesheet" href="themes.css?v=20260527-fonts-1">
-  <link rel="stylesheet" href="styles.css?v=20260527-fonts-1">
+  <link rel="stylesheet" href="themes.css?v=20260528-cosmic-2">
+  <link rel="stylesheet" href="styles.css?v=20260528-cosmic-2">
 
   <style>
     /* Lab-only chrome. Uses theme tokens where possible so the
@@ -440,6 +440,17 @@
 </head>
 
 <body>
+  <!-- Mirror of the ambient theme backgrounds from index.html so the
+       lab can preview them. Each is hidden by default and only
+       painted when its theme's [data-theme="…"] is active on <html>. -->
+  <div class="cosmic-bg" aria-hidden="true">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <path class="shooting-star" d="M -10,15 Q 45,5 60,45 T 115,80"/>
+      <path class="shooting-star" d="M 115,20 Q 70,30 45,55 T -10,90"/>
+      <path class="shooting-star" d="M -10,55 Q 30,75 65,60 T 115,30"/>
+    </svg>
+  </div>
+
   <div class="lab-shell">
 
     <h1 class="lab-title">Theme Lab</h1>
@@ -863,6 +874,7 @@
       { id: "thirrrst",    label: "Thirrrst",    inApp: true },
       { id: "spin",        label: "Spin",        inApp: true },
       { id: "kink",        label: "Kink",        inApp: true },
+      { id: "cosmic",      label: "Cosmic",      inApp: true  },
     ];
 
     /* Per-theme display-font candidates. Index 0 of each array is
@@ -925,6 +937,34 @@
         { label: "Cormorant Garamond", family: '"Cormorant Garamond", Georgia, serif' },
         { label: "Cinzel",             family: '"Cinzel", Georgia, serif' },
         { label: "Italiana",           family: '"Italiana", Georgia, serif' },
+      ],
+      cosmic: [
+        /* Major Mono Display — looks like 1960s NASA flight-deck
+           console output. THE DEFAULT. Apollo Guidance Computer /
+           Nostromo MU/TH/UR vibe — the most "spaceship terminal"
+           of the bunch. */
+        { label: "Major Mono Display", family: '"Major Mono Display", ui-monospace, monospace' },
+        /* Orbitron — Matt McInerney's homage to Star Trek title
+           cards. Wide geometric forms, mission-control chrome. */
+        { label: "Orbitron",           family: '"Orbitron", -apple-system, system-ui, sans-serif' },
+        /* Michroma — extra-wide geometric, very Eurostile Extended.
+           Closest free analog to the literal Alien / 2001 type. */
+        { label: "Michroma",           family: '"Michroma", -apple-system, system-ui, sans-serif' },
+        /* Aldrich — cleaner Eurostile clone. Reads like a HUD label
+           on a Star Wars cockpit panel. */
+        { label: "Aldrich",            family: '"Aldrich", -apple-system, system-ui, sans-serif' },
+        /* Chakra Petch — angular cyberpunk/cockpit. Half-way
+           between Orbitron and a videogame HUD font. */
+        { label: "Chakra Petch",       family: '"Chakra Petch", -apple-system, system-ui, sans-serif' },
+        /* Syncopate — extra-wide all-caps geometric. NASA mission
+           patch / movie-title-card vibes. */
+        { label: "Syncopate",          family: '"Syncopate", -apple-system, system-ui, sans-serif' },
+        /* VT323 — pure CRT terminal. Pixel-bitmap green-phosphor
+           nostalgia, Alien-era. */
+        { label: "VT323",              family: '"VT323", ui-monospace, monospace' },
+        /* Audiowide — 70s-disco-meets-arcade. Kept as a fallback
+           but it's the least "Kubrick" of the bunch. */
+        { label: "Audiowide",          family: '"Audiowide", -apple-system, system-ui, sans-serif' },
       ],
     };
     const DEFAULT_ID = "isaias";

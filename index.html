@@ -25,30 +25,117 @@
        at runtime takes effect with no flash. Add the new font's family
        to this URL when introducing a theme that needs one. -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Audiowide&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600;700&family=Italiana&family=JetBrains+Mono:wght@400;500&family=Nunito:wght@400;700;800;900&family=Pirata+One&family=Quicksand:wght@400;500;600;700&family=Rye&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Audiowide&family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Chakra+Petch:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600;700&family=Italiana&family=JetBrains+Mono:wght@400;500&family=Major+Mono+Display&family=Nunito:wght@400;700;800;900&family=Pirata+One&family=Quicksand:wght@400;500;600;700&family=Rye&family=Share+Tech+Mono&display=swap"
     rel="stylesheet">
   <!-- Apply the saved theme BEFORE styles.css resolves. Inline +
        synchronous so there's no flash of the default theme on first
        paint. The "isaias" id maps to :root (no data-theme attribute);
        any other valid id sets <html data-theme="…">. Stays in sync
-       with the THEMES list in app.js. -->
+       with the THEMES list in app.js.
+
+       Also handles shareable theme URLs: visiting /mother-tree,
+       /ripple-effect, etc. picks up the slug from the path, applies
+       that theme immediately, and persists it as the user's choice
+       so it sticks on subsequent visits. Vercel rewrites (see
+       vercel.json) map every recognized slug to /index.html. Keep
+       the SLUG_TO_THEME map below in sync with that rewrite list. -->
   <script>
     (function () {
       try {
-        var t = localStorage.getItem("ow_theme");
+        var SLUG_TO_THEME = {
+          "isaias":        "isaias",
+          "isaiiaas":      "isaias",
+          "mother-tree":   "mother-tree",
+          "mothertree":    "mother-tree",
+          "ripple":        "ripple",
+          "ripple-effect": "ripple",
+          "sky":           "sky",
+          "circus":        "circus",
+          "thirrrst":      "thirrrst",
+          "thirst":        "thirrrst",
+          "spin":          "spin",
+          "kink":          "kink"
+        };
+        var slug = location.pathname.toLowerCase().replace(/^\/+|\/+$/g, "");
+        var fromUrl = SLUG_TO_THEME[slug] || null;
+        if (fromUrl) {
+          try { localStorage.setItem("ow_theme", fromUrl); } catch (e) {}
+        }
+        var t = fromUrl || (function () {
+          try { return localStorage.getItem("ow_theme"); } catch (e) { return null; }
+        })();
         if (t && t !== "isaias") {
           document.documentElement.setAttribute("data-theme", t);
         }
       } catch (e) {}
     })();
   </script>
+  <!-- Mark Chromium-family browsers (Chrome, Edge, Brave, Arc, Opera) so
+       the Ripple-theme ambient animation can fall back to a static ring
+       pattern on those engines. Chrome's macOS compositor flashes
+       backdrop-filter'd elements (the header, etc.) whenever the
+       ripple SVG re-rasterizes — a long-standing engine bug we can't
+       fix with CSS. Safari (desktop + iOS) and Firefox handle it
+       cleanly, so they keep the full animation.
+
+       Detection: "Chrome/" appears in the UA of every Chromium-based
+       desktop browser (Chrome, Edge, Brave, Arc, Vivaldi, Opera) but
+       NOT in Safari. iOS Chrome uses "CriOS/" (since it runs on WebKit,
+       not Blink) and therefore correctly stays in the animated branch
+       — it already paints fine.
+
+       Set on <html> before styles.css loads so there's no FOUC between
+       animated and static. -->
+  <script>
+    (function () {
+      try {
+        if (/Chrome\//.test(navigator.userAgent)) {
+          document.documentElement.setAttribute("data-engine", "chromium");
+        }
+      } catch (e) {}
+    })();
+  </script>
   <!-- themes.css MUST be loaded before styles.css so every var(--…)
        reference in styles.css resolves against the active theme. -->
-  <link rel="stylesheet" href="themes.css?v=20260527-fonts-1">
-  <link rel="stylesheet" href="styles.css?v=20260527-fonts-1">
+  <link rel="stylesheet" href="themes.css?v=20260528-cosmic-2">
+  <link rel="stylesheet" href="styles.css?v=20260528-ripple-chromium-static-1">
 </head>
 
 <body>
+  <!-- Ambient ripple background — only painted when the Ripple theme is
+       active (see .ripple-bg rules in styles.css). Pure SVG + CSS, no JS,
+       compositor-only animation, ~no runtime cost. aria-hidden + the
+       pointer-events:none in CSS keep it out of the accessibility tree
+       and out of every tap target. -->
+  <div class="ripple-bg" aria-hidden="true">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <circle cx="50" cy="35" r="10" />
+      <circle cx="50" cy="35" r="10" />
+      <circle cx="50" cy="35" r="10" />
+      <circle cx="50" cy="35" r="10" />
+      <circle cx="50" cy="35" r="10" />
+    </svg>
+  </div>
+  <!-- Ambient cosmic background — only painted when the Cosmic theme is
+       active (see .cosmic-bg rules in styles.css). Pure SVG + CSS, no
+       JS, compositor-only animation, ~no runtime cost. Three curved
+       <path>s define meteor arcs across the sky; CSS animates a
+       stroke-dash along each path so a short bright streak draws from
+       one end to the other and dissolves. Staggered, slightly-
+       different cycle lengths keep it from feeling periodic. aria-
+       hidden + pointer-events:none keep it out of every tap target. -->
+  <div class="cosmic-bg" aria-hidden="true">
+    <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <!-- Each path is a single quadratic Bezier from off-screen on
+           one side to off-screen on the other, with a control point
+           that bows the line gently. Coordinates extend beyond the
+           0–100 viewBox so the streak enters from true off-canvas
+           and exits the same way. -->
+      <path class="shooting-star" d="M -10,15 Q 45,5 60,45 T 115,80"/>
+      <path class="shooting-star" d="M 115,20 Q 70,30 45,55 T -10,90"/>
+      <path class="shooting-star" d="M -10,55 Q 30,75 65,60 T 115,30"/>
+    </svg>
+  </div>
   <div class="status-bar-scrim" aria-hidden="true"></div>
   <div class="home-indicator-scrim" aria-hidden="true"></div>
   <header>
@@ -211,6 +298,19 @@
       <div id="settings-notifications" hidden></div>
 
       <div class="settings-panel">
+        <!-- Theme picker. Options are populated from the THEMES list in
+             app.js so adding a new theme means editing themes.css +
+             that array; this <select> stays in sync automatically.
+             Kept at the top of the panel — it's the most visible,
+             personality-changing setting, and shareable via /<slug>
+             URLs (see the FOUC script in <head>). -->
+        <label class="setting-row" for="setting-theme">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Theme</span>
+            <span class="setting-toggle-hint">Colors and fonts.</span>
+          </span>
+          <select class="setting-select" id="setting-theme"></select>
+        </label>
         <label class="setting-toggle" for="setting-hide-ongoing">
           <span class="setting-toggle-text">
             <span class="setting-toggle-title">Hide ongoing cards</span>
@@ -234,16 +334,6 @@
           </span>
           <input type="checkbox" id="setting-cant-miss" class="setting-toggle-input" />
           <span class="setting-toggle-switch" aria-hidden="true"></span>
-        </label>
-        <!-- Theme picker. Options are populated from the THEMES list in
-             app.js so adding a new theme means editing themes.css +
-             that array; this <select> stays in sync automatically. -->
-        <label class="setting-row" for="setting-theme">
-          <span class="setting-toggle-text">
-            <span class="setting-toggle-title">Theme</span>
-            <span class="setting-toggle-hint">Colors and fonts.</span>
-          </span>
-          <select class="setting-select" id="setting-theme"></select>
         </label>
         <div class="settings-row-block">
           <div class="settings-row-text">
@@ -376,7 +466,7 @@
   </dialog>
 
   <script src="./map-data.js?v=ecc635dd102f"></script>
-  <script src="./app.js?v=20260527-fav-hardening-4"></script>
+  <script src="./app.js?v=20260528-notif-trim"></script>
 </body>
 
 </html>

@@ -787,3 +787,156 @@
   --card-wash-alpha-hover: 0.22;
   --card-wash-stop-hover: 46%;
 }
+
+
+/* ── DRAFT — "Cosmic" — Space Odyssey, observed through a telescope
+   Monolith-black surfaces with a faint deep-indigo undertone (the
+   color of space when your eyes have fully adjusted — never truly
+   black, always a hint of cool violet). Starlight-cream ink.
+
+   COLOR PHILOSOPHY — this theme deliberately avoids the
+   synthwave/cyberpunk triad (hot cyan + hot magenta + electric
+   violet). Real "space" colors are what you see in Hubble
+   photography and 70s sci-fi: dusty, luminous, observed-from-a-
+   distance. Bright stars and nebulae are SOFT and glowing, never
+   neon. The one exception is the HAL 9000 red — it's allowed to
+   stay hot because the whole point of HAL's eye is that it's the
+   one alert color in an otherwise pastel ship interior.
+
+   Accent references:
+     - moonlight ice-blue         (Earth from orbit, Discovery One's
+                                   running lights, Cherenkov glow)
+     - dusty rose nebula          (Pillars of Creation, Trifid Neb.)
+     - deep interstellar violet   (Eagle Nebula dust, Arrival fog)
+     - solar copper / Mars sunset (Sunshine, Gargantua accretion,
+                                   Apollo lunar-surface gold)
+     - HAL 9000 eye red           (the can't-miss tier, of course)
+
+   Display face is Major Mono Display — looks like the printout of
+   a 1960s NASA flight-deck computer. Chunky monospaced caps that
+   feel like Apollo Guidance Computer / Nostromo MU/TH/UR readouts.
+   The most "this is literally a spaceship terminal" of all the
+   sci-fi font options on Google Fonts.
+
+   Body face is Chakra Petch — angular geometric sans with proper
+   weights, sits alongside the monospaced display without competing
+   with it. This is what makes the WHOLE app feel like a spaceship
+   readout instead of just the titles.
+
+   Mono face is Share Tech Mono — literally designed to look like
+   a sci-fi terminal printout. Used for times / counts / metadata.
+
+   Card wash is ZEROED on this theme. The top-edge color-fade on
+   event cards is what reads as "cyberpunk neon glow", and that's
+   not the vibe — space cinema is dark surfaces with crisp color
+   accents, not bleeding nebula gradients on every card. Borders
+   still carry the type color so events are still distinguishable.
+
+   Body-level radial gradients (the soft lime/pink corner glows
+   from body::before) are also nuked for this theme — see the
+   override block right after this one. We want TRUE deep black,
+   not "black with a tint of brand color leaking in from above".
+
+   Role mapping for this theme:
+     --lime  → moonlight ice-blue    (primary / camp / "NOW")
+     --pink  → dusty rose nebula     (sound stage)
+     --cyan  → interstellar violet   (art installation, hour times)
+     --amber → solar copper          (mutant vehicle)
+     --red   → HAL 9000 eye red      (can't-miss favorite tier) */
+[data-theme="cosmic"] {
+  /* Surfaces — pure void. The page is literal #000 like staring
+     out of a spaceship porthole on the dark side of the moon.
+     Cards lift only by ~3% luminance — just barely enough to read
+     as "raised", not enough to soften the contrast with deep
+     space. There's no indigo undertone anymore; the dust-blue
+     vibe comes from the ink and moss tokens instead, where it
+     reads as "starlight" rather than "tinted background". */
+  --night-0: #000000;
+  --night-1: #000000;
+  --night-2: #050608;
+  --night-3: #0c0e12;
+  --night-4: #161a22;
+  --moss-rgb: 140 158 188;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #6a7896;
+
+  /* Starlight ink — pure white-blue at the top end, fading to a
+     dust-cloud grey for low-emphasis text. */
+  --cream: #e8ecf5;
+  --cream-soft: #b4bcd0;
+  --cream-dim: #7a85a0;
+
+  /* Accents — luminous but desaturated. Think "object glowing in
+     deep space" not "neon sign in Shibuya". Each accent stays
+     readable against the near-black surface but never crosses into
+     pure-saturation cyberpunk territory. The deep variants stay
+     dark enough to read as "pressed/inactive" states. */
+  --lime: #94d4e0;
+  --lime-soft: #c0e6ec;
+  --lime-deep: #3f7b8a;
+  --lime-rgb: 148 212 224;
+
+  --pink: #d89eb8;
+  --pink-soft: #e6bccc;
+  --pink-deep: #7a4a60;
+  --pink-rgb: 216 158 184;
+
+  --cyan: #9b87d4;
+  --cyan-soft: #bcaee0;
+  --cyan-deep: #4a3a85;
+  --cyan-rgb: 155 135 212;
+
+  --amber: #e8a558;
+  --amber-soft: #f0c084;
+  --amber-deep: #8a5a18;
+  --amber-rgb: 232 165 88;
+
+  --warn: #e8c45a;
+  --warn-rgb: 232 196 90;
+
+  /* HAL's eye — the one hot point in the palette. Deliberately the
+     most saturated color in the theme so it reads as "alert / can't
+     miss" against an otherwise dusty pastel sky. */
+  --red: #e63838;
+  --red-soft: #f07878;
+  --red-deep: #8a1414;
+  --red-rgb: 230 56 56;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  /* Whole-typeface override — not just display. Body copy and mono
+     swap too so the entire app reads as ship-computer output, not
+     "Inter with sci-fi headlines bolted on top". */
+  --font-display: "Major Mono Display", "Orbitron", "Space Grotesk", ui-monospace, monospace;
+  --font-sans: "Chakra Petch", "Space Grotesk", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "Share Tech Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Card wash NUKED. The top-edge color-fade gradient on event
+     cards is the single biggest thing making other dark themes
+     read as "cyberpunk neon" — bleeding color out of every card
+     edge is a synthwave move. Cosmic relies on the colored border
+     alone (still kept via the static rgb / 0.22 in styles.css) to
+     telegraph type. The card surface itself stays flat space-black. */
+  --card-wash-alpha: 0;
+  --card-wash-stop: 0%;
+  --card-wash-alpha-hover: 0;
+  --card-wash-stop-hover: 0%;
+}
+
+/* Cosmic — kill the body::before page-level radial gradients.
+   styles.css globally paints two soft glows (lime top-left, pink
+   top-right) behind the page to give every theme a subtle "lit"
+   feeling. On Cosmic that lit feeling is exactly what makes
+   "true black void" stop being true black. Override to nothing
+   so the space behind everything is just absolute #000. */
+[data-theme="cosmic"] body::before {
+  background: none;
+}

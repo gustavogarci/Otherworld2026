@@ -698,6 +698,7 @@
     { id: "thirrrst",    label: "Thirrrst" },
     { id: "spin",        label: "Spin" },
     { id: "kink",        label: "Kink" },
+    { id: "cosmic",      label: "Cosmic" },
   ];
   function loadThemePref() {
     try {
@@ -2203,7 +2204,7 @@
     if (shouldShowIosHintNotif()) {
       cards.push(makeNotifCard({
         title: "Add to Home Screen",
-        body: "Safari clears website data after about 7 days. Tap the Share button below, then \u201CAdd to Home Screen\u201D — installed sites keep your favorites safe.",
+        body: "Tap Share \u2192 Add to Home Screen so Safari can't wipe your favorites.",
         primaryLabel: null,
         onPrimary: null,
         onDismiss: () => {
@@ -2216,7 +2217,7 @@
     if (shouldShowBackupNotif()) {
       cards.push(makeNotifCard({
         title: "Back up your favorites",
-        body: "When you're done planning, remember to back up your favorites in case your browser clears its local data.",
+        body: "So your browser can't lose them later.",
         primaryLabel: "Back up",
         onPrimary: () => {
           // Trigger the existing Backup flow via its button so all the

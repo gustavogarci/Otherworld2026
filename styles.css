@@ -759,20 +759,24 @@ dialog.modal.restore-modal {
 }
 .settings-notif-action:active { transform: translateY(1px); }
 .settings-notif-dismiss {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
+  margin: -6px -6px -6px 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: 0;
   color: var(--cream-dim);
-  font-size: 13px;
+  font-size: 20px;
+  line-height: 1;
   border-radius: 50%;
   cursor: pointer;
+  flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
 }
 .settings-notif-dismiss:hover { color: var(--cream); background: var(--moss-1); }
+.settings-notif-dismiss:active { transform: scale(0.92); }
 
 /* ── Settings: corrupt-stash + persist status ─────────────── */
 .fav-corrupt-block .fav-corrupt-list {
@@ -3030,3 +3034,252 @@ body.map-fullscreen .map-view .controls-overlay {
   }
 }
 
+
+/* ─── Ripple theme — ambient background ─────────────────────────────
+   Decorative animated rings that bloom from a single origin above the
+   center of the viewport, like a drop hit the water. Only painted when
+   <html data-theme="ripple"> is active — every other theme keeps the
+   layer at display:none so it costs literally zero.
+
+   Markup lives at the top of <body> in index.html as <div class="ripple-bg">
+   wrapping an inline SVG with three identical <circle>s. The circles are
+   stacked at the same position and offset in time via animation-delay so
+   at any moment there's always one ring growing.
+
+   Why this is cheap:
+   - Only `transform` (scale) and `opacity` animate. Both are
+     compositor-only properties, so the browser doesn't relayout or
+     repaint per frame — it hands them to the GPU.
+   - No JS, no canvas, no image. The SVG is ~200 bytes.
+   - iOS Safari / PWA pauses CSS animations when backgrounded, so we
+     don't burn battery in someone's pocket out at the playa.
+   - Behind everything (z-index:-1) and pointer-events:none, so it
+     never affects tap targets, scroll, or modals. */
+.ripple-bg {
+  display: none;
+}
+
+[data-theme="ripple"] .ripple-bg {
+  display: block;
+  position: fixed;
+  inset: 0;
+  /* Negative z-index lets the body's background-color still paint
+     behind us (browsers paint body bg on the root canvas, which is
+     below z-index:-1 of body's children) — so we sit between the
+     --night-1 wash and the rest of the app. */
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  /* Chrome-specific compositor stabilization. Safari already keeps
+     this layer composited implicitly, so it looked clean there. On
+     Chrome the combo of (animating SVG) + (sibling `backdrop-filter`
+     blur on the header / quiet pill) + (z-index:-1) caused the
+     compositor to repromote/demote layers mid-animation, flashing
+     the cards. These three properties force Chrome to give the
+     ripple its own permanent GPU surface and bound its invalidation
+     region, so the cards above never repaint because of us:
+       - transform: translateZ(0) → promote to composited layer
+       - backface-visibility: hidden → keep that promotion sticky
+       - contain: paint → tell the browser nothing inside this layer
+         can affect painting outside it, so blur'd siblings only
+         re-rasterize when we (the ripple) change, never the
+         opposite. */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: paint;
+  /* Soft radial vignette so the rings dissolve smoothly into the
+     surrounding --night-1 surface instead of clipping at the edges
+     and so the drop origin reads as the "brightest" spot. */
+  background:
+    radial-gradient(
+      ellipse 80% 70% at 50% 35%,
+      rgb(var(--lime-rgb) / 0.04) 0%,
+      transparent 60%
+    );
+}
+
+[data-theme="ripple"] .ripple-bg svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+[data-theme="ripple"] .ripple-bg circle {
+  fill: none;
+  /* --lime-deep (#1f8a8a) instead of --lime (#4fd9d2) — same teal
+     family but several stops darker, so each ring barely lifts off
+     the --night-1 surface. Reads as "something is moving" more than
+     "here is a line." */
+  stroke: var(--lime-deep);
+  stroke-width: 1.2;
+  /* Keep the stroke a constant 1.2 CSS px regardless of how much
+     we scale — gives the elegant "constant-thickness ring expanding
+     outward" feel of a real water ripple instead of a bloating
+     donut. */
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+  /* 20s per ring × 5 staggered rings = a new ripple is born every
+     4s, but each one takes a slow 20s to bloom and dissolve. */
+  animation: ripple-pulse 20s linear infinite;
+  opacity: 0;
+}
+[data-theme="ripple"] .ripple-bg circle:nth-child(1) { animation-delay:   0s; }
+[data-theme="ripple"] .ripple-bg circle:nth-child(2) { animation-delay:  -4s; }
+[data-theme="ripple"] .ripple-bg circle:nth-child(3) { animation-delay:  -8s; }
+[data-theme="ripple"] .ripple-bg circle:nth-child(4) { animation-delay: -12s; }
+[data-theme="ripple"] .ripple-bg circle:nth-child(5) { animation-delay: -16s; }
+
+@keyframes ripple-pulse {
+  0%   { transform: scale(0.2); opacity: 0; }
+  15%  { opacity: 0.18; }
+  60%  { opacity: 0.08; }
+  100% { transform: scale(6.5); opacity: 0; }
+}
+
+/* Static fallback: five concentric rings frozen mid-bloom, no
+   animation. Keeps the theme's underwater identity without motion.
+
+   Activated in two cases:
+     1. The user opted into Reduce Motion at the OS level.
+     2. The browser is Chromium-family (Chrome, Edge, Brave, Arc, Opera).
+        Set by the inline script in index.html → <html data-engine="chromium">.
+        Chrome's macOS compositor flashes adjacent backdrop-filter'd
+        elements whenever the SVG re-rasterizes — an engine bug we
+        can't paper over with CSS. Safari and Firefox both keep the
+        full animation. Trade-off is intentional: a beautiful static
+        ring pattern beats a flashing animated one. */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="ripple"] .ripple-bg circle {
+    animation: none;
+    opacity: 0.12;
+  }
+  [data-theme="ripple"] .ripple-bg circle:nth-child(1) { transform: scale(1.0); }
+  [data-theme="ripple"] .ripple-bg circle:nth-child(2) { transform: scale(1.8); }
+  [data-theme="ripple"] .ripple-bg circle:nth-child(3) { transform: scale(2.8); }
+  [data-theme="ripple"] .ripple-bg circle:nth-child(4) { transform: scale(4.0); }
+  [data-theme="ripple"] .ripple-bg circle:nth-child(5) { transform: scale(5.4); }
+}
+
+html[data-engine="chromium"][data-theme="ripple"] .ripple-bg circle {
+  animation: none;
+  opacity: 0.12;
+}
+html[data-engine="chromium"][data-theme="ripple"] .ripple-bg circle:nth-child(1) { transform: scale(1.0); }
+html[data-engine="chromium"][data-theme="ripple"] .ripple-bg circle:nth-child(2) { transform: scale(1.8); }
+html[data-engine="chromium"][data-theme="ripple"] .ripple-bg circle:nth-child(3) { transform: scale(2.8); }
+html[data-engine="chromium"][data-theme="ripple"] .ripple-bg circle:nth-child(4) { transform: scale(4.0); }
+html[data-engine="chromium"][data-theme="ripple"] .ripple-bg circle:nth-child(5) { transform: scale(5.4); }
+
+
+/* ─── Cosmic theme — shooting stars ─────────────────────────────────
+   Sparse curved streaks across the void. Each "star" is a single
+   <path> describing a gently-curved Bezier from off-screen to
+   off-screen. The trick: we use a long stroke-dasharray
+   (short visible dash, huge gap) and animate stroke-dashoffset
+   so the visible dash slides along the path — start to end —
+   tracing the curve. Opacity fades in at the head of the run and
+   fades back out at the tail so the streak doesn't snap in or snap
+   off; it appears, draws across the curve, and dissolves.
+
+   NO HEAD DOT — earlier design had a bright circle leading the
+   trail, which read as "comet" or "moving sprite" instead of
+   "shooting star". A single tapering line is more honest to the
+   actual phenomenon (a meteor's light trail).
+
+   Curves, not straight lines — real meteors don't streak in
+   perfect Euclidean lines (parallax + atmospheric arc). The
+   Bezier control points give each streak a subtle bow so the eye
+   reads them as celestial, not laser-pointer.
+
+   Modeled after the .ripple-bg pattern: only painted under
+   <html data-theme="cosmic">, pure SVG + CSS, compositor-only
+   stroke-dashoffset/opacity animation, no JS, pointer-events:none,
+   aria-hidden, prefers-reduced-motion respected.
+
+   Markup lives at the top of <body> in index.html (and themes.html
+   so the lab can preview it). The SVG uses viewBox 0 0 100 100
+   with preserveAspectRatio="xMidYMid slice" so it covers any
+   viewport while letting us write path coordinates in viewBox
+   units (effectively percent-of-shorter-axis). */
+.cosmic-bg {
+  display: none;
+}
+
+[data-theme="cosmic"] .cosmic-bg {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+[data-theme="cosmic"] .cosmic-bg svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+[data-theme="cosmic"] .cosmic-bg .shooting-star {
+  fill: none;
+  stroke: var(--cream);
+  /* vector-effect keeps the stroke a constant CSS pixel width
+     regardless of how aggressively the SVG is scaled to fill the
+     viewport. Without it, a 0.4-unit stroke gets huge on landscape
+     monitors and invisible on narrow phones. */
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  /* The visible portion of the dash pattern (≈ length of one
+     streak), followed by a huge gap so only one dash is ever
+     visible on the path at a time. Animating stroke-dashoffset
+     slides this dash along the path from start to end. */
+  stroke-dasharray: 22 600;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  will-change: stroke-dashoffset, opacity;
+}
+
+/* Each streak animates over a long cycle, but only the first ~12%
+   of the cycle is "visible sweep" — the remaining ~88% is dead
+   time. Staggered delays + slightly different cycle lengths give
+   an aperiodic feel: streaks don't all fire in a perfect rhythm.
+   The dashoffset values overshoot the actual path length on both
+   sides (well past the start and the end) so the dash always
+   enters and exits while invisible, never popping mid-canvas.
+   Opacity is what defines the visible window — it rises just after
+   the dash enters the visible region and falls before it exits. */
+@keyframes cosmic-streak {
+  0%   { stroke-dashoffset: 30;   opacity: 0; }
+  1%   { opacity: 0; }
+  3%   { opacity: 0.9; }
+  10%  { opacity: 0.9; }
+  12%  { stroke-dashoffset: -200; opacity: 0; }
+  100% { stroke-dashoffset: -200; opacity: 0; }
+}
+
+[data-theme="cosmic"] .cosmic-bg .shooting-star:nth-child(1) {
+  animation: cosmic-streak 23s linear infinite;
+  animation-delay: 0s;
+}
+[data-theme="cosmic"] .cosmic-bg .shooting-star:nth-child(2) {
+  animation: cosmic-streak 31s linear infinite;
+  animation-delay: -11s;
+}
+[data-theme="cosmic"] .cosmic-bg .shooting-star:nth-child(3) {
+  animation: cosmic-streak 27s linear infinite;
+  animation-delay: -19s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No motion — the void stays still. The cosmic theme doesn't
+     need a static fallback like ripple's frozen rings; the deep
+     black surface IS the theme, and silently dropping the streaks
+     is the most honest reduced-motion behavior here. */
+  [data-theme="cosmic"] .cosmic-bg .shooting-star {
+    animation: none;
+    opacity: 0;
+  }
+}
