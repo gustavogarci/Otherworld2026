@@ -24,7 +24,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260527-safari-safearea">
+  <link rel="stylesheet" href="styles.css?v=20260527-fav-hardening-3">
 </head>
 
 <body>
@@ -68,6 +68,7 @@
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
             <span class="label">Settings</span>
+            <span class="cta-badge cta-badge-dot" id="settings-badge" hidden aria-hidden="true"></span>
           </button>
         </div>
       </div>
@@ -182,6 +183,12 @@
     </div>
 
     <div class="sheet-body">
+      <!-- Notification cards (back-up reminder, iOS Add-to-Home-Screen
+           hint) get appended here as full-width siblings of the other
+           Settings cards. Container itself stays an attribute-only
+           <div> with no styling so when it's empty it eats no space. -->
+      <div id="settings-notifications" hidden></div>
+
       <div class="settings-panel">
         <label class="setting-toggle" for="setting-hide-ongoing">
           <span class="setting-toggle-text">
@@ -210,13 +217,39 @@
         <div class="settings-row-block">
           <div class="settings-row-text">
             <span class="setting-toggle-title">Backup favorites</span>
-            <span class="setting-toggle-hint">If your browser clears storage, you can paste a code to get them back.</span>
+            <span class="setting-toggle-hint">If your browser clears storage, you can paste a code (or open a saved file) to get them back.</span>
           </div>
           <div class="backup-row">
             <button type="button" class="backup-btn backup-btn-primary" id="fav-backup">Backup <span id="fav-backup-count"></span></button>
             <button type="button" class="backup-btn btn-ghost" id="fav-restore">Restore</button>
           </div>
           <div class="backup-status" id="fav-backup-status" hidden></div>
+        </div>
+
+        <!-- Corrupt-stash recovery. Hidden unless app.js stashed a
+             bad JSON read at startup. Lives in the main panel because
+             it's a "your data needs you" prompt, not dev-only. -->
+        <div class="settings-row-block fav-corrupt-block" id="fav-corrupt-block" hidden>
+          <div class="settings-row-text">
+            <span class="setting-toggle-title">Recover stashed data</span>
+            <span class="setting-toggle-hint">We couldn't read some saved favorites and put the raw text aside instead of overwriting it. Copy what's recoverable, then discard.</span>
+          </div>
+          <div class="fav-corrupt-list"></div>
+          <div class="backup-row">
+            <button type="button" class="backup-btn btn-ghost" id="fav-corrupt-dismiss">Discard all</button>
+          </div>
+        </div>
+
+        <!-- Persistent-storage status. App.js hides this when the API
+             isn't supported (e.g. Safari iOS). -->
+        <div class="settings-row-block fav-persist-block" id="fav-persist-block" hidden>
+          <div class="settings-row-text">
+            <span class="setting-toggle-title">Browser storage</span>
+            <span class="setting-toggle-hint fav-persist-state"></span>
+          </div>
+          <div class="backup-row">
+            <button type="button" class="backup-btn btn-ghost" id="fav-persist-ask">Ask browser to keep these</button>
+          </div>
         </div>
       </div>
 
@@ -271,11 +304,16 @@
   <dialog class="modal backup-modal" id="backup-modal" aria-labelledby="backup-modal-title">
     <h2 id="backup-modal-title">Your backup code</h2>
     <p class="setting-hint tight" id="fav-backup-hint">
-      Paste it into Notes (or email it to yourself) so you can Restore later.
+      Keep a copy of this code (or save it as a file) so you can restore later.
     </p>
     <div class="code-wrap">
       <textarea class="backup-code" id="fav-backup-code" rows="4" readonly
         aria-label="Backup code"></textarea>
+    </div>
+    <div class="backup-actions-row">
+      <button type="button" class="backup-btn btn-ghost" id="fav-backup-download" aria-label="Save backup as a file">
+        Save as file
+      </button>
     </div>
     <div class="close-row">
       <button type="button" class="btn-secondary" id="fav-backup-copy" aria-label="Copy backup code">
@@ -285,8 +323,29 @@
     </div>
   </dialog>
 
+  <dialog class="modal restore-modal" id="restore-modal" aria-labelledby="restore-modal-title">
+    <div class="modal-head">
+      <h2 id="restore-modal-title">Restore favorites</h2>
+      <button type="button" class="modal-close" id="restore-modal-close" aria-label="Close">✕</button>
+    </div>
+    <p class="setting-hint tight">
+      Restoring merges with any favorites you already have on this device — nothing is deleted.
+    </p>
+    <div class="restore-options">
+      <button type="button" class="backup-btn" id="fav-restore-paste">
+        <span class="restore-option-title">Paste a backup code</span>
+        <span class="restore-option-hint">If you copied a code earlier, paste it now.</span>
+      </button>
+      <button type="button" class="backup-btn" id="fav-restore-file">
+        <span class="restore-option-title">Choose a backup file</span>
+        <span class="restore-option-hint">Open an <code>otherworld-favorites-*.json</code> from Files / Downloads / iCloud.</span>
+      </button>
+      <input type="file" id="fav-restore-file-input" accept="application/json,.json" hidden />
+    </div>
+  </dialog>
+
   <script src="./map-data.js?v=ecc635dd102f"></script>
-  <script src="./app.js?v=20260527-dialog"></script>
+  <script src="./app.js?v=20260527-fav-hardening-4"></script>
 </body>
 
 </html>

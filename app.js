@@ -231,6 +231,29 @@
   // We accept that tradeoff — losing favorites silently is worse than
   // collapsing a true duplicate.
   const FAV_KEY = "otherworld:favorites:v1";
+  // Companion store holding original camp/title/day/starredAt metadata
+  // for each favorite key. Written in parallel with FAV_KEY so older
+  // app.js readers continue to see the canonical list of keys under
+  // FAV_KEY while newer readers also get the rich metadata that
+  // powers the fuzzy fallback when upstream renames a camp or title.
+  // Shape: Array<[key, {camp, title, day, starredAt}]>
+  const FAV_META_KEY = "otherworld:favorites:meta:v1";
+  // Bookkeeping keys for the data-loss hardening (nags, persistence
+  // requests, install hint, corrupt-blob stashes). All independent
+  // so each can be cleared in isolation without affecting the
+  // favorites set itself.
+  const FAV_CORRUPT_PREFIX = "otherworld:favorites:corrupt:";
+  const FAV_BACKED_UP_AT_KEY = "otherworld:favorites:backed-up-at";
+  const FAV_FIRST_ADDED_AT_KEY = "otherworld:favorites:first-added-at";
+  const FAV_NAG_DISMISSED_AT_KEY = "otherworld:favorites:nag-dismissed-at";
+  const FAV_PERSIST_REQUESTED_KEY = "otherworld:favorites:persist-requested";
+  const FAV_IOS_HINT_DISMISSED_KEY = "otherworld:favorites:ios-hint-dismissed";
+  // Cross-call flag set by defensive load when JSON.parse fails on
+  // either FAV_KEY or FAV_RED_KEY. The Settings UI surfaces a banner
+  // pointing at the stashed otherworld:favorites:corrupt:* keys so a
+  // user can manually recover the raw text instead of silently
+  // starting from an empty set on the next toggle.
+  const _favLoadIssues = [];
   function normalizeTitleForKey(s) {
     if (!s) return "";
     let t = String(s).toLowerCase();
@@ -255,19 +278,117 @@
       normalizeTitleForKey(ev.title || ""),
     ].join("|");
   }
-  function loadFavorites() {
+  // Stash a corrupt JSON blob into otherworld:favorites:corrupt:<ts>
+  // so the next toggle can't silently overwrite it. Bounded to the
+  // last 3 corrupt stashes per key to keep storage from filling up.
+  function stashCorrupt(sourceKey, raw) {
+    if (raw == null) return;
     try {
-      const raw = localStorage.getItem(FAV_KEY);
-      if (!raw) return new Set();
+      const ts = Date.now();
+      const k = FAV_CORRUPT_PREFIX + sourceKey + ":" + ts;
+      localStorage.setItem(k, String(raw));
+      _favLoadIssues.push({ sourceKey, storageKey: k, ts });
+      // GC older stashes for this same sourceKey.
+      const all = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const lk = localStorage.key(i);
+        if (lk && lk.startsWith(FAV_CORRUPT_PREFIX + sourceKey + ":")) all.push(lk);
+      }
+      all.sort();
+      while (all.length > 3) {
+        const drop = all.shift();
+        try { localStorage.removeItem(drop); } catch {}
+      }
+    } catch {}
+  }
+  // List currently stashed corrupt blobs (across both favorites keys),
+  // newest first. Used by the Settings recovery banner.
+  function listCorruptStashes() {
+    const out = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith(FAV_CORRUPT_PREFIX)) continue;
+        const tail = k.slice(FAV_CORRUPT_PREFIX.length);
+        const m = tail.match(/^(.+):(\d+)$/);
+        if (!m) continue;
+        out.push({ storageKey: k, sourceKey: m[1], ts: Number(m[2]) });
+      }
+    } catch {}
+    out.sort((a, b) => b.ts - a.ts);
+    return out;
+  }
+  function readCorruptStash(storageKey) {
+    try { return localStorage.getItem(storageKey); } catch { return null; }
+  }
+  function deleteCorruptStash(storageKey) {
+    try { localStorage.removeItem(storageKey); } catch {}
+  }
+
+  // Load the meta companion store. Tolerant — missing or malformed
+  // returns an empty Map and never throws.
+  function loadFavoritesMeta() {
+    try {
+      const raw = localStorage.getItem(FAV_META_KEY);
+      if (!raw) return new Map();
       const arr = JSON.parse(raw);
-      return migrateLegacyFavorites(Array.isArray(arr) ? arr : []);
-    } catch { return new Set(); }
+      if (!Array.isArray(arr)) return new Map();
+      const out = new Map();
+      for (const entry of arr) {
+        if (!Array.isArray(entry) || entry.length < 2) continue;
+        const [k, meta] = entry;
+        if (typeof k !== "string" || !meta || typeof meta !== "object") continue;
+        out.set(k, {
+          camp: typeof meta.camp === "string" ? meta.camp : null,
+          title: typeof meta.title === "string" ? meta.title : null,
+          day: typeof meta.day === "string" ? meta.day : null,
+          startTime: typeof meta.startTime === "string" ? meta.startTime : null,
+          starredAt: typeof meta.starredAt === "number" ? meta.starredAt : null,
+        });
+      }
+      return out;
+    } catch {
+      try {
+        const raw = localStorage.getItem(FAV_META_KEY);
+        if (raw) stashCorrupt(FAV_META_KEY, raw);
+      } catch {}
+      return new Map();
+    }
+  }
+  // Returns a Map<key, meta>. Defensive: a corrupt FAV_KEY blob is
+  // stashed via stashCorrupt() and surfaced through the Settings
+  // recovery banner — we never silently fall back to an empty set
+  // because that's exactly the path that lets the next toggle wipe
+  // recoverable bytes.
+  function loadFavorites() {
+    let raw = null;
+    try { raw = localStorage.getItem(FAV_KEY); } catch { raw = null; }
+    const meta = loadFavoritesMeta();
+    if (!raw) return new Map();
+    let arr;
+    try {
+      arr = JSON.parse(raw);
+    } catch {
+      stashCorrupt(FAV_KEY, raw);
+      return new Map();
+    }
+    if (!Array.isArray(arr)) {
+      stashCorrupt(FAV_KEY, raw);
+      return new Map();
+    }
+    const keys = migrateLegacyFavoriteKeys(arr);
+    const out = new Map();
+    for (const k of keys) out.set(k, meta.get(k) || null);
+    return out;
   }
   // Migrate any v1 keys saved with the old 4-part shape
   // (camp|day|startTime|title) by stripping the third segment and
   // normalising title + camp. Idempotent: keys already in the new
   // 3-part shape pass through unchanged.
-  function migrateLegacyFavorites(arr) {
+  //
+  // Returns a Set<string> of normalised keys. The Map<key, meta>
+  // wrapper that the rest of the app uses gets built in loadFavorites.
+  function migrateLegacyFavoriteKeys(arr) {
     const out = new Set();
     let migrated = false;
     for (const k of arr) {
@@ -291,8 +412,26 @@
     }
     return out;
   }
-  function saveFavorites(set) {
-    try { localStorage.setItem(FAV_KEY, JSON.stringify([...set])); } catch {}
+  // Back-compat alias used by the Restore flow which passes arrays
+  // of raw keys (from a pasted backup). Returns a Set<string>.
+  function migrateLegacyFavorites(arr) { return migrateLegacyFavoriteKeys(arr); }
+  // Persist both the canonical key list (FAV_KEY, what older builds
+  // read) and the rich metadata (FAV_META_KEY, used by the fuzzy
+  // fallback). Accepts either a Map<key, meta> (the new shape) or a
+  // Set<key> (defensive — older callers).
+  function saveFavorites(favs) {
+    try {
+      const keys = favs instanceof Map ? [...favs.keys()] : [...favs];
+      localStorage.setItem(FAV_KEY, JSON.stringify(keys));
+      if (favs instanceof Map) {
+        const meta = [];
+        for (const [k, m] of favs) {
+          if (m) meta.push([k, m]);
+        }
+        if (meta.length) localStorage.setItem(FAV_META_KEY, JSON.stringify(meta));
+        else localStorage.removeItem(FAV_META_KEY);
+      }
+    } catch {}
   }
 
   // ── Can't-miss favorites (red tier) ───────────────────────
@@ -302,21 +441,113 @@
   // favoritesRed ⊆ favorites (enforced on load + every toggle).
   const FAV_RED_KEY = "otherworld:favorites:red:v1";
   function loadRedFavorites() {
-    try {
-      const raw = localStorage.getItem(FAV_RED_KEY);
-      if (!raw) return new Set();
-      const arr = JSON.parse(raw);
-      if (!Array.isArray(arr)) return new Set();
-      // Lift through the same normaliser so any legacy 4-part keys
-      // restored from a pre-migration backup match the current shape.
-      return migrateLegacyFavorites(arr);
-    } catch { return new Set(); }
+    let raw = null;
+    try { raw = localStorage.getItem(FAV_RED_KEY); } catch { raw = null; }
+    if (!raw) return new Set();
+    let arr;
+    try { arr = JSON.parse(raw); }
+    catch {
+      stashCorrupt(FAV_RED_KEY, raw);
+      return new Set();
+    }
+    if (!Array.isArray(arr)) {
+      stashCorrupt(FAV_RED_KEY, raw);
+      return new Set();
+    }
+    // Lift through the same normaliser so any legacy 4-part keys
+    // restored from a pre-migration backup match the current shape.
+    return migrateLegacyFavoriteKeys(arr);
   }
   function saveRedFavorites(set) {
     try {
       if (!set || set.size === 0) localStorage.removeItem(FAV_RED_KEY);
       else localStorage.setItem(FAV_RED_KEY, JSON.stringify([...set]));
     } catch {}
+  }
+
+  // Encoded payload used by the Backup modal. Hoisted out of
+  // bindFavoritesBackup() so it stays in module scope.
+  function encodeFavoritesBlob(favMap, redSet) {
+    const favs = favMap instanceof Map ? [...favMap.keys()] : [...favMap];
+    const meta = [];
+    if (favMap instanceof Map) {
+      for (const [k, m] of favMap) if (m) meta.push([k, m]);
+    }
+    const red = redSet ? [...redSet] : [];
+    const hasRed = red.length > 0;
+    const hasMeta = meta.length > 0;
+    let payload;
+    if (hasMeta) {
+      // v=3 carries rich per-favorite metadata so a future device
+      // (or this device after a wipe) can self-heal upstream renames.
+      // Legacy v=1/v=2 readers ignore unknown fields and still
+      // pick up the canonical key list from `favs`.
+      payload = { v: 3, t: "otherworld-favs", favs, red, meta };
+    } else if (hasRed) {
+      payload = { v: 2, t: "otherworld-favs", favs, red };
+    } else {
+      payload = { v: 1, t: "otherworld-favs", favs };
+    }
+    const json = JSON.stringify(payload);
+    const bytes = new TextEncoder().encode(json);
+    let binary = "";
+    for (const b of bytes) binary += String.fromCharCode(b);
+    return btoa(binary);
+  }
+
+  // ── Per-event favorite metadata ───────────────────────────
+  // Captures the camp + title + day a favorite was originally
+  // starred with so that if upstream later rewrites the title
+  // (or the user lands on a device with a corrupt favorites
+  // map), the fuzzy resolver below can re-attach the favorite to
+  // the new event by same-camp-same-day + title similarity.
+  function buildFavoriteMeta(ev) {
+    if (!ev) return null;
+    return {
+      camp: ((ev._entry && ev._entry.name) || ev.owner || "").trim() || null,
+      title: (ev.title || "").trim() || null,
+      day: (ev.day || "").trim() || null,
+      startTime: (ev.startTime || "").trim() || null,
+      starredAt: Date.now(),
+    };
+  }
+
+  // ── Persistent storage request ────────────────────────────
+  // Chrome / Firefox / Edge / Android Chrome can grant Persistent
+  // Storage which exempts the origin from quota eviction. Safari iOS
+  // doesn't implement the API but ignores the call silently — the
+  // real ITP mitigation there is Add to Home Screen, which the
+  // Settings hint nudges users toward separately.
+  let _persistRequestInflight = false;
+  async function maybeRequestPersistedStorage() {
+    if (_persistRequestInflight) return;
+    if (!navigator.storage || typeof navigator.storage.persist !== "function") return;
+    let alreadyAsked = false;
+    try { alreadyAsked = localStorage.getItem(FAV_PERSIST_REQUESTED_KEY) === "1"; } catch {}
+    _persistRequestInflight = true;
+    try {
+      let persisted = false;
+      try { persisted = !!(await navigator.storage.persisted?.()); } catch {}
+      if (persisted) {
+        try { localStorage.setItem(FAV_PERSIST_REQUESTED_KEY, "1"); } catch {}
+        return;
+      }
+      // Don't spam the browser if we've asked before and were denied.
+      if (alreadyAsked) return;
+      try { await navigator.storage.persist(); } catch {}
+      try { localStorage.setItem(FAV_PERSIST_REQUESTED_KEY, "1"); } catch {}
+    } finally {
+      _persistRequestInflight = false;
+    }
+  }
+  async function getPersistedStorageState() {
+    if (!navigator.storage || typeof navigator.storage.persisted !== "function") {
+      return "unsupported";
+    }
+    try {
+      const ok = await navigator.storage.persisted();
+      return ok ? "persistent" : "best-effort";
+    } catch { return "unknown"; }
   }
 
   const state = {
@@ -1717,6 +1948,15 @@
     bindFavoritesBackup();
     bindDisplaySettings();
     bindDevNow();
+    bindCorruptRecovery();
+    bindPersistStatus();
+    // Initial paint of the in-settings state — runs every time the
+    // Settings modal is opened so counts / hints stay fresh.
+    document.getElementById("settings-open")?.addEventListener("click", () => {
+      renderSettingsNotifications();
+      renderCorruptRecovery();
+      renderPersistStatus();
+    });
   }
 
   // ── Dev tool: pretend it's a different moment ─────────────
@@ -1788,6 +2028,346 @@
     });
   }
 
+  // ── In-Settings notification cards + gear dot ─────────────
+  // Replaces the older home-page banner. Two notification cards may
+  // appear at the very top of the Settings sheet; whenever either is
+  // active a small lime dot sits on the gear icon so users notice
+  // there's something to see without anything intruding on the
+  // schedule itself.
+  //
+  // Thresholds:
+  //   - Add-to-Home-Screen hint   → favorites.size >= 10 (iOS only)
+  //   - Back-up-your-favorites    → favorites.size >= 20 (any browser)
+  // The lower threshold for the iOS hint reflects how dangerous the
+  // 7-day ITP wipe is for non-installed Safari users — that's the
+  // first thing we want them to fix.
+  const IOS_HINT_THRESHOLD = 10;
+  const BACKUP_NAG_THRESHOLD = 20;
+
+  function shouldShowBackupNotif() {
+    if (!state.favorites || state.favorites.size < BACKUP_NAG_THRESHOLD) return false;
+    let backedUp = null;
+    let dismissed = null;
+    try {
+      backedUp = localStorage.getItem(FAV_BACKED_UP_AT_KEY);
+      dismissed = localStorage.getItem(FAV_NAG_DISMISSED_AT_KEY);
+    } catch {}
+    if (backedUp) return false;
+    if (dismissed) {
+      const ageMs = Date.now() - Number(dismissed);
+      if (ageMs < 30 * 24 * 60 * 60 * 1000) return false;
+    }
+    return true;
+  }
+  function shouldShowIosHintNotif() {
+    if (!isIosSafariNotStandalone()) return false;
+    if (!state.favorites || state.favorites.size < IOS_HINT_THRESHOLD) return false;
+    let dismissed = null;
+    try { dismissed = localStorage.getItem(FAV_IOS_HINT_DISMISSED_KEY); } catch {}
+    if (dismissed) {
+      const ageMs = Date.now() - Number(dismissed);
+      if (ageMs < 30 * 24 * 60 * 60 * 1000) return false;
+    }
+    return true;
+  }
+  function hasActiveNotifications() {
+    return shouldShowBackupNotif() || shouldShowIosHintNotif();
+  }
+
+  function renderSettingsBadge() {
+    const dot = document.getElementById("settings-badge");
+    if (!dot) return;
+    dot.hidden = !hasActiveNotifications();
+  }
+
+  // Build one notification card. Returns the root DOM node.
+  function makeNotifCard({ title, body, primaryLabel, onPrimary, onDismiss }) {
+    const wrap = document.createElement("div");
+    wrap.className = "settings-notif";
+    const content = document.createElement("div");
+    content.className = "settings-notif-content";
+    const titleEl = document.createElement("div");
+    titleEl.className = "settings-notif-title";
+    titleEl.textContent = title;
+    const bodyEl = document.createElement("div");
+    bodyEl.className = "settings-notif-body";
+    bodyEl.textContent = body;
+    content.appendChild(titleEl);
+    content.appendChild(bodyEl);
+    const actions = document.createElement("div");
+    actions.className = "settings-notif-actions";
+    if (primaryLabel && onPrimary) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "settings-notif-action";
+      btn.textContent = primaryLabel;
+      btn.addEventListener("click", onPrimary);
+      actions.appendChild(btn);
+    }
+    if (onDismiss) {
+      const x = document.createElement("button");
+      x.type = "button";
+      x.className = "settings-notif-dismiss";
+      x.setAttribute("aria-label", "Dismiss");
+      x.textContent = "✕";
+      x.addEventListener("click", onDismiss);
+      actions.appendChild(x);
+    }
+    wrap.appendChild(content);
+    wrap.appendChild(actions);
+    return wrap;
+  }
+
+  function renderSettingsNotifications() {
+    const panel = document.getElementById("settings-notifications");
+    if (!panel) return;
+    panel.innerHTML = "";
+    const cards = [];
+    if (shouldShowIosHintNotif()) {
+      cards.push(makeNotifCard({
+        title: "Add to Home Screen",
+        body: "Safari clears website data after about 7 days. Tap the Share button below, then \u201CAdd to Home Screen\u201D — installed sites keep your favorites safe.",
+        primaryLabel: null,
+        onPrimary: null,
+        onDismiss: () => {
+          try { localStorage.setItem(FAV_IOS_HINT_DISMISSED_KEY, String(Date.now())); } catch {}
+          renderSettingsNotifications();
+          renderSettingsBadge();
+        },
+      }));
+    }
+    if (shouldShowBackupNotif()) {
+      cards.push(makeNotifCard({
+        title: "Back up your favorites",
+        body: "When you're done planning, remember to back up your favorites in case your browser clears its local data.",
+        primaryLabel: "Back up",
+        onPrimary: () => {
+          // Trigger the existing Backup flow via its button so all the
+          // bookkeeping (backed-up-at, clipboard, persist request)
+          // runs through one canonical path.
+          const btn = document.getElementById("fav-backup");
+          if (btn) btn.click();
+        },
+        onDismiss: () => {
+          try { localStorage.setItem(FAV_NAG_DISMISSED_AT_KEY, String(Date.now())); } catch {}
+          renderSettingsNotifications();
+          renderSettingsBadge();
+        },
+      }));
+    }
+    if (!cards.length) {
+      panel.hidden = true;
+      return;
+    }
+    panel.hidden = false;
+    for (const c of cards) panel.appendChild(c);
+  }
+
+  // ── Settings: corrupt-data recovery banner (Tier 1.1 UI) ──
+  // Shown only when stashCorrupt() actually preserved something on
+  // load. Lets the user copy the raw text out of the stash and then
+  // dismiss it. This is intentionally minimal — last-resort path.
+  function bindCorruptRecovery() {
+    const dismissAll = document.getElementById("fav-corrupt-dismiss");
+    if (dismissAll) {
+      dismissAll.addEventListener("click", () => {
+        for (const s of listCorruptStashes()) deleteCorruptStash(s.storageKey);
+        renderCorruptRecovery();
+      });
+    }
+  }
+  function renderCorruptRecovery() {
+    const wrap = document.getElementById("fav-corrupt-block");
+    if (!wrap) return;
+    const stashes = listCorruptStashes();
+    if (!stashes.length) {
+      wrap.hidden = true;
+      return;
+    }
+    wrap.hidden = false;
+    const listEl = wrap.querySelector(".fav-corrupt-list");
+    if (!listEl) return;
+    listEl.innerHTML = "";
+    for (const s of stashes) {
+      const row = document.createElement("div");
+      row.className = "fav-corrupt-row";
+      const when = new Date(s.ts);
+      const label = document.createElement("div");
+      label.className = "fav-corrupt-label";
+      label.textContent = s.sourceKey.replace(/^otherworld:/, "") + " · " +
+        when.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+      row.appendChild(label);
+      const actions = document.createElement("div");
+      actions.className = "fav-corrupt-actions";
+      const copyB = document.createElement("button");
+      copyB.type = "button";
+      copyB.className = "backup-btn btn-ghost";
+      copyB.textContent = "Copy raw";
+      copyB.addEventListener("click", () => {
+        const raw = readCorruptStash(s.storageKey) || "";
+        void copyText(raw);
+        copyB.textContent = "Copied";
+        setTimeout(() => { copyB.textContent = "Copy raw"; }, 1200);
+      });
+      const dropB = document.createElement("button");
+      dropB.type = "button";
+      dropB.className = "backup-btn btn-ghost";
+      dropB.textContent = "Discard";
+      dropB.addEventListener("click", () => {
+        deleteCorruptStash(s.storageKey);
+        renderCorruptRecovery();
+      });
+      actions.appendChild(copyB);
+      actions.appendChild(dropB);
+      row.appendChild(actions);
+      listEl.appendChild(row);
+    }
+  }
+
+  // ── Settings: persistent-storage status indicator (Tier 1.3) ──
+  function bindPersistStatus() {
+    const askBtn = document.getElementById("fav-persist-ask");
+    if (askBtn) {
+      askBtn.addEventListener("click", async () => {
+        if (!navigator.storage?.persist) return;
+        try {
+          // Force a fresh attempt — clear the "already asked" flag so
+          // the browser permission prompt path runs.
+          try { localStorage.removeItem(FAV_PERSIST_REQUESTED_KEY); } catch {}
+          await maybeRequestPersistedStorage();
+        } finally {
+          renderPersistStatus();
+        }
+      });
+    }
+  }
+  async function renderPersistStatus() {
+    const wrap = document.getElementById("fav-persist-block");
+    if (!wrap) return;
+    const stateEl = wrap.querySelector(".fav-persist-state");
+    const askBtn = document.getElementById("fav-persist-ask");
+    const s = await getPersistedStorageState();
+    if (s === "unsupported") {
+      // Don't even render — most users don't need to see that their
+      // browser doesn't expose the API. The iOS hint covers the
+      // Safari case separately.
+      wrap.hidden = true;
+      return;
+    }
+    wrap.hidden = false;
+    if (stateEl) {
+      stateEl.textContent = s === "persistent"
+        ? "Browser will keep these favorites until you delete them."
+        : "Browser may evict storage under pressure. Tap below to ask for persistence.";
+      stateEl.dataset.state = s;
+    }
+    if (askBtn) askBtn.hidden = s === "persistent";
+  }
+
+  // ── iOS detection helper ──────────────────────────────────
+  // Used by shouldShowIosHintNotif() above; isolated here so the
+  // notification renderer above can reference it without forward-
+  // reference gymnastics. The actual iOS hint UI is now a card
+  // injected into #settings-notifications, not a standalone block.
+  function isIosSafariNotStandalone() {
+    const ua = navigator.userAgent || "";
+    const isIos = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    if (!isIos) return false;
+    const standalone = window.navigator.standalone === true
+      || window.matchMedia?.("(display-mode: standalone)")?.matches === true
+      || window.matchMedia?.("(display-mode: fullscreen)")?.matches === true;
+    return !standalone;
+  }
+
+  // ── Self-heal favorites against upstream renames (Tier 3.1) ──
+  // After ALL_EVENTS is built and state.favorites is loaded, walk
+  // every favorite whose stored key has no matching event. If the
+  // favorite has metadata (camp + day + title) try to find a same-
+  // camp same-day event with a close-enough title and re-key the
+  // favorite under the new event's key. Run once at startup.
+  function titleDistance(a, b) {
+    // Cheap Levenshtein with early-out. Titles are short (<60 chars)
+    // so we don't need the row-swap trick. Returns Infinity if the
+    // length delta alone exceeds 60% of the longer string — that's
+    // already past the fuzzy threshold so we can skip the matrix.
+    if (a === b) return 0;
+    if (!a || !b) return Math.max((a || "").length, (b || "").length);
+    const la = a.length, lb = b.length;
+    if (Math.abs(la - lb) > Math.max(la, lb) * 0.6) return Infinity;
+    const prev = new Array(lb + 1);
+    const curr = new Array(lb + 1);
+    for (let j = 0; j <= lb; j++) prev[j] = j;
+    for (let i = 1; i <= la; i++) {
+      curr[0] = i;
+      const ca = a.charCodeAt(i - 1);
+      for (let j = 1; j <= lb; j++) {
+        const cost = ca === b.charCodeAt(j - 1) ? 0 : 1;
+        curr[j] = Math.min(
+          prev[j] + 1,
+          curr[j - 1] + 1,
+          prev[j - 1] + cost,
+        );
+      }
+      for (let j = 0; j <= lb; j++) prev[j] = curr[j];
+    }
+    return prev[lb];
+  }
+  function selfHealFavorites() {
+    if (!state.favorites || state.favorites.size === 0) return;
+    // Lookup tables we'll consult per favorite.
+    const eventByKey = new Map();
+    const eventsByCampDay = new Map(); // "campNorm|day" → Event[]
+    for (const ev of ALL_EVENTS) {
+      const k = eventFavKey(ev);
+      if (!eventByKey.has(k)) eventByKey.set(k, ev);
+      const campNorm = normalizeCampForKey((ev._entry && ev._entry.name) || ev.owner || "");
+      const day = (ev.day || "").trim().toLowerCase();
+      const bucket = campNorm + "|" + day;
+      if (!eventsByCampDay.has(bucket)) eventsByCampDay.set(bucket, []);
+      eventsByCampDay.get(bucket).push(ev);
+    }
+
+    const rekeys = []; // {oldKey, newKey, meta}
+    for (const [k, meta] of state.favorites) {
+      if (eventByKey.has(k)) continue;
+      if (!meta || !meta.camp || !meta.title || !meta.day) continue;
+      const bucket = normalizeCampForKey(meta.camp) + "|" + meta.day.trim().toLowerCase();
+      const candidates = eventsByCampDay.get(bucket);
+      if (!candidates || !candidates.length) continue;
+      const normTarget = normalizeTitleForKey(meta.title);
+      let best = null;
+      let bestDist = Infinity;
+      for (const ev of candidates) {
+        const normCand = normalizeTitleForKey(ev.title || "");
+        const d = titleDistance(normTarget, normCand);
+        if (d < bestDist) { bestDist = d; best = ev; }
+      }
+      if (!best) continue;
+      const lenRef = Math.max(normTarget.length, normalizeTitleForKey(best.title).length, 1);
+      // Accept the match only when the edit distance is < 30% of the
+      // longer normalised title. Empirically catches typo fixes,
+      // emoji adds/removes, and the common " Daily" / " Workshop"
+      // suffix additions without false-positives across same-day
+      // events from the same camp.
+      if (bestDist / lenRef > 0.3) continue;
+      const newKey = eventFavKey(best);
+      if (newKey === k) continue;
+      if (state.favorites.has(newKey)) continue; // already starred
+      rekeys.push({ oldKey: k, newKey, meta });
+    }
+    if (!rekeys.length) return;
+    for (const r of rekeys) {
+      state.favorites.delete(r.oldKey);
+      state.favorites.set(r.newKey, r.meta);
+      if (state.favoritesRed.has(r.oldKey)) {
+        state.favoritesRed.delete(r.oldKey);
+        state.favoritesRed.add(r.newKey);
+      }
+    }
+    saveFavorites(state.favorites);
+    saveRedFavorites(state.favoritesRed);
+  }
+
   // ── Favorites backup / restore ────────────────────────────
   // Two-button UI in the Settings modal. Backup serialises the favorites
   // set into a compact base64 JSON blob and (a) tries to copy it to the
@@ -1809,7 +2389,7 @@
     const codeEl = document.getElementById("fav-backup-code");
     const copyBtn = document.getElementById("fav-backup-copy");
     if (!backupBtn || !restoreBtn || !statusEl) return;
-    const DEFAULT_HINT = "Paste it into Notes (or email it to yourself) so you can Restore later.";
+    const DEFAULT_HINT = "Keep a copy of this code (or save it as a file) so you can restore later.";
     let copyResetTimer = null;
 
     function refreshCount() {
@@ -1828,47 +2408,62 @@
       statusEl.className = "backup-status" + (kind ? " " + kind : "");
       statusEl.innerHTML = html;
     }
+    // Thin alias around the hoisted writer so callers in this scope
+    // keep their original name.
     function encodeBlob(set, redSet) {
-      // Additive schema: v1 readers ignore unknown fields and only
-      // see `favs`, so a v=2 blob restored on an older cached app.js
-      // round-trips losslessly minus the red tier. We bump `v` to 2
-      // only when there's actually a red set worth carrying.
-      const hasRed = redSet && redSet.size > 0;
-      const payload = hasRed
-        ? { v: 2, t: "otherworld-favs", favs: [...set], red: [...redSet] }
-        : { v: 1, t: "otherworld-favs", favs: [...set] };
-      const json = JSON.stringify(payload);
-      // btoa needs latin-1; TextEncoder + per-byte String.fromCharCode is
-      // the modern unicode-safe path (replaces the deprecated
-      // encodeURIComponent → unescape dance).
-      const bytes = new TextEncoder().encode(json);
-      let binary = "";
-      for (const b of bytes) binary += String.fromCharCode(b);
-      return btoa(binary);
+      return encodeFavoritesBlob(set, redSet);
     }
+    // decodeBlob accepts either the canonical base64 form OR the
+    // raw JSON dropped onto the page as a file (Tier 2.1 file-based
+    // restore). Tries JSON.parse on the trimmed string first, falls
+    // back to atob+decode. Returns { favs, red, meta: Map<key,meta> }.
     function decodeBlob(str) {
-      const trimmed = String(str || "").trim().replace(/\s+/g, "");
+      const trimmed = String(str || "").trim();
       if (!trimmed) throw new Error("Empty code");
-      let json;
-      try {
-        const binary = atob(trimmed);
-        const bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        json = new TextDecoder().decode(bytes);
-      } catch {
-        throw new Error("That doesn't look like a valid backup code.");
+      let payload = null;
+      // Raw-JSON path (downloaded backup file).
+      if (trimmed.startsWith("{")) {
+        try { payload = JSON.parse(trimmed); }
+        catch { /* fall through to base64 path */ }
       }
-      let payload;
-      try { payload = JSON.parse(json); }
-      catch { throw new Error("Backup code is corrupted."); }
+      if (!payload) {
+        const compact = trimmed.replace(/\s+/g, "");
+        let json;
+        try {
+          const binary = atob(compact);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          json = new TextDecoder().decode(bytes);
+        } catch {
+          throw new Error("That doesn't look like a valid backup code.");
+        }
+        try { payload = JSON.parse(json); }
+        catch { throw new Error("Backup code is corrupted."); }
+      }
       if (!payload || payload.t !== "otherworld-favs" || !Array.isArray(payload.favs)) {
         throw new Error("Backup code is for something else.");
+      }
+      const meta = new Map();
+      if (Array.isArray(payload.meta)) {
+        for (const row of payload.meta) {
+          if (!Array.isArray(row) || row.length < 2) continue;
+          const [k, m] = row;
+          if (typeof k !== "string" || !m || typeof m !== "object") continue;
+          meta.set(k, {
+            camp: typeof m.camp === "string" ? m.camp : null,
+            title: typeof m.title === "string" ? m.title : null,
+            day: typeof m.day === "string" ? m.day : null,
+            startTime: typeof m.startTime === "string" ? m.startTime : null,
+            starredAt: typeof m.starredAt === "number" ? m.starredAt : null,
+          });
+        }
       }
       return {
         favs: payload.favs.filter(k => typeof k === "string"),
         red: Array.isArray(payload.red)
           ? payload.red.filter(k => typeof k === "string")
           : [],
+        meta,
       };
     }
 
@@ -1923,6 +2518,32 @@
       closeDialog(backupDialog);
     }
 
+    // Common merge path used by paste-restore and file-restore.
+    // `parsed` is the output of decodeBlob (or any equivalent
+    // shape). Returns a status string for the UI.
+    function applyRestorePayload(parsed) {
+      const before = state.favorites.size;
+      const normalised = migrateLegacyFavorites(parsed.favs || []);
+      const normalisedRed = migrateLegacyFavorites(parsed.red || []);
+      const restoredMeta = parsed.meta instanceof Map ? parsed.meta : new Map();
+      for (const k of normalised) {
+        if (state.favorites.has(k)) continue;
+        state.favorites.set(k, restoredMeta.get(k) || null);
+      }
+      for (const k of normalisedRed) {
+        if (state.favorites.has(k)) state.favoritesRed.add(k);
+      }
+      const added = state.favorites.size - before;
+      saveFavorites(state.favorites);
+      saveRedFavorites(state.favoritesRed);
+      refreshCount();
+      renderSettingsBadge();
+      if (typeof renderAll === "function") renderAll();
+      const total = normalised.size;
+      return "Restored " + total + " favorite" + (total === 1 ? "" : "s") +
+        " (" + added + " new, " + (total - added) + " already on this device).";
+    }
+
     backupBtn.addEventListener("click", async () => {
       const n = state.favorites.size;
       if (n === 0) {
@@ -1938,6 +2559,12 @@
       // Best-effort clipboard on open — no button/hint feedback; the
       // user hasn't tapped Copy yet.
       void copyText(code, codeEl);
+      // Track that the user has at least seen the backup code so the
+      // Tier 2.2 nag doesn't keep hammering them, and try to grab
+      // persistent storage now (cheap, no-op on Safari iOS).
+      try { localStorage.setItem(FAV_BACKED_UP_AT_KEY, String(Date.now())); } catch {}
+      void maybeRequestPersistedStorage();
+      renderSettingsBadge();
     });
 
     if (copyBtn) {
@@ -1948,6 +2575,43 @@
       });
     }
 
+    // Download-as-file (Tier 2.1). A .json file saved to Files /
+    // Downloads survives Safari ITP eviction and even reinstall
+    // because it lives outside the website's storage sandbox —
+    // strictly better than the clipboard on iOS.
+    const downloadBtn = document.getElementById("fav-backup-download");
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", () => {
+        const code = codeEl ? codeEl.value : "";
+        if (!code) return;
+        try {
+          // Decode the base64 blob back to its JSON form so the file
+          // is human-inspectable AND restore-able by the same path.
+          const binary = atob(code);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          const blob = new Blob([bytes], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          const now = new Date();
+          const stamp = now.getFullYear() + "-"
+            + String(now.getMonth() + 1).padStart(2, "0") + "-"
+            + String(now.getDate()).padStart(2, "0");
+          a.download = "otherworld-favorites-" + stamp + ".json";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          if (hintEl) hintEl.textContent = "Saved. Keep that file somewhere safe — Files / Drive / email to yourself.";
+          try { localStorage.setItem(FAV_BACKED_UP_AT_KEY, String(Date.now())); } catch {}
+          renderSettingsBadge();
+        } catch {
+          if (hintEl) hintEl.textContent = "Couldn't save the file — try the Copy button instead.";
+        }
+      });
+    }
+
     if (closeBtn) closeBtn.addEventListener("click", closeBackupModal);
     bindDialogBackdropClose(backupDialog, closeBackupModal);
     // ESC on the backup dialog only closes it (native top-layer
@@ -1955,7 +2619,25 @@
     // Settings dialog underneath stays open with its scroll position
     // intact. No global keydown dispatcher needed.
 
+    // Restore now opens a small chooser dialog (paste OR file) instead
+    // of going straight to window.prompt — the file path is the iOS
+    // ITP-survivable one and needs an <input type="file"> click.
+    const restoreDialog = document.getElementById("restore-modal");
+    const restorePasteBtn = document.getElementById("fav-restore-paste");
+    const restoreFileBtn = document.getElementById("fav-restore-file");
+    const restoreFileInput = document.getElementById("fav-restore-file-input");
+    const restoreCloseBtn = document.getElementById("restore-modal-close");
+    function openRestoreModal() { if (restoreDialog) openDialog(restoreDialog); }
+    function closeRestoreModal() { if (restoreDialog) closeDialog(restoreDialog); }
     restoreBtn.addEventListener("click", () => {
+      if (restoreDialog) {
+        openRestoreModal();
+        return;
+      }
+      // Fallback for old cached HTML that doesn't have the modal yet.
+      doRestoreFromPrompt();
+    });
+    function doRestoreFromPrompt() {
       const input = window.prompt(
         "Paste your backup code below.\n\nRestoring merges with any favorites you already have on this device — nothing is deleted."
       );
@@ -1963,33 +2645,35 @@
       let parsed;
       try { parsed = decodeBlob(input); }
       catch (err) { showStatus(err.message, "err"); return; }
-      const before = state.favorites.size;
-      // Run restored keys through the legacy migrator so backups
-      // created with the old 4-part format (camp|day|time|title)
-      // upgrade in-place to the new normalised 3-part shape. Same
-      // pass for the red set keeps the favoritesRed ⊆ favorites
-      // invariant after the merge.
-      const normalised = migrateLegacyFavorites(parsed.favs);
-      const normalisedRed = migrateLegacyFavorites(parsed.red);
-      for (const k of normalised) state.favorites.add(k);
-      // Only adopt red flags whose key is actually in favorites — both
-      // because of the invariant and because a stale red key with no
-      // matching favorite would surface as a phantom on later toggles.
-      for (const k of normalisedRed) {
-        if (state.favorites.has(k)) state.favoritesRed.add(k);
-      }
-      const added = state.favorites.size - before;
-      saveFavorites(state.favorites);
-      saveRedFavorites(state.favoritesRed);
-      refreshCount();
-      if (typeof renderAll === "function") renderAll();
-      const total = normalised.size;
-      showStatus(
-        "Restored " + total + " favorite" + (total === 1 ? "" : "s") +
-        " (" + added + " new, " + (total - added) + " already on this device).",
-        "ok"
-      );
-    });
+      showStatus(applyRestorePayload(parsed), "ok");
+    }
+    if (restorePasteBtn) {
+      restorePasteBtn.addEventListener("click", () => {
+        closeRestoreModal();
+        doRestoreFromPrompt();
+      });
+    }
+    if (restoreFileBtn && restoreFileInput) {
+      restoreFileBtn.addEventListener("click", () => {
+        restoreFileInput.value = ""; // re-pick same file works
+        restoreFileInput.click();
+      });
+      restoreFileInput.addEventListener("change", async () => {
+        const file = restoreFileInput.files && restoreFileInput.files[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const parsed = decodeBlob(text);
+          closeRestoreModal();
+          showStatus(applyRestorePayload(parsed), "ok");
+        } catch (err) {
+          closeRestoreModal();
+          showStatus(err && err.message ? err.message : "Couldn't read that file.", "err");
+        }
+      });
+    }
+    if (restoreCloseBtn) restoreCloseBtn.addEventListener("click", closeRestoreModal);
+    bindDialogBackdropClose(restoreDialog, closeRestoreModal);
   }
 
   // ── Auto-hide header on scroll-down, reveal on scroll-up ──
@@ -2150,12 +2834,38 @@
       nextRed = false;
     }
 
-    if (nextFav) state.favorites.add(k);
-    else state.favorites.delete(k);
+    if (nextFav) {
+      // Preserve the existing meta on re-favorite if any so the
+      // starredAt timestamp survives a tier-bump round trip. Only
+      // build fresh meta if we don't already have something.
+      const existing = state.favorites.get(k);
+      state.favorites.set(k, existing || buildFavoriteMeta(ev));
+    } else {
+      state.favorites.delete(k);
+    }
     if (nextRed) state.favoritesRed.add(k);
     else state.favoritesRed.delete(k);
     saveFavorites(state.favorites);
     saveRedFavorites(state.favoritesRed);
+
+    // First-ever favorite milestone — track when we crossed zero
+    // so the backup nag (Tier 2.2) gets a sane "wait 24h before
+    // pestering" floor and the "Add to Home Screen on iOS" hint
+    // has a stable anchor too.
+    if (nextFav && !wasFav) {
+      try {
+        if (!localStorage.getItem(FAV_FIRST_ADDED_AT_KEY)) {
+          localStorage.setItem(FAV_FIRST_ADDED_AT_KEY, String(Date.now()));
+        }
+      } catch {}
+      // Best-effort: ask the browser to keep our storage. No-op on
+      // Safari iOS (no API); on everything else this is the cheapest
+      // win against quota-pressure eviction.
+      void maybeRequestPersistedStorage();
+    }
+    // Surface the nag / iOS hint now that the favorites count
+    // changed. Cheap (just hides/shows existing DOM).
+    renderSettingsBadge();
 
     // 1. Update the source button in place — no re-render needed.
     if (srcEl) {
@@ -2848,7 +3558,14 @@
     else if (state.mode === "camp") renderCampView();
     else if (state.mode === "map") renderMapView();
     updateNowCue();
+    renderSettingsBadge();
   }
+
+  // Run self-heal once now that ALL_EVENTS and state.favorites are
+  // both available — rekeys any favorites whose stored key no
+  // longer matches the current data due to upstream title/camp
+  // edits (Tier 3.1 fuzzy fallback).
+  selfHealFavorites();
 
   bindUi();
   bindHeaderAutoHide();

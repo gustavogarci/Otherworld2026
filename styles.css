@@ -650,6 +650,188 @@ dialog.modal.backup-modal {
   color: var(--cream);
 }
 
+.backup-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.backup-actions-row .backup-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ── Restore options modal (Tier 2.1) ─────────────────────── */
+dialog.modal.restore-modal {
+  max-width: 480px;
+}
+.restore-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.restore-options .backup-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  text-align: left;
+}
+.restore-option-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cream);
+}
+.restore-option-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--cream-dim);
+  line-height: 1.4;
+}
+.restore-option-hint code {
+  font-family: var(--font-mono, "JetBrains Mono", ui-monospace, monospace);
+  font-size: 11.5px;
+  padding: 1px 4px;
+  background: var(--night-2);
+  border-radius: 3px;
+}
+
+/* ── Gear-icon notification dot ───────────────────────────── */
+/* Pure circular dot variant of .cta-badge. Used on #settings-open
+   whenever there's an active notification card waiting inside the
+   Settings modal (back-up nag at >=20 favorites, iOS Add-to-Home-
+   Screen at >=10 on Safari). Sits where the text-style badge would,
+   so the desktop "pill" layout still keeps it visible inline. */
+.cta-badge-dot {
+  min-width: 0;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+}
+
+/* ── Settings: top-of-modal notification cards ──────────────
+   Each card is its own Settings-sized panel — same margin/padding/
+   border-radius as the toggle card below — so when there are zero
+   notifications the (hidden) container takes up no space at all
+   instead of leaving an empty card behind. */
+.settings-notif {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  background: linear-gradient(
+    180deg,
+    rgba(204, 232, 78, 0.10),
+    rgba(204, 232, 78, 0.03)
+  );
+  border: 1px solid rgba(204, 232, 78, 0.30);
+  border-radius: 8px;
+}
+.settings-notif-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.settings-notif-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cream);
+  line-height: 1.3;
+}
+.settings-notif-body {
+  font-size: 12.5px;
+  color: var(--cream-soft);
+  line-height: 1.4;
+}
+.settings-notif-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-notif-action {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lime);
+  background: rgba(204, 232, 78, 0.08);
+  border: 1px solid rgba(204, 232, 78, 0.5);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.settings-notif-action:hover {
+  background: rgba(204, 232, 78, 0.18);
+  border-color: var(--lime);
+}
+.settings-notif-action:active { transform: translateY(1px); }
+.settings-notif-dismiss {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--cream-dim);
+  font-size: 13px;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.settings-notif-dismiss:hover { color: var(--cream); background: var(--moss-1); }
+
+/* ── Settings: corrupt-stash + persist status ─────────────── */
+.fav-corrupt-block .fav-corrupt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.fav-corrupt-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 6px;
+}
+.fav-corrupt-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.5px;
+  color: var(--cream-soft);
+  line-height: 1.35;
+  word-break: break-word;
+}
+.fav-corrupt-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 6px;
+}
+.fav-corrupt-actions .backup-btn {
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+.fav-persist-state[data-state="persistent"] {
+  color: var(--lime-soft);
+}
+
 /* ── Header CTAs (Search / Filters / About) ───────────────
    Mobile default: icon-only 34x34 circular tap targets.
    Desktop (>=640px): pill with icon + label. */
