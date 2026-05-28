@@ -3,11 +3,11 @@
         "source": "www2026.pdf",
         "extractedAt": "2026-05-26T03:36:44.798Z",
         "entryCount": 270,
-        "eventCount": 990,
+        "eventCount": 991,
         "unassignedEventCount": 0,
         "countsByType": {
             "camp": 204,
-            "camp_events": 935,
+            "camp_events": 936,
             "sound_stage": 8,
             "sound_stage_events": 44,
             "mutant_vehicle": 6,
@@ -15,7 +15,7 @@
             "art_installation": 52,
             "art_installation_events": 11
         },
-        "lastReconciledAt": "2026-05-28T17:02:02+00:00",
+        "lastReconciledAt": "2026-05-28T20:02:02+00:00",
         "reconciledFromSheet": "1o9Ue218Yx8mMa9OGyPfd66NoofYI3O1ewkN8NB-qnVc"
     },
     "entries": [
@@ -750,7 +750,7 @@
                     "owner": "Big Top Rouge",
                     "ownerType": "camp",
                     "title": "Partner Stretch Flow",
-                    "description": "Partner Stretch Flow: Give your tired dancing legs and back some love. Connect and move with new friends through playful partner stretches and accessible acroyoga-inspired poses. Come solo or with a buddy. Bring a yoga mat!",
+                    "description": "Give your tired dancing legs and back some love. Connect and move with new friends through playful partner stretches and accessible acroyoga-inspired poses. Come solo or with a buddy. Bring a yoga mat!",
                     "day": "Saturday",
                     "startTime": "13:00",
                     "endTime": "14:00",
@@ -6226,12 +6226,12 @@
                     "title": "Couples Somatic Coregulation with Tany",
                     "description": "Explore Tao and Tantra body-based practices to deepen intimacy, presence, and nervous system attunement. Leave with hands-on tools to nurture connection with yourself and your partner long after the festival ends.",
                     "day": "Friday",
-                    "startTime": "13:00",
-                    "endTime": "14:00",
+                    "startTime": "10:00",
+                    "endTime": "11:00",
                     "durationHours": 1,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
-                    "rawTimeText": "Friday 13:00 - 14:00",
+                    "rawTimeText": "Friday 10:00 - 11:00",
                     "tags": [
                         "Workshop / Class",
                         "Refuge / Introspective"
@@ -14219,23 +14219,6 @@
                 {
                     "owner": "Vic Drip",
                     "ownerType": "camp",
-                    "title": "Camp Proud of You",
-                    "description": "Enjoy positive parenting with tea and scones. We offer nonjudgemental listening, loving support, advice (if you want it) and a wholesome mom and dad vibe. We are so glad you are here. We appreciate your unique presence",
-                    "day": "Friday",
-                    "startTime": "15:00",
-                    "endTime": "17:30",
-                    "durationHours": 2.5,
-                    "crossesMidnight": false,
-                    "normalizationFlags": [],
-                    "rawTimeText": "Friday 15:00 - 17:30",
-                    "tags": [
-                        "Food / Drink",
-                        "Wellness / Yoga"
-                    ]
-                },
-                {
-                    "owner": "Vic Drip",
-                    "ownerType": "camp",
                     "title": "The Dart Knight Variety Hour",
                     "description": "Come for the smokes, stay for the smokin’ entartainment! This niche nicotine show enters its trilogy year with pufformances in burlesque, poetry, songs, and cigarette shenanigans. Join us for a dart and Smoke Em’ If You Gotham! (19+)",
                     "day": "Saturday",
@@ -14268,7 +14251,7 @@
                     ]
                 }
             ],
-            "claimed": false,
+            "claimed": true,
             "neighbourhood": "ASHLAND"
         },
         {
@@ -15047,8 +15030,24 @@
         {
             "name": "Zero Gravitas",
             "type": "camp",
-            "events": [],
-            "claimed": false
+            "events": [
+                {
+                    "owner": "Zero Gravitas",
+                    "ownerType": "camp",
+                    "title": "Blind Date Acro",
+                    "description": "Together we’ll learn a beginner-friendly L-base sequence... with a twist! along the way expect unexpected challenges, partner swaps, games, sensory changes, and yes… moments of doing acro blindfolded! Prerequisites: Bird, Chair, Side Star, Shoulder stand with hands on base’s legs. Please bring: A yoga mat and water bottle.",
+                    "day": "Friday",
+                    "startTime": "14:00",
+                    "endTime": "15:30",
+                    "durationHours": 1.5,
+                    "crossesMidnight": false,
+                    "normalizationFlags": [],
+                    "rawTimeText": "Friday 14:00 - 15:30",
+                    "tags": []
+                }
+            ],
+            "claimed": false,
+            "neighbourhood": "DOACRACY"
         },
         {
             "name": "CLuG (Cyber Love Garden)",
@@ -16389,6 +16388,20 @@
                     "tags": [
                         "Interactive / Crafts"
                     ]
+                },
+                {
+                    "owner": "The Really Lost Penguins Chill Cave",
+                    "ownerType": "camp",
+                    "title": "Acroyoga Jam",
+                    "description": "Casual/chill acroyoga jam session. Not a formal class, but experienced people will be on hand to show some basics. Mats/blankets are helpful, but optional. No partner required.",
+                    "day": "Thursday",
+                    "startTime": "17:00",
+                    "endTime": "18:00",
+                    "durationHours": 1,
+                    "crossesMidnight": false,
+                    "normalizationFlags": [],
+                    "rawTimeText": "Thursday 17:00 - 18:00",
+                    "tags": []
                 },
                 {
                     "owner": "The Really Lost Penguins Chill Cave",
