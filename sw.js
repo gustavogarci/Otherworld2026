@@ -20,7 +20,7 @@
 
 // Bump this string to invalidate the shell cache on the next visit.
 // Format is just for humans; any change triggers a refill.
-const SW_VERSION = "v17-2026-05-28-cosmic";
+const SW_VERSION = "v19-2026-05-28-restore-toast";
 
 const SHELL_CACHE = "otherworld-shell-" + SW_VERSION;
 const DATA_CACHE = "otherworld-data";

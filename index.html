@@ -380,25 +380,12 @@
             <button type="button" class="backup-btn btn-ghost" id="fav-corrupt-dismiss">Discard all</button>
           </div>
         </div>
-
-        <!-- Persistent-storage status. App.js hides this when the API
-             isn't supported (e.g. Safari iOS). -->
-        <div class="settings-row-block fav-persist-block" id="fav-persist-block" hidden>
-          <div class="settings-row-text">
-            <span class="setting-toggle-title">Browser storage</span>
-            <span class="setting-toggle-hint fav-persist-state"></span>
-          </div>
-          <div class="backup-row">
-            <button type="button" class="backup-btn btn-ghost" id="fav-persist-ask">Ask browser to keep these</button>
-          </div>
-        </div>
       </div>
 
-      <details class="settings-panel settings-foldable">
+      <details class="settings-panel settings-foldable" open>
         <summary class="settings-foldable-summary"><span class="settings-section-label">About</span></summary>
         <div class="settings-foldable-body">
-          <div class="settings-stats" id="stats"></div>
-          <p>Built by one silly goose 🪿.</p>
+          <p>Built by one <a href="https://soundcloud.com/gustavo-garc-a-32/silly-goose-otherworld-2025" target="_blank" rel="noopener">Silly Goose →</a> 🪿.</p>
           <p>
             This is a <a href="https://github.com/gustavogarci/Otherworld2026" target="_blank" rel="noopener">fork →</a>
             of <a href="https://github.com/Isaiiaas/OtherworldWWW" target="_blank" rel="noopener">Isaiiaas/OtherworldWWW →</a>.
@@ -412,6 +399,7 @@
             This website is not affiliated with
             <strong>Kindle Arts Society</strong> or <strong>Otherworld</strong>.
           </p>
+          <div class="settings-stats" id="stats"></div>
         </div>
       </details>
 

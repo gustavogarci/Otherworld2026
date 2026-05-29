@@ -28,10 +28,30 @@
   // events.json fetch on the first visit. Silent update model —
   // a new SW activates on the next reload, no user-facing toast.
   // See sw.js for the cache strategies.
+  //
+  // Skip on localhost: the cache-first shell makes saved edits show
+  // up a reload late (or not at all), which is miserable in dev. We
+  // also actively unregister any SW + nuke its caches so a previously
+  // installed one stops shadowing the dev server.
+  const isLocalDev = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
+    || location.hostname.endsWith(".local");
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    });
+    if (isLocalDev) {
+      navigator.serviceWorker.getRegistrations()
+        .then(regs => regs.forEach(r => r.unregister()))
+        .catch(() => {});
+      if (window.caches && caches.keys) {
+        caches.keys()
+          .then(names => names
+            .filter(n => n.startsWith("otherworld-"))
+            .forEach(n => caches.delete(n)))
+          .catch(() => {});
+      }
+    } else {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      });
+    }
   }
 
   // Use the HTTP cache with default heuristic freshness. The static
@@ -465,6 +485,34 @@
     } catch {}
   }
 
+  // ── Pinned camps (By-Camp view) ───────────────────────────
+  // A personal "float to the top" flag for entries in the By-Camp
+  // list. Keyed by type + normalised name (no stable id exists on
+  // entries) so a pin survives upstream re-parses and minor name
+  // tweaks the same way favorites do.
+  const PINNED_KEY = "otherworld:pinned-camps:v1";
+  function campPinKey(entry) {
+    return (entry.type || "camp") + "|" + normalizeCampForKey(entry.name || "");
+  }
+  function loadPinnedCamps() {
+    let raw = null;
+    try { raw = localStorage.getItem(PINNED_KEY); } catch { raw = null; }
+    if (!raw) return new Set();
+    try {
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? new Set(arr) : new Set();
+    } catch {
+      stashCorrupt(PINNED_KEY, raw);
+      return new Set();
+    }
+  }
+  function savePinnedCamps(set) {
+    try {
+      if (!set || set.size === 0) localStorage.removeItem(PINNED_KEY);
+      else localStorage.setItem(PINNED_KEY, JSON.stringify([...set]));
+    } catch {}
+  }
+
   // Encoded payload used by the Backup modal. Hoisted out of
   // bindFavoritesBackup() so it stays in module scope.
   function encodeFavoritesBlob(favMap, redSet) {
@@ -540,15 +588,6 @@
       _persistRequestInflight = false;
     }
   }
-  async function getPersistedStorageState() {
-    if (!navigator.storage || typeof navigator.storage.persisted !== "function") {
-      return "unsupported";
-    }
-    try {
-      const ok = await navigator.storage.persisted();
-      return ok ? "persistent" : "best-effort";
-    } catch { return "unknown"; }
-  }
 
   const state = {
     mode: "day",
@@ -582,6 +621,9 @@
     // but the data is preserved either way so disabling/re-enabling
     // the feature doesn't lose user intent.
     favoritesRed: loadRedFavorites(),
+    // Camps pinned to the top of the By-Camp list. Personal ordering
+    // preference, persisted across sessions.
+    pinnedCamps: loadPinnedCamps(),
   };
 
   // Enforce favoritesRed ⊆ favorites. Defensive: prevents a stale
@@ -728,11 +770,20 @@
   function loadBoolPref(k) {
     try { return localStorage.getItem(k) === "1"; } catch { return false; }
   }
+  // Like loadBoolPref but defaults to true when the user hasn't chosen yet.
+  function loadBoolPrefDefaultTrue(k) {
+    try { return localStorage.getItem(k) !== "0"; } catch { return true; }
+  }
   function saveBoolPref(k, v) {
     try {
       if (v) localStorage.setItem(k, "1");
       else localStorage.removeItem(k);
     } catch {}
+  }
+  // Persists both states explicitly so an intentional "off" survives a
+  // default-true preference (where a missing key means "on").
+  function saveBoolPrefExplicit(k, v) {
+    try { localStorage.setItem(k, v ? "1" : "0"); } catch {}
   }
   function loadMapPinsHiddenPref() {
     try {
@@ -746,7 +797,7 @@
     try { localStorage.setItem(MAP_PINS_HIDDEN_KEY, v ? "1" : "0"); } catch {}
   }
   let hideDescriptions = loadBoolPref(HIDE_DESC_KEY);
-  let hideOngoing = loadBoolPref(HIDE_ONGOING_KEY);
+  let hideOngoing = loadBoolPrefDefaultTrue(HIDE_ONGOING_KEY);
   let cantMissEnabled = loadBoolPref(CANT_MISS_KEY);
   let activeThemeId = loadThemePref();
   let mapPinsHidden = loadMapPinsHiddenPref();
@@ -1298,6 +1349,7 @@
     const card = document.createElement("article");
     card.className = "event-card" + (ongoing ? " is-ongoing" : "");
     card.dataset.type = ev.ownerType || "camp";
+    card.dataset.favKey = eventFavKey(ev);
 
     const flags = (ev.normalizationFlags || []).length
       ? `<div class="flags">⚠ ${ev.normalizationFlags.join(", ")}</div>`
@@ -1372,6 +1424,13 @@
   // ── By Camp view ────────────────────────────────────────
   function renderCampView() {
     const view = document.getElementById("view");
+    // Capture which camps are expanded BEFORE clearing, so a pin
+    // toggle (which re-renders) doesn't collapse an open camp.
+    const openPinKeys = new Set(
+      Array.from(view.querySelectorAll(".camp-block[open]"))
+        .map(el => el.dataset.pinKey)
+        .filter(Boolean)
+    );
     view.innerHTML = "";
 
     const entries = DATA.entries.filter(entryMatchesFilters);
@@ -1387,6 +1446,11 @@
     // second "camps" block after art in the UI.
     const TYPE_ORDER = { camp: 0, sound_stage: 1, art_installation: 2, mutant_vehicle: 3 };
     entries.sort((a, b) => {
+      // Pinned camps float above everything else, keeping their own
+      // type → name order within the pinned group.
+      const pa = state.pinnedCamps.has(campPinKey(a)) ? 0 : 1;
+      const pb = state.pinnedCamps.has(campPinKey(b)) ? 0 : 1;
+      if (pa !== pb) return pa - pb;
       const ta = TYPE_ORDER[a.type] ?? 99;
       const tb = TYPE_ORDER[b.type] ?? 99;
       if (ta !== tb) return ta - tb;
@@ -1394,6 +1458,9 @@
     });
 
     const filterEvents = hasAnyEventLevelFilter();
+    // Tracks the pinned→unpinned boundary so we can drop a thin divider
+    // between the pinned group and the rest exactly once.
+    let dividerDone = false;
     for (const entry of entries) {
       const events = entry.events.filter(ev => {
         // Hide events that don't match the current event-level filters
@@ -1419,16 +1486,33 @@
       }
       const dayKeys = Array.from(byDay.keys()).sort((a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b));
 
+      const pinKey = campPinKey(entry);
+      const isPinned = state.pinnedCamps.has(pinKey);
+
+      // First unpinned entry after one or more pinned ones → divider.
+      if (!isPinned && !dividerDone && view.querySelector(".camp-block")) {
+        const div = document.createElement("div");
+        div.className = "camp-divider";
+        view.appendChild(div);
+        dividerDone = true;
+      }
+      if (!isPinned) dividerDone = true;
+
       const block = document.createElement("details");
       block.className = "camp-block";
+      block.dataset.pinKey = pinKey;
       if (state.search && events.length > 0) block.open = true;
+      else if (openPinKeys.has(pinKey)) block.open = true;
       block.innerHTML = `
       <summary>
         <span class="name" title=""></span>
         ${entry.neighbourhood ? `<span class="neighbourhood-chip"></span>` : ""}
-        ${entry.claimed ? `<span class="verified-pill" title="Verified camp">✓ Verified</span>` : ""}
+        ${entry.claimed ? `<span class="verified-pill" title="Verified — managed by the camp owner" aria-label="Verified — managed by the camp owner">✓</span>` : ""}
         <span class="type-pill" data-type="${entry.type}">${typeLabel(entry.type)}</span>
         <span class="count">${events.length}</span>
+        <button class="pin-btn${isPinned ? " is-pinned" : ""}" type="button" aria-pressed="${isPinned ? "true" : "false"}" aria-label="${isPinned ? "Unpin camp" : "Pin camp to top"}" title="${isPinned ? "Unpin" : "Pin to top"}">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3Z"/></svg>
+        </button>
       </summary>
       <div class="body"></div>
     `;
@@ -1438,6 +1522,17 @@
       if (entry.neighbourhood) {
         block.querySelector(".neighbourhood-chip").textContent = entry.neighbourhood;
       }
+
+      const pinBtn = block.querySelector(".pin-btn");
+      pinBtn.addEventListener("click", e => {
+        // Stop the click from toggling the <details> open/closed.
+        e.preventDefault();
+        e.stopPropagation();
+        if (state.pinnedCamps.has(pinKey)) state.pinnedCamps.delete(pinKey);
+        else state.pinnedCamps.add(pinKey);
+        savePinnedCamps(state.pinnedCamps);
+        renderCampView();
+      });
 
       const body = block.querySelector(".body");
       if (events.length === 0) {
@@ -2005,13 +2100,11 @@
     bindDisplaySettings();
     bindDevNow();
     bindCorruptRecovery();
-    bindPersistStatus();
     // Initial paint of the in-settings state — runs every time the
     // Settings modal is opened so counts / hints stay fresh.
     document.getElementById("settings-open")?.addEventListener("click", () => {
       renderSettingsNotifications();
       renderCorruptRecovery();
-      renderPersistStatus();
     });
   }
 
@@ -2066,7 +2159,7 @@
     });
     hideOngoingEl.addEventListener("change", () => {
       hideOngoing = hideOngoingEl.checked;
-      saveBoolPref(HIDE_ONGOING_KEY, hideOngoing);
+      saveBoolPrefExplicit(HIDE_ONGOING_KEY, hideOngoing);
       renderAll();
     });
     cantMissEl.addEventListener("change", () => {
@@ -2302,46 +2395,6 @@
     }
   }
 
-  // ── Settings: persistent-storage status indicator (Tier 1.3) ──
-  function bindPersistStatus() {
-    const askBtn = document.getElementById("fav-persist-ask");
-    if (askBtn) {
-      askBtn.addEventListener("click", async () => {
-        if (!navigator.storage?.persist) return;
-        try {
-          // Force a fresh attempt — clear the "already asked" flag so
-          // the browser permission prompt path runs.
-          try { localStorage.removeItem(FAV_PERSIST_REQUESTED_KEY); } catch {}
-          await maybeRequestPersistedStorage();
-        } finally {
-          renderPersistStatus();
-        }
-      });
-    }
-  }
-  async function renderPersistStatus() {
-    const wrap = document.getElementById("fav-persist-block");
-    if (!wrap) return;
-    const stateEl = wrap.querySelector(".fav-persist-state");
-    const askBtn = document.getElementById("fav-persist-ask");
-    const s = await getPersistedStorageState();
-    if (s === "unsupported") {
-      // Don't even render — most users don't need to see that their
-      // browser doesn't expose the API. The iOS hint covers the
-      // Safari case separately.
-      wrap.hidden = true;
-      return;
-    }
-    wrap.hidden = false;
-    if (stateEl) {
-      stateEl.textContent = s === "persistent"
-        ? "Browser will keep these favorites until you delete them."
-        : "Browser may evict storage under pressure. Tap below to ask for persistence.";
-      stateEl.dataset.state = s;
-    }
-    if (askBtn) askBtn.hidden = s === "persistent";
-  }
-
   // ── iOS detection helper ──────────────────────────────────
   // Used by shouldShowIosHintNotif() above; isolated here so the
   // notification renderer above can reference it without forward-
@@ -2481,11 +2534,24 @@
     document.getElementById("settings-open")
       .addEventListener("click", refreshCount);
 
+    function hideStatus() {
+      statusEl.hidden = true;
+      statusEl.innerHTML = "";
+    }
     function showStatus(html, kind) {
       statusEl.hidden = false;
       statusEl.className = "backup-status" + (kind ? " " + kind : "");
-      statusEl.innerHTML = html;
+      statusEl.innerHTML =
+        '<span class="backup-status-text">' + html + "</span>" +
+        '<button type="button" class="backup-status-dismiss" aria-label="Dismiss">✕</button>';
+      const dismissBtn = statusEl.querySelector(".backup-status-dismiss");
+      if (dismissBtn) dismissBtn.addEventListener("click", hideStatus);
     }
+    // Clear any lingering restore/backup status when Settings closes
+    // (button, backdrop, or ESC — they all fire the dialog's native
+    // close event), so reopening Settings starts clean.
+    const settingsDialogEl = document.getElementById("settings-modal");
+    if (settingsDialogEl) settingsDialogEl.addEventListener("close", hideStatus);
     // Thin alias around the hoisted writer so callers in this scope
     // keep their original name.
     function encodeBlob(set, redSet) {
@@ -2619,7 +2685,7 @@
       if (typeof renderAll === "function") renderAll();
       const total = normalised.size;
       return "Restored " + total + " favorite" + (total === 1 ? "" : "s") +
-        " (" + added + " new, " + (total - added) + " already on this device).";
+        " (" + added + " new).";
     }
 
     backupBtn.addEventListener("click", async () => {
@@ -2957,6 +3023,14 @@
         srcEl.classList.add("just-favorited");
       }
     }
+
+    // 1b. Sync every other on-screen card for this same event. Long
+    // events render duplicate "ongoing" cards (one per overlapping
+    // hour), each with its own star — they'd otherwise stay stale until
+    // a full re-render. Cheap: a single scoped querySelectorAll.
+    document
+      .querySelectorAll(`.event-card[data-fav-key="${CSS.escape(k)}"] .fav-btn`)
+      .forEach(btn => { if (btn !== srcEl) applyFavBtnState(btn, nextFav, nextRed); });
 
     // 2. Mirror to the modal star (if open on this event and not the
     // element we just updated above).

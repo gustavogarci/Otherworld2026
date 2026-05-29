@@ -326,7 +326,7 @@ h1.logo-h1 a {
   color: var(--moss-3);
   font-size: 12.5px;
   font-family: var(--font-mono);
-  margin: 0 0 12px;
+  margin: 12px 0 0;
   padding: 10px 12px;
   background: var(--night-4);
   border: 1px solid var(--moss-1);
@@ -415,6 +415,9 @@ h1.logo-h1 a {
   font-weight: 400;
 }
 .backup-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   margin-top: 10px;
   padding: 10px 12px;
   font-size: 13px;
@@ -425,8 +428,23 @@ h1.logo-h1 a {
   border-radius: 6px;
   word-break: break-all;
 }
+.backup-status[hidden] { display: none; }
 .backup-status.ok { border-color: rgb(var(--lime-rgb) / 0.5); }
 .backup-status.err { border-color: rgba(255, 120, 120, 0.5); color: #ffb4b4; }
+.backup-status-text { flex: 1 1 auto; min-width: 0; }
+.backup-status-dismiss {
+  flex: none;
+  margin: -2px -4px 0 0;
+  padding: 2px 4px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.backup-status-dismiss:hover { opacity: 1; }
 
 .dev-now-row {
   display: flex;
@@ -814,10 +832,6 @@ dialog.modal.restore-modal {
   padding: 6px 10px;
   font-size: 12px;
 }
-.fav-persist-state[data-state="persistent"] {
-  color: var(--lime-soft);
-}
-
 /* ── Header CTAs (Search / Filters / About) ───────────────
    Mobile default: icon-only 34x34 circular tap targets.
    Desktop (>=640px): pill with icon + label. */
@@ -2034,8 +2048,10 @@ footer.site-footer a:hover {
   border-left-color: var(--lime);
 }
 
-.camp-block summary:hover {
-  background: var(--night-3);
+@media (hover: hover) {
+  .camp-block summary:hover {
+    background: var(--night-3);
+  }
 }
 
 .camp-block .name {
@@ -2112,7 +2128,8 @@ footer.site-footer a:hover {
   font-family: var(--font-sans);
 }
 
-.event-card .owner .verified-pill {
+.event-card .owner .verified-pill,
+.camp-block summary .verified-pill {
   width: 16px;
   height: 16px;
   padding: 0;
@@ -2120,8 +2137,67 @@ footer.site-footer a:hover {
   gap: 0;
   justify-content: center;
   border-radius: 50%;
-  /* The "✓ Verified" text is replaced with just ✓ via JS, so this
-     shrinks to a tight circular badge. */
+  flex-shrink: 0;
+  /* The "✓ Verified" text is replaced with just ✓ via JS (cards) or
+     emitted as a bare ✓ (By-Camp), so this shrinks to a tight
+     circular badge instead of a full-width pill. Keeps the camp row
+     compact and leaves room for the name + pin. */
+}
+
+/* ── Pin-to-top button (By-Camp summary) ─────────────────── */
+.camp-block summary .pin-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: -4px -4px -4px 2px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--moss-3);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s, transform 0.1s;
+}
+
+.camp-block summary .pin-btn svg {
+  fill: currentColor;
+  /* Unpinned: dim until hovered/pinned so it doesn't shout. */
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+@media (hover: hover) {
+  .camp-block summary .pin-btn:hover {
+    color: var(--lime);
+    background: var(--night-3);
+  }
+
+  .camp-block summary .pin-btn:hover svg {
+    opacity: 1;
+  }
+}
+
+.camp-block summary .pin-btn.is-pinned {
+  color: var(--lime);
+}
+
+.camp-block summary .pin-btn.is-pinned svg {
+  opacity: 1;
+}
+
+.camp-block summary .pin-btn:active {
+  transform: scale(0.9);
+}
+
+/* Thin divider separating the pinned group from the rest of the
+   list. The filled pin alone signals "pinned" — no card highlight. */
+.camp-divider {
+  height: 1px;
+  background: var(--moss-1);
+  margin: 4px 2px 18px;
 }
 
 .camp-block .body {
