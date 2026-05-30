@@ -940,3 +940,96 @@
 [data-theme="cosmic"] body::before {
   background: none;
 }
+
+
+/* ── DRAFT — "Healing" — twilight yurt, lavender + sage + candlelight
+   Inspired by the Healing Kiss camp: a watercolor schedule painted on
+   warm parchment, set against a dusky-plum forest at moonrise. Soft,
+   hand-painted, spa-at-dusk — pressed wildflowers, amethyst crystals,
+   a purple lotus, and the honey glow of lantern-lit canvas tents.
+
+   Deliberately NOT electric — every accent is a desaturated, dusty
+   watercolor wash so the whole app reads calm and restorative, like
+   a deep breath. Surfaces are twilight eggplant (the forest behind
+   the yurts), ink is warm candlelit cream (the parchment).
+
+   Display face is Cormorant Garamond — a high-contrast, lyrical
+   wellness/editorial serif that feels like a hand-lettered apothecary
+   label or a yoga-retreat brochure.
+
+   Role mapping for this theme:
+     --lime  → healing sage          (primary / camp / "NOW")
+     --pink  → dusty wild rose       (sound stage)
+     --cyan  → amethyst lavender     (art installation, hour times)
+     --amber → candlelit honey       (mutant vehicle)
+     --red   → clay rose             (can't-miss favorite tier) */
+[data-theme="healing"] {
+  /* Surfaces — dusky twilight plum, the forest behind the tents just
+     after sunset. Lifts by a few % per layer with a violet undertone
+     so cards feel like lantern-warmed canvas against the dark woods. */
+  --night-0: #120a18;
+  --night-1: #1a1124;
+  --night-2: #251930;
+  --night-3: #30223e;
+  --night-4: #3d2c4e;
+  --moss-rgb: 176 156 200;
+  --moss-1: rgb(var(--moss-rgb) / 0.10);
+  --moss-2: rgb(var(--moss-rgb) / 0.22);
+  --moss-3: #8c7da0;
+
+  /* Ink — warm parchment cream fading to a muted lavender-grey, so
+     low-emphasis text settles back toward the twilight surfaces. */
+  --cream: #f1e9da;
+  --cream-soft: #cfc3b6;
+  --cream-dim: #9a8ea6;
+
+  /* Accents — all dusty watercolor washes, nothing neon. */
+  --lime: #93b878;
+  --lime-soft: #b4d09c;
+  --lime-deep: #4e6e38;
+  --lime-rgb: 147 184 120;
+
+  --pink: #d98aa6;
+  --pink-soft: #e8b2c6;
+  --pink-deep: #8a4862;
+  --pink-rgb: 217 138 166;
+
+  --cyan: #b48fd6;
+  --cyan-soft: #cdb2e6;
+  --cyan-deep: #5e3f86;
+  --cyan-rgb: 180 143 214;
+
+  --amber: #e6b25e;
+  --amber-soft: #f0cd92;
+  --amber-deep: #8a6320;
+  --amber-rgb: 230 178 94;
+
+  --warn: #e6c45a;
+  --warn-rgb: 230 196 90;
+
+  --red: #d65a72;
+  --red-soft: #e88fa0;
+  --red-deep: #8a2c40;
+  --red-rgb: 214 90 114;
+
+  --type-camp: var(--lime);
+  --type-camp-deep: var(--lime-deep);
+  --type-stage: var(--pink);
+  --type-stage-deep: var(--pink-deep);
+  --type-art: var(--cyan);
+  --type-art-deep: var(--cyan-deep);
+  --type-vehicle: var(--amber);
+  --type-vehicle-deep: var(--amber-deep);
+
+  --font-display: "Cormorant Garamond", "Bricolage Grotesque", Georgia, serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* A touch more wash than default so cards carry a soft watercolor
+     bloom of their type color — but kept gentle so it stays "painted",
+     not "neon". */
+  --card-wash-alpha: 0.08;
+  --card-wash-stop: 30%;
+  --card-wash-alpha-hover: 0.12;
+  --card-wash-stop-hover: 34%;
+}

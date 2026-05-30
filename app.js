@@ -734,6 +734,7 @@
   const THEMES = [
     { id: "isaias",      label: "Isaiiaas" },
     { id: "mother-tree", label: "Mother Tree" },
+    { id: "healing",     label: "Healing" },
     { id: "ripple",      label: "Ripple" },
     { id: "sky",         label: "Sky" },
     { id: "circus",      label: "Circus" },
@@ -3739,4 +3740,82 @@
   }
 
   startLiveTick();
+
+  // ── Refresh data when the app is resumed ─────────────────────────
+  // iOS home-screen (standalone) PWAs freeze the page and resume it
+  // from memory instead of doing a fresh navigation, so events.json is
+  // fetched exactly once — at startup — and can sit stale for as long
+  // as the session stays alive (easily many hours). When the app
+  // becomes visible again, check upstream for a newer reconcile; if
+  // there is one, prime the SW data cache with the fresh body and
+  // reload so the next paint shows current data. Priming first is what
+  // avoids the stale-while-revalidate "one step behind" that a plain
+  // reload would otherwise hit (the SW would serve the old cached copy
+  // and only refresh in the background).
+  (function setupResumeRefresh() {
+    const MIN_INTERVAL_MS = 60_000;   // throttle: at most one check / min
+    const RELOAD_GUARD_KEY = "ow_resume_reload_for"; // dedupe reload target
+    let lastCheck = 0;
+    let checking = false;
+
+    function nudgeServiceWorker() {
+      if (!("serviceWorker" in navigator)) return;
+      navigator.serviceWorker.getRegistration()
+        .then(reg => { if (reg) reg.update(); })
+        .catch(() => {});
+    }
+
+    async function checkForFreshData() {
+      const now = Date.now();
+      if (checking || now - lastCheck < MIN_INTERVAL_MS) return;
+      lastCheck = now;
+      checking = true;
+      nudgeServiceWorker();
+      try {
+        // Cache-bust the query string so this request bypasses BOTH the
+        // HTTP cache and the SW's stale-while-revalidate handler (which
+        // keys on the full URL incl. query) and actually hits the
+        // network for a current copy.
+        const resp = await fetch("./events.json?_resume=" + now, { cache: "no-store" });
+        if (!resp || !resp.ok) return;
+        const fresh = await resp.clone().json().catch(() => null);
+        const freshAt = fresh && fresh.metadata && fresh.metadata.lastReconciledAt;
+        const currentAt = DATA && DATA.metadata && DATA.metadata.lastReconciledAt;
+        if (!freshAt || freshAt === currentAt) return; // nothing new
+
+        // Guard against reload loops: if we already reloaded targeting
+        // this exact timestamp (e.g. cache priming failed and the
+        // startup fetch still served stale), don't bounce again.
+        let alreadyTried = false;
+        try { alreadyTried = sessionStorage.getItem(RELOAD_GUARD_KEY) === freshAt; } catch {}
+        if (alreadyTried) return;
+
+        // Prime the canonical /events.json entry in the SW data cache so
+        // the reload's startup fetch serves the fresh body immediately.
+        // Coupled to sw.js's DATA_CACHE name on purpose — keep in sync.
+        try {
+          if (window.caches) {
+            const cache = await caches.open("otherworld-data");
+            await cache.put("/events.json", resp.clone());
+          }
+        } catch {}
+
+        try { sessionStorage.setItem(RELOAD_GUARD_KEY, freshAt); } catch {}
+        location.reload();
+      } catch {
+        // Offline or upstream hiccup — leave the current data in place.
+      } finally {
+        checking = false;
+      }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") checkForFreshData();
+    });
+    // pageshow with persisted=true fires on bfcache restore, a common
+    // iOS resume path that doesn't always emit visibilitychange.
+    window.addEventListener("pageshow", e => {
+      if (e.persisted) checkForFreshData();
+    });
+  })();
 })();
