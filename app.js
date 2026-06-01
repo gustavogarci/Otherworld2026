@@ -1773,6 +1773,9 @@
   // ── Event modal ──────────────────────────────────────────
   let _modalEvent = null;
   function showModal(ev) {
+    // Opening a detail view ends the undo window so the toast doesn't
+    // float over the dialog; the removal is already committed.
+    favUndo.commit();
     _modalEvent = ev;
     document.getElementById("m-title").textContent = ev.title || "(untitled)";
     document.getElementById("m-owner").textContent = `${ev._entry.name} · ${typeLabel(ev.ownerType)}`;
@@ -3017,6 +3020,9 @@
     const k = eventFavKey(ev);
     const wasFav = state.favorites.has(k);
     const wasRed = state.favoritesRed.has(k);
+    // Snapshot the existing meta before any mutation so an Undo can
+    // restore the original starredAt rather than a fresh timestamp.
+    const priorMeta = state.favorites.get(k) || null;
 
     // State machine:
     //   cantMissEnabled OFF → binary ☆ ↔ ★ (original behaviour).
@@ -3101,10 +3107,17 @@
       if (mFav && mFav !== srcEl) applyFavBtnState(mFav, nextFav, nextRed);
     }
 
+    // A manual re-favorite cancels any still-pending undo for this key.
+    if (nextFav && !wasFav) favUndo.dropKey(k);
+
     // 3. Full schedule re-render ONLY if it would actually change what's
     // on screen. That's: favorites-only filter is active.
     if (state.favoritesOnly) {
       renderAll();
+      // The card just left the filtered view — offer a reversal window.
+      if (wasFav && !nextFav) {
+        favUndo.push({ key: k, meta: priorMeta, wasRed });
+      }
     }
   }
 
@@ -3121,6 +3134,92 @@
     el.setAttribute("aria-pressed", isFav ? "true" : "false");
     el.setAttribute("aria-label", isFav ? "Unfavorite" : "Favorite");
   }
+
+  // ── Favorites "Undo" toast ────────────────────────────────
+  // When the Favorites filter is on, unfavoriting drops the card out
+  // of view instantly. This is a short, reversible window: a single
+  // bottom-center toast that lets you put removals back, newest-first
+  // (LIFO), each Undo tap restoring one and resetting the timer.
+  //
+  // The removal itself is committed to storage immediately — the toast
+  // is purely a reversal buffer, so what's on screen always reflects
+  // the real favorites set. Letting the timer expire (or navigating
+  // into the modal) just finalises whatever's left in the stack.
+  const favUndo = (() => {
+    const el = document.getElementById("fav-toast");
+    const msgEl = el && el.querySelector(".fav-toast-msg");
+    const btn = el && el.querySelector(".fav-toast-undo");
+    const DURATION_MS = 5000;
+    // Stack of { key, meta, wasRed }, captured at removal time so a
+    // restore reinstates the exact prior state (original starredAt
+    // meta + can't-miss red tier), not a generic favorite.
+    let stack = [];
+    let timer = null;
+
+    function render() {
+      if (!msgEl) return;
+      const n = stack.length;
+      msgEl.innerHTML = n > 1
+        ? `<span class="count">${n}</span> removed from favorites`
+        : "Removed from favorites";
+    }
+    function restartTimer() {
+      clearTimeout(timer);
+      timer = setTimeout(commit, DURATION_MS);
+    }
+    function hide() {
+      if (el) el.classList.remove("is-visible");
+    }
+    // Drop the undo window; the removals stay (already persisted).
+    function commit() {
+      clearTimeout(timer);
+      stack = [];
+      hide();
+    }
+    // Record a removal and (re)show the toast, resetting the clock.
+    function push(entry) {
+      if (!el) return;
+      stack.push(entry);
+      render();
+      el.classList.add("is-visible");
+      restartTimer();
+    }
+    // A manual re-favorite of a still-pending key makes its undo entry
+    // moot — drop it so the count stays truthful.
+    function dropKey(k) {
+      const before = stack.length;
+      stack = stack.filter(e => e.key !== k);
+      if (stack.length === before) return;
+      if (stack.length === 0) commit();
+      else render();
+    }
+    // Restore the most recent removal (LIFO), then keep the toast up
+    // with a refreshed timer if there's more to walk back.
+    function undoOne() {
+      const entry = stack.pop();
+      if (!entry) { commit(); return; }
+      state.favorites.set(entry.key, entry.meta || null);
+      if (entry.wasRed) state.favoritesRed.add(entry.key);
+      saveFavorites(state.favorites);
+      saveRedFavorites(state.favoritesRed);
+      renderSettingsBadge();
+      renderAll();
+      if (stack.length > 0) { render(); restartTimer(); }
+      else commit();
+    }
+
+    if (btn) {
+      btn.addEventListener("click", e => { e.stopPropagation(); undoOne(); });
+    }
+    if (el) {
+      // Pause the countdown while the pointer rests on the toast so it
+      // can't expire mid-reach (desktop; mobile has no hover).
+      el.addEventListener("mouseenter", () => clearTimeout(timer));
+      el.addEventListener("mouseleave", () => { if (stack.length) restartTimer(); });
+    }
+
+    return { push, dropKey, commit };
+  })();
 
   // ── Camp modal (events for a camp, opened from a map pin) ──
   function showCampModal(entry) {

@@ -215,6 +215,15 @@
   </button>
   <main id="view"></main>
 
+  <!-- Favorites "Undo" toast. Sibling of <main> (not inside it) so the
+       schedule re-render — which clears #view — never wipes it. Shown
+       only when a favorite is removed while the Favorites filter is on
+       (the one case where the card vanishes from view). -->
+  <div id="fav-toast" class="fav-toast" role="status" aria-live="polite">
+    <span class="fav-toast-msg"></span>
+    <button type="button" class="fav-toast-undo">Undo</button>
+  </div>
+
   <dialog class="modal" id="modal" aria-labelledby="m-title">
     <div class="modal-head">
       <h2 id="m-title"></h2>

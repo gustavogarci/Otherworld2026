@@ -2786,6 +2786,87 @@ body.map-fullscreen .map-back-pill {
   height: 14px;
 }
 
+/* ── Favorites "Undo" toast ─────────────────────────────────
+   Bottom-center, fixed, floating above the safe area. Reuses the
+   .map-back-pill surface (dark translucent + blur + hairline border)
+   but as a rounded rect rather than a full pill. Idle state is faded
+   out + visibility:hidden + pointer-events:none so it can't be tapped
+   or focused when there's nothing to undo. */
+.fav-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, calc(env(safe-area-inset-bottom) + 8px));
+  transform: translateX(-50%) translateY(12px);
+  width: calc(100% - 24px);
+  max-width: 420px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 8px 13px 16px;
+  background: rgba(18, 42, 53, 0.94);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: #eff7f8;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+  border-radius: 14px;
+  font: 500 14px/1.3 var(--font-sans);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+}
+
+.fav-toast.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.fav-toast-msg {
+  flex: 1;
+  min-width: 0;
+}
+
+.fav-toast-msg .count {
+  color: var(--lime);
+  font-weight: 700;
+}
+
+.fav-toast-undo {
+  flex-shrink: 0;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--lime);
+  font: 700 13px/1 var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 9px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .fav-toast-undo:hover {
+    background: rgb(var(--lime-rgb) / 0.12);
+  }
+}
+
+/* Honor reduced-motion: keep it a plain fade, no slide. */
+@media (prefers-reduced-motion: reduce) {
+  .fav-toast {
+    transform: translateX(-50%);
+    transition: opacity 0.15s linear, visibility 0.15s;
+  }
+  .fav-toast.is-visible {
+    transform: translateX(-50%);
+  }
+}
+
 /* In fullscreen, move the legend out of the top row (it was fighting
    the zoom controls). Bottom-left, no tab bar to clear anymore. */
 body.map-fullscreen .map-view .legend {
