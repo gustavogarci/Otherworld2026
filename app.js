@@ -647,6 +647,10 @@
     // Lived in state.quick previously, which surprised users who
     // expected "Favorites + Happening now" to intersect, not union.
     favoritesOnly: false,
+    // Second stage of the header Favorites filter, reachable only when
+    // cantMissEnabled is on: off → all favorites → red ("can't miss")
+    // only → off. Always a subset of favoritesOnly being true.
+    favoritesRedOnly: false,
     // Time-of-day chips ("morning" | "afternoon" | "evening" | "late").
     // Multi-select, OR semantics across selected periods AND-combined
     // with other filters.
@@ -1088,7 +1092,12 @@
   // old bug. renderCampView uses the same predicate to trim the
   // events shown inside each expanded camp.
   function eventMatchesEventLevelFilters(ev) {
-    if (state.favoritesOnly && !eventIsFavorite(ev)) return false;
+    if (state.favoritesOnly) {
+      if (!eventIsFavorite(ev)) return false;
+      // Second stage: red-only. Gated on cantMissEnabled so a stale
+      // flag can't silently hide everything if the feature is off.
+      if (state.favoritesRedOnly && cantMissEnabled && !eventIsRedFav(ev)) return false;
+    }
     if (!eventMatchesTags(ev)) return false;
     if (!eventMatchesQuick(ev)) return false;
     if (!eventMatchesTimeOfDay(ev)) return false;
@@ -1923,8 +1932,23 @@
     }
 
     // Header Favorites toggle — quickest path to filter by favorites.
+    // With can't-miss enabled it cycles off → all favorites → reds only
+    // → off; otherwise it stays a binary on/off.
     document.getElementById("fav-toggle").addEventListener("click", () => {
-      state.favoritesOnly = !state.favoritesOnly;
+      if (cantMissEnabled) {
+        if (!state.favoritesOnly) {
+          state.favoritesOnly = true;
+          state.favoritesRedOnly = false;
+        } else if (!state.favoritesRedOnly) {
+          state.favoritesRedOnly = true;
+        } else {
+          state.favoritesOnly = false;
+          state.favoritesRedOnly = false;
+        }
+      } else {
+        state.favoritesOnly = !state.favoritesOnly;
+        state.favoritesRedOnly = false;
+      }
       renderAll();
     });
 
@@ -2230,6 +2254,9 @@
     cantMissEl.addEventListener("change", () => {
       cantMissEnabled = cantMissEl.checked;
       saveBoolPref(CANT_MISS_KEY, cantMissEnabled);
+      // The reds-only filter stage is unreachable without the feature;
+      // drop it so we don't leave a hidden filter narrowing the list.
+      if (!cantMissEnabled) state.favoritesRedOnly = false;
       // Re-render so every visible star reflects the new rules
       // (off: any reds render as regular green; on: they pop again).
       // Also repaint an open modal star — applyFavBtnState gates
@@ -3849,11 +3876,27 @@
     sb.textContent = hasSearch ? "•" : "";
     document.getElementById("search-open").classList.toggle("has-active", hasSearch);
 
-    // Header Favorites star — active when the favorites-only flag is on.
+    // Header Favorites star — active when the favorites-only flag is on,
+    // and tinted red in the second (reds-only) stage so the three states
+    // are visually distinct.
     const favOn = state.favoritesOnly;
+    const redOnly = favOn && state.favoritesRedOnly && cantMissEnabled;
     const favBtn = document.getElementById("fav-toggle");
     favBtn.classList.toggle("has-active", favOn);
+    favBtn.classList.toggle("is-red-only", redOnly);
     favBtn.setAttribute("aria-pressed", favOn ? "true" : "false");
+    const favLabel = favBtn.querySelector(".label");
+    if (favLabel) favLabel.textContent = redOnly ? "Can’t-miss" : "Favorites";
+    favBtn.setAttribute(
+      "aria-label",
+      !favOn
+        ? "Show favorites only"
+        : redOnly
+          ? "Showing can’t-miss favorites only. Activate to show all events."
+          : cantMissEnabled
+            ? "Showing all favorites. Activate to show can’t-miss only."
+            : "Showing favorites only"
+    );
     // No notification-style count badge on this button — the day-tab
     // strip already shows "Friday 3" when filtered, which is enough.
   }

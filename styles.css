@@ -903,6 +903,15 @@ dialog.modal.restore-modal {
   fill: currentColor;
 }
 
+/* Second filter stage: reds-only. Recolour the active star to the
+   can't-miss red so the three states (off / all / reds) read at a
+   glance. The .has-active fill rule above still applies. */
+#fav-toggle.has-active.is-red-only {
+  color: var(--star-red);
+  border-color: rgb(var(--star-red-rgb) / 0.55);
+  background: rgb(var(--star-red-rgb) / 0.12);
+}
+
 .cta-badge {
   position: absolute;
   top: -2px;
