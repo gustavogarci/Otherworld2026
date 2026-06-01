@@ -33,8 +33,17 @@
   // up a reload late (or not at all), which is miserable in dev. We
   // also actively unregister any SW + nuke its caches so a previously
   // installed one stops shadowing the dev server.
+  // Treat localhost, *.local, AND private-LAN IPs (192.168.x.x,
+  // 10.x.x.x, 172.16–31.x.x) as dev. The LAN ranges matter for
+  // previewing on a phone over Wi-Fi (http://192.168…:8000): without
+  // them the service worker would shadow fresh edits with cached code.
+  // Production only ever runs on public domains, so this never affects
+  // real users.
   const isLocalDev = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
-    || location.hostname.endsWith(".local");
+    || location.hostname.endsWith(".local")
+    || /^192\.168\.\d{1,3}\.\d{1,3}$/.test(location.hostname)
+    || /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(location.hostname)
+    || /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/.test(location.hostname);
   if ("serviceWorker" in navigator) {
     if (isLocalDev) {
       navigator.serviceWorker.getRegistrations()
@@ -61,12 +70,37 @@
   // `no-store`) was a visible cold-start tax. When the cron updates
   // events.json the new Last-Modified invalidates the cached copy
   // automatically; until then the browser serves it from disk.
-  const [_eventsResp, _aliasResp] = await Promise.all([
-    fetch('./events.json'),
-    fetch('./camp-aliases.json').catch(() => null),
-  ]);
-  if (!_eventsResp.ok) throw new Error('Failed to load events.json: ' + _eventsResp.status);
-  window.OTHERWORLD_DATA = await _eventsResp.json();
+  let _aliasResp = null;
+  try {
+    let _eventsResp;
+    [_eventsResp, _aliasResp] = await Promise.all([
+      fetch('./events.json'),
+      fetch('./camp-aliases.json').catch(() => null),
+    ]);
+    if (!_eventsResp.ok) throw new Error('Failed to load events.json: ' + _eventsResp.status);
+    window.OTHERWORLD_DATA = await _eventsResp.json();
+  } catch (err) {
+    // First-load failure (offline with nothing cached yet, network
+    // error, or malformed JSON). Without this the page would just sit
+    // blank with no explanation. Show a friendly, on-brand empty state
+    // with a retry instead. Once the schedule has been loaded once,
+    // the service worker serves it from cache so this path won't fire.
+    const view = document.getElementById('view');
+    if (view) {
+      view.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-title">Couldn't load the schedule</div>
+          <div class="empty-sub">Check your connection and try again. Once it's loaded once, it stays available offline.</div>
+        </div>`;
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'empty-retry';
+      retry.textContent = 'Try again';
+      retry.addEventListener('click', () => location.reload());
+      view.querySelector('.empty-state')?.appendChild(retry);
+    }
+    return;
+  }
   const _aliasData = (_aliasResp && _aliasResp.ok) ? await _aliasResp.json().catch(() => null) : null;
 
   // Defensive dedupe: collapse entries whose names canonicalize to the
@@ -1824,12 +1858,34 @@
   }
 
   function switchMode(mode) {
+    // Capture where the user was in the outgoing schedule so a round
+    // trip through the Map (or another tab) returns them to the same
+    // spot instead of snapping to the top. Closing the event modal
+    // already preserves scroll because it's an overlay with no
+    // re-render; switching modes rebuilds #view from scratch, which
+    // resets window scroll to 0 unless we restore it ourselves.
+    const prev = state.mode;
+    if (prev === "day" || prev === "camp") {
+      state._scrollMemory = { mode: prev, day: state.day, y: window.scrollY };
+    }
+
     state.mode = mode;
     for (const b of document.querySelectorAll("#mode-tabs .tab")) {
       b.classList.toggle("active", b.dataset.mode === mode);
     }
     applyFullscreenMode();
     renderAll();
+
+    // Restore the captured scroll when coming back to the same view we
+    // left. Day mode is keyed by day too, so switching the active day
+    // while away correctly starts at the top instead of a stale offset.
+    if (mode === "day" || mode === "camp") {
+      const mem = state._scrollMemory;
+      if (mem && mem.mode === mode && (mode !== "day" || mem.day === state.day)) {
+        const y = mem.y;
+        requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "auto" }));
+      }
+    }
   }
 
   // Map mode is edge-to-edge fullscreen: hides header/footer.
@@ -3112,6 +3168,18 @@
     let zoom = 1, pan = { x: 0, y: 0 };
     let panning = false, panStart = null;
     let pendingFocus = null;
+    // Handle for the deferred fit() scheduled by mount(). A focus
+    // request (Open-map-from-event) cancels it so the generic
+    // "fit to screen" can't fire a frame later and clobber the
+    // pin-centering transform.
+    let mountFitRaf = null;
+    // Transient "you are here" ring drawn around the pin when the map
+    // is opened from an event. Lives in canvas space (glued to the
+    // geographic point, independent of whether pins/labels show) and
+    // fades on the first map interaction. Tracked so we can cancel its
+    // auto-fade timer and remove a stale ring on the next focus.
+    let focusRingEl = null;
+    let focusRingTimer = null;
     // Hoisted so renderPins() can check whether a multi-touch
     // gesture is active and skip firing pin taps in that case.
     const pointers = new Map();
@@ -3303,6 +3371,12 @@
       stage.addEventListener("pointercancel", endPointer);
       stage.addEventListener("pointerleave", endPointer);
 
+      // Any direct interaction with the map (touch, drag, wheel)
+      // dismisses the focus ring so it's never in the way once the
+      // user starts exploring — panning, pinching, toggling pins, etc.
+      stage.addEventListener("pointerdown", dismissFocusRing);
+      stage.addEventListener("wheel", dismissFocusRing, { passive: true });
+
       renderPins();
       return root;
     }
@@ -3447,16 +3521,83 @@
     }
 
     function focusOn(pin) {
-      if (!stage) { pendingFocus = pin; return; }
+      const img = canvas && canvas.querySelector("img");
+      // Need the loaded image's natural size to know the rendered
+      // height. If the stage or image isn't ready, defer — the img
+      // load handler replays pendingFocus once dimensions exist.
+      if (!stage || !img || !img.naturalWidth || !img.naturalHeight) {
+        pendingFocus = pin;
+        return;
+      }
       const rect = stage.getBoundingClientRect();
-      zoom = Math.min(3, Math.max(zoom, 2));
-      // Pin is at (pin.x * stageWidth * zoom, pin.y * stageHeight * zoom)
-      // after scale (canvas starts at 100% of stage width).
+      // Open the map zoomed in tight on the pin (550%) so the camp's
+      // immediate surroundings are legible. Only this Open-map-from-
+      // event flow uses focusOn(); the Map tab itself opens at fit.
+      zoom = 5.5;
+      // applyTransform() sizes the canvas to the image's natural pixels
+      // and scales by baseScale = rect.width / naturalWidth. So at
+      // zoom=1 the image renders rect.width wide and (rect.width / AR)
+      // tall — NOT rect.height. Centering must use that rendered
+      // height, otherwise the pin lands off-center vertically whenever
+      // the stage aspect ratio differs from the image's (e.g. the
+      // tall fullscreen viewport).
+      const renderedH = rect.width * img.naturalHeight / img.naturalWidth;
       const px = pin.x * rect.width * zoom;
-      const py = pin.y * rect.height * zoom;
+      const py = pin.y * renderedH * zoom;
+      // Center horizontally. Vertically, center within the band BELOW
+      // the top controls/status-bar chrome — in fullscreen the stage
+      // spans under the status bar, so centering on the true middle
+      // leaves the pin sitting visually high. topPad pushes the target
+      // down by half the occluded top strip, and auto-adapts to the
+      // device safe-area inset (the controls sit at safe-area-inset-top).
+      const controls = root && root.querySelector(".controls-overlay");
+      const topPad = controls
+        ? Math.max(0, controls.getBoundingClientRect().bottom - rect.top)
+        : 0;
       pan.x = rect.width / 2 - px;
-      pan.y = rect.height / 2 - py;
+      pan.y = topPad + (rect.height - topPad) / 2 - py;
       applyTransform();
+      showFocusRing(pin);
+    }
+
+    // ── Focus ring ("you are here" target) ───────────────────
+    // A short-lived circle drawn around the pin we just centered on,
+    // appended into canvas space so it tracks the exact geographic
+    // point (works whether or not pins/labels are visible). It draws
+    // itself on, breathes a couple times, then fades — either on the
+    // first map interaction (see the stage listeners) or after a
+    // timeout if the user just looks without touching.
+    function clearFocusRing() {
+      if (focusRingTimer) { clearTimeout(focusRingTimer); focusRingTimer = null; }
+      if (focusRingEl) { focusRingEl.remove(); focusRingEl = null; }
+    }
+    function dismissFocusRing() {
+      if (!focusRingEl) return;
+      const el = focusRingEl;
+      focusRingEl = null;
+      if (focusRingTimer) { clearTimeout(focusRingTimer); focusRingTimer = null; }
+      el.classList.add("is-leaving");
+      // Remove after the fade. Fallback timeout covers the cases where
+      // transitionend never fires (detached node, reduced-motion).
+      const done = () => el.remove();
+      el.addEventListener("transitionend", done, { once: true });
+      setTimeout(done, 500);
+    }
+    function showFocusRing(pin) {
+      if (!canvas) return;
+      clearFocusRing();
+      const ring = document.createElement("div");
+      ring.className = "map-focus-ring";
+      ring.style.left = (pin.x * 100) + "%";
+      ring.style.top = (pin.y * 100) + "%";
+      ring.innerHTML =
+        '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">'
+        + '<circle cx="50" cy="50" r="42"/></svg>';
+      canvas.appendChild(ring);
+      focusRingEl = ring;
+      // Auto-fade if untouched (desktop "just looking") so it never
+      // lingers indefinitely.
+      focusRingTimer = setTimeout(dismissFocusRing, 7000);
     }
 
     return {
@@ -3464,12 +3605,23 @@
         container.appendChild(ensureNode());
         // Re-evaluate dimming on every mount (filters may have changed).
         renderPins();
+        // Drop any leftover focus ring; a focusOn() in this same tick
+        // (Open-map-from-event) re-adds a fresh one after this.
+        clearFocusRing();
         // Stage dimensions change between regular and fullscreen
         // viewports — re-fit so the map fills whatever space we have.
-        requestAnimationFrame(() => fit());
+        // Tracked so a focusOn() in the same tick can cancel it (see
+        // below) — otherwise this fit would overwrite the pin centering.
+        if (mountFitRaf) cancelAnimationFrame(mountFitRaf);
+        mountFitRaf = requestAnimationFrame(() => { mountFitRaf = null; fit(); });
       },
       focusOn(pin) {
         ensureNode();
+        // Opening the map centered on a specific pin: cancel mount()'s
+        // pending generic fit so it can't clobber the focus a frame
+        // later. focusOn() (or its deferred replay once the image
+        // loads) now owns the transform.
+        if (mountFitRaf) { cancelAnimationFrame(mountFitRaf); mountFitRaf = null; }
         focusOn(pin);
       },
       refreshDim: renderPins,

@@ -20,7 +20,7 @@
 
 // Bump this string to invalidate the shell cache on the next visit.
 // Format is just for humans; any change triggers a refill.
-const SW_VERSION = "v20-2026-05-29-healing-theme";
+const SW_VERSION = "v26-2026-05-31-map-focus-ring-tune";
 
 const SHELL_CACHE = "otherworld-shell-" + SW_VERSION;
 const DATA_CACHE = "otherworld-data";

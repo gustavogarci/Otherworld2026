@@ -2899,6 +2899,71 @@ body.map-fullscreen .map-view .controls-overlay {
   opacity: 1;
 }
 
+/* Focus ring — the transient "you are here" target drawn around a pin
+   when the map is opened from an event. Lives in canvas space and is
+   inverse-scaled (like .pin) so it's a constant on-screen size at any
+   zoom. pointer-events:none so it never intercepts taps. */
+.map-view .map-focus-ring {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  margin-left: -38px;
+  margin-top: -38px;
+  transform: scale(var(--pin-scale, 1));
+  transform-origin: center;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 1;
+  transition: opacity 0.32s ease-out;
+}
+
+.map-view .map-focus-ring.is-leaving {
+  opacity: 0;
+}
+
+.map-view .map-focus-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  /* Soft breathing after the circle finishes drawing. */
+  animation: focus-ring-breathe 2.2s ease-in-out 0.6s infinite;
+}
+
+.map-view .map-focus-ring circle {
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  /* Circumference for r=42 ≈ 263.9 — draw the stroke on from nothing. */
+  stroke-dasharray: 264;
+  stroke-dashoffset: 264;
+  transform: rotate(-90deg);
+  transform-box: fill-box;
+  transform-origin: center;
+  filter: drop-shadow(0 0 5px rgb(var(--lime-rgb) / 0.65));
+  animation: focus-ring-draw 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+}
+
+@keyframes focus-ring-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes focus-ring-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50%      { transform: scale(1.07); opacity: 0.66; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-view .map-focus-ring circle {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .map-view .map-focus-ring svg {
+    animation: none;
+  }
+}
+
 .map-view .controls-overlay {
   position: absolute;
   top: 12px;
@@ -3085,6 +3150,20 @@ body.map-fullscreen .map-view .controls-overlay {
   color: var(--cream-dim);
   max-width: 280px;
   margin: 0 auto;
+}
+
+.empty-state .empty-retry {
+  margin-top: 18px;
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--night-3);
+  background: var(--cream);
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
 }
 
 /* Narrow-screen layout tweaks for the schedule body itself. The
