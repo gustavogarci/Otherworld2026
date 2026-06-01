@@ -262,7 +262,12 @@
     return { get, syncSrc };
   })();
   const DAY_ORDER = ["Thursday", "Friday", "Saturday", "Sunday", "Monday"];
-  const FESTIVAL_START_HOUR = 6;
+  // Each event's `day` is the calendar day its startTime falls on (a
+  // "Saturday 02:00" event is 2am Saturday morning, before Saturday noon).
+  // So the By Day list runs in natural calendar order, 00:00 → 23:00 — an
+  // earlier start hour would push genuine early-morning events to the
+  // bottom, making them look like they happen the next day.
+  const FESTIVAL_START_HOUR = 0;
   const HOURS_IN_DAY = 24;
 
   const ALL_EVENTS = [];
