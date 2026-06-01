@@ -15,7 +15,7 @@
             "art_installation": 52,
             "art_installation_events": 11
         },
-        "lastReconciledAt": "2026-06-01T00:02:02+00:00",
+        "lastReconciledAt": "2026-06-01T05:02:02+00:00",
         "reconciledFromSheet": "1o9Ue218Yx8mMa9OGyPfd66NoofYI3O1ewkN8NB-qnVc"
     },
     "entries": [
@@ -2838,7 +2838,7 @@
                     "day": "Saturday",
                     "startTime": "10:00",
                     "endTime": "22:00",
-                    "durationHours": 1.5,
+                    "durationHours": 1,
                     "crossesMidnight": false,
                     "normalizationFlags": [],
                     "rawTimeText": "Saturday 10:00 - 22:00"
