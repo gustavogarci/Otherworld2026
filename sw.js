@@ -20,7 +20,7 @@
 
 // Bump this string to invalidate the shell cache on the next visit.
 // Format is just for humans; any change triggers a refill.
-const SW_VERSION = "v26-2026-05-31-map-focus-ring-tune";
+const SW_VERSION = "v36-2026-06-02-moist-drops-nofade";
 
 const SHELL_CACHE = "otherworld-shell-" + SW_VERSION;
 const DATA_CACHE = "otherworld-data";
@@ -43,6 +43,7 @@ const SHELL_ASSETS = [
   "/icon-192.png",
   "/icon-512.png",
   "/logo.png",
+  "/sandstorm.mp3",
 ];
 
 // Same-origin paths that should be stale-while-revalidate.

@@ -3528,3 +3528,112 @@ html[data-engine="chromium"][data-theme="ripple"] .ripple-bg circle:nth-child(5)
     opacity: 0;
   }
 }
+
+/* ── "Stay Moist" easter egg overlay ───────────────────────────────
+   Created by initMoistEasterEgg() in app.js after five quick taps on
+   the logo, removed automatically when the riff ends. Full-screen but
+   inert: pointer-events:none + aria-hidden keep it out of every tap
+   target and the accessibility tree. Animations are transform/opacity
+   only (GPU-composited) so it stays light. */
+#moist-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+#moist-fx.moist-fx-out {
+  opacity: 0;
+}
+
+/* Bluish wet sheen washing over the screen, pulsing on the beat. The
+   --beat custom property is set inline from the riff's tempo. */
+#moist-fx .moist-sheen {
+  position: absolute;
+  inset: 0;
+  /* Glow hugs the LEFT and RIGHT edges so the top/bottom of the screen
+     (status bar, home indicator) stay untouched — cleaner on mobile. */
+  background:
+    radial-gradient(80% 120% at 0% 50%, rgba(120, 200, 255, 0.22), transparent 60%),
+    radial-gradient(70% 110% at 100% 50%, rgba(70, 150, 220, 0.18), transparent 55%);
+  mix-blend-mode: screen;
+  animation: moist-pulse var(--beat, 0.44s) ease-in-out infinite;
+}
+
+/* A single water droplet sliding down the glass. --scale randomizes
+   the size per drop (set inline). */
+#moist-fx .moist-drop {
+  position: absolute;
+  top: -8%;
+  width: 8px;
+  height: 14px;
+  border-radius: 50% 50% 50% 50% / 35% 35% 65% 65%;
+  background: linear-gradient(180deg, rgba(200, 235, 255, 0.85), rgba(120, 190, 240, 0.5));
+  box-shadow: 0 0 6px rgba(160, 215, 255, 0.6), inset 0 -2px 3px rgba(255, 255, 255, 0.5);
+  transform: translateY(0) scale(var(--scale, 1));
+  will-change: transform, opacity;
+  animation-name: moist-drip;
+  animation-timing-function: cubic-bezier(0.55, 0, 0.7, 1);
+  animation-iteration-count: infinite;
+}
+
+/* V2: raindrops hitting water — concentric ripple rings expanding and
+   fading from random points. --scale (set inline) is the final size. */
+#moist-fx .moist-ripple {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px; /* center on the (left,top) point */
+  border-radius: 50%;
+  border: 2px solid rgba(170, 220, 255, 0.85);
+  box-shadow: 0 0 8px rgba(150, 210, 255, 0.5);
+  transform: scale(0);
+  will-change: transform, opacity;
+  animation-name: moist-ring;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes moist-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.95; }
+}
+
+@keyframes moist-drip {
+  0%   { transform: translateY(0) scale(var(--scale, 1)); opacity: 0; }
+  10%  { opacity: 0.9; }
+  85%  { opacity: 0.9; }
+  100% { transform: translateY(115vh) scale(var(--scale, 1)); opacity: 0; }
+}
+
+@keyframes moist-ring {
+  0%   { transform: scale(0); opacity: 0; }
+  15%  { opacity: 0.9; }
+  100% { transform: scale(var(--scale, 5)); opacity: 0; }
+}
+
+/* Keep the logo from triggering iOS's long-press callout / selection /
+   image-drag, so the easter-egg hold reads cleanly as a hold. */
+.logo-h1 a,
+.logo {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Reduced motion: no drips/rings/pulsing — just a brief gentle wet
+   wash. The audio still plays; only the animation is toned down. */
+@media (prefers-reduced-motion: reduce) {
+  #moist-fx .moist-drop,
+  #moist-fx .moist-ripple {
+    display: none;
+  }
+  #moist-fx .moist-sheen {
+    animation: none;
+    opacity: 0.7;
+  }
+}

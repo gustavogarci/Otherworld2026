@@ -23,6 +23,296 @@
     bind(fullscreenQuery);
   })();
 
+  // ── Easter egg: long-press the MOIST logo → "Sandstorm" ──────────
+  // Mobile-only. Press-and-hold the logo (~600ms) to play the Sandstorm
+  // clip and wash a light "wet" overlay over the screen ("moist"). A
+  // normal tap still navigates home instantly — long-press never fights
+  // the link. Audio prefers a real MP3 (AUDIO_SRC) and falls back to a
+  // synthesized riff if the file is missing. Fully self-contained: it
+  // only watches the logo and manages an overlay it creates.
+  (function initMoistEasterEgg() {
+    // Only on touch devices. On desktop the logo link works natively.
+    const isMobile = window.matchMedia?.("(pointer: coarse)")?.matches === true;
+    if (!isMobile) return;
+
+    const link = document.querySelector(".logo-h1 a");
+    if (!link) return;
+
+    // Drop a sandstorm.mp3 in the project root and it plays automatically
+    // (and add it to SHELL_ASSETS in sw.js). Until then we fall back to
+    // the in-browser synth. Set to null to force the synth.
+    const AUDIO_SRC = "sandstorm.mp3";
+    const CLIP_SECONDS = 30;    // how long the overlay runs with the MP3
+    const AUDIO_VOL = 0.9;      // playback volume
+    // Which "wet" visual to show: 1 = water drops, 2 = ripples. Drops is
+    // the keeper; ripples stays in the code to switch back to later.
+    const FX_VERSION = 1;
+    const HOLD_MS = 600;        // press-and-hold duration to trigger
+    const MOVE_TOL = 12;        // px of finger drift that cancels the hold
+    const BPM = 136;            // Sandstorm tempo (drives the beat pulse)
+    const beatSec = 60 / BPM;
+
+    let holdTimer = null;
+    let suppressClick = false;  // swallow the click that follows a hold
+    let startX = 0, startY = 0;
+    let active = false;         // guards against overlapping triggers
+
+    const cancelHold = () => { clearTimeout(holdTimer); holdTimer = null; };
+
+    link.addEventListener("pointerdown", e => {
+      if (e.pointerType === "mouse") return; // touch/pen only
+      startX = e.clientX;
+      startY = e.clientY;
+      cancelHold();
+      holdTimer = setTimeout(() => {
+        suppressClick = true;
+        fire();
+      }, HOLD_MS);
+    });
+    link.addEventListener("pointermove", e => {
+      if (Math.abs(e.clientX - startX) > MOVE_TOL ||
+          Math.abs(e.clientY - startY) > MOVE_TOL) cancelHold();
+    });
+    link.addEventListener("pointerup", cancelHold);
+    link.addEventListener("pointercancel", cancelHold);
+    link.addEventListener("pointerleave", cancelHold);
+    // iOS shows a save-image / link-preview callout on long-press; block
+    // it (CSS also sets -webkit-touch-callout:none on the logo).
+    link.addEventListener("contextmenu", e => e.preventDefault());
+    link.addEventListener("click", e => {
+      if (suppressClick) {
+        e.preventDefault();
+        e.stopPropagation();
+        suppressClick = false;
+      }
+    });
+
+    function fire() {
+      if (active) return;
+      active = true;
+      const version = FX_VERSION; // drops by default (ripples still available)
+      const { seconds, stop } = startAudio();
+      const fx = showMoistOverlay(version, seconds);
+
+      let done = false;
+      let swallowClick = null;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(endTimer);
+        document.removeEventListener("pointerdown", onTouch, true);
+        stop();         // fade the audio out
+        fx.dismiss();   // fade + remove the overlay
+        setTimeout(() => { active = false; }, 800);
+      };
+      // Tapping anywhere on the screen dismisses it early. The tap must
+      // ONLY dismiss — swallow it so it doesn't also open a card/button
+      // underneath. We cancel the pointer event in the capture phase and
+      // then eat the click it would synthesize. Deferred a beat so the
+      // long-press's own gesture doesn't instantly cancel it.
+      const onTouch = e => {
+        e.preventDefault();
+        e.stopPropagation();
+        swallowClick = ev => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          document.removeEventListener("click", swallowClick, true);
+          swallowClick = null;
+        };
+        document.addEventListener("click", swallowClick, true);
+        // Safety net: stop swallowing if no click ever materializes.
+        setTimeout(() => {
+          if (swallowClick) {
+            document.removeEventListener("click", swallowClick, true);
+            swallowClick = null;
+          }
+        }, 800);
+        finish();
+      };
+      setTimeout(() => {
+        document.addEventListener("pointerdown", onTouch, true);
+      }, 250);
+      // Otherwise it ends on its own when the clip finishes.
+      const endTimer = setTimeout(finish, seconds * 1000);
+    }
+
+    // ── Audio: real MP3 if present, otherwise the synth fallback ────
+    // Returns { seconds, stop } — stop() halts playback so a screen tap
+    // (or the natural end) can cut it short.
+    function startAudio() {
+      if (AUDIO_SRC) {
+        try {
+          const a = new Audio(AUDIO_SRC);
+          a.preload = "auto";
+          a.volume = AUDIO_VOL;
+          const p = a.play();
+          // If the file is missing or playback is blocked, fall back to
+          // the synth so the egg still does *something*.
+          if (p && typeof p.catch === "function") {
+            p.catch(() => { try { playSandstorm(); } catch (e) {} });
+          }
+          return {
+            seconds: CLIP_SECONDS,
+            stop: () => { try { a.pause(); } catch (e) {} },
+          };
+        } catch (e) {
+          // fall through to synth
+        }
+      }
+      return playSandstorm();
+    }
+
+    // ── Audio: synthesize the Sandstorm lead riff (fallback) ───────
+    // The signature: a fast gallop of seven staccato notes per bar,
+    // changing pitch each bar to climb the B-minor melody. A sine
+    // "kick" lands on every beat for the rave feel.
+    function playSandstorm() {
+      const noop = { seconds: CLIP_SECONDS, stop: () => {} };
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return noop;
+
+      let ctx;
+      try { ctx = new Ctx(); } catch (e) { return noop; }
+      if (ctx.state === "suspended") ctx.resume?.();
+
+      const master = ctx.createGain();
+      master.gain.value = 0.18; // keep it modest
+      master.connect(ctx.destination);
+
+      // B-minor pitches (Hz, equal temperament).
+      const N = {
+        A4: 440.0, B4: 493.88, Cs5: 554.37, D5: 587.33,
+        E5: 659.25, Fs5: 739.99,
+      };
+      // One entry per bar = the pitch its seven gallop notes play.
+      // Builds on B, then climbs the melodic contour and resolves.
+      const bars = [
+        N.B4, N.B4, N.D5, N.B4,
+        N.D5, N.E5, N.Fs5, N.B4,
+      ];
+
+      const sixteenth = beatSec / 2;     // two notes per beat in the gallop
+      const start = ctx.currentTime + 0.05;
+      let t = start;
+
+      bars.forEach(freq => {
+        // Seven quick notes then a rest — the Sandstorm gallop.
+        for (let i = 0; i < 7; i++) {
+          playNote(ctx, master, freq, t, sixteenth * 0.85);
+          t += sixteenth;
+        }
+        t += sixteenth; // rest slot
+      });
+
+      // Four-on-the-floor kick under the whole thing.
+      const totalBeats = Math.ceil((t - start) / beatSec);
+      for (let b = 0; b < totalBeats; b++) {
+        playKick(ctx, master, start + b * beatSec);
+      }
+
+      const total = t - ctx.currentTime + 0.3;
+      const closeTimer = setTimeout(() => { try { ctx.close(); } catch (e) {} }, total * 1000 + 200);
+      const stop = () => {
+        clearTimeout(closeTimer);
+        try {
+          const now = ctx.currentTime;
+          master.gain.cancelScheduledValues(now);
+          master.gain.setValueAtTime(master.gain.value, now);
+          master.gain.linearRampToValueAtTime(0, now + 1.0);
+        } catch (e) {}
+        setTimeout(() => { try { ctx.close(); } catch (e) {} }, 1100);
+      };
+      return { seconds: total, stop };
+    }
+
+    function playNote(ctx, dest, freq, at, dur) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.value = freq;
+      // Short attack/release so notes don't click.
+      gain.gain.setValueAtTime(0, at);
+      gain.gain.linearRampToValueAtTime(0.9, at + 0.006);
+      gain.gain.linearRampToValueAtTime(0, at + dur);
+      osc.connect(gain).connect(dest);
+      osc.start(at);
+      osc.stop(at + dur + 0.02);
+    }
+
+    function playKick(ctx, dest, at) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(150, at);
+      osc.frequency.exponentialRampToValueAtTime(45, at + 0.12);
+      gain.gain.setValueAtTime(0.9, at);
+      gain.gain.exponentialRampToValueAtTime(0.001, at + 0.18);
+      osc.connect(gain).connect(dest);
+      osc.start(at);
+      osc.stop(at + 0.2);
+    }
+
+    // ── Visual: two interchangeable "wet" overlays ─────────────────
+    // version 1 = water droplets running down the glass (the keeper).
+    // version 2 = raindrops hitting water, concentric ripple rings —
+    // kept available; flip FX_VERSION to 2 to use it instead.
+    function showMoistOverlay(version, seconds) {
+      const fx = document.createElement("div");
+      fx.id = "moist-fx";
+      fx.className = version === 2 ? "moist-fx--ripples" : "moist-fx--drops";
+      fx.setAttribute("aria-hidden", "true");
+
+      const sheen = document.createElement("div");
+      sheen.className = "moist-sheen";
+      // Pulse the sheen in time with the beat (we own the tempo).
+      sheen.style.setProperty("--beat", beatSec.toFixed(3) + "s");
+      fx.appendChild(sheen);
+
+      if (version === 2) addRipples(fx, seconds);
+      else addDrops(fx, seconds);
+
+      document.body.appendChild(fx);
+
+      // fire() drives the lifetime so it can also be dismissed early by
+      // a screen tap. dismiss() fades out then removes the element.
+      let removed = false;
+      const dismiss = () => {
+        if (removed) return;
+        removed = true;
+        fx.classList.add("moist-fx-out");
+        setTimeout(() => fx.remove(), 600);
+      };
+      return { el: fx, dismiss };
+    }
+
+    function addDrops(fx, seconds) {
+      const DROPS = 14;
+      for (let i = 0; i < DROPS; i++) {
+        const drop = document.createElement("span");
+        drop.className = "moist-drop";
+        drop.style.left = Math.round(Math.random() * 100) + "%";
+        drop.style.animationDelay = (Math.random() * seconds * 0.7).toFixed(2) + "s";
+        drop.style.animationDuration = (1.6 + Math.random() * 1.6).toFixed(2) + "s";
+        drop.style.setProperty("--scale", (0.6 + Math.random() * 0.9).toFixed(2));
+        fx.appendChild(drop);
+      }
+    }
+
+    function addRipples(fx, seconds) {
+      const RINGS = 18;
+      for (let i = 0; i < RINGS; i++) {
+        const ring = document.createElement("span");
+        ring.className = "moist-ripple";
+        ring.style.left = Math.round(Math.random() * 100) + "%";
+        ring.style.top = Math.round(Math.random() * 100) + "%";
+        ring.style.animationDelay = (Math.random() * seconds * 0.85).toFixed(2) + "s";
+        ring.style.animationDuration = (1.6 + Math.random() * 1.2).toFixed(2) + "s";
+        ring.style.setProperty("--scale", (4 + Math.random() * 5).toFixed(1));
+        fx.appendChild(ring);
+      }
+    }
+  })();
+
   // Register the service worker for offline support. Deferred to
   // window.load so it never competes with the critical-path
   // events.json fetch on the first visit. Silent update model —
