@@ -15,7 +15,7 @@
             "art_installation": 52,
             "art_installation_events": 11
         },
-        "lastReconciledAt": "2026-06-01T23:02:02+00:00",
+        "lastReconciledAt": "2026-06-02T03:02:02+00:00",
         "reconciledFromSheet": "1o9Ue218Yx8mMa9OGyPfd66NoofYI3O1ewkN8NB-qnVc"
     },
     "entries": [
@@ -1091,7 +1091,7 @@
             "name": "Booty Crocker",
             "type": "camp",
             "events": [],
-            "claimed": false
+            "claimed": true
         },
         {
             "name": "Bubbly Bar",
@@ -4205,7 +4205,7 @@
                     "owner": "Electric Circus",
                     "ownerType": "camp",
                     "title": "Electric Circus Cabaret",
-                    "description": "",
+                    "description": "yez we got clowns, we got dancers, we got singers, we got occasional full frontal. We got sweet and sour and definitely umami. We will entertain you ragged. Bars open, come see the show. Always one night only",
                     "day": "Friday",
                     "startTime": "19:30",
                     "endTime": "20:30",
@@ -4439,7 +4439,7 @@
                     "owner": "Electric Circus",
                     "ownerType": "camp",
                     "title": "Open Mic 3:33 Performance Hour",
-                    "description": "Open Mic style, bring your 3:33-minutes of dance, song, comedy, puppetry, striptease, burlesque, performance art - as long as it’s live! Time limit strictly enforced with spankings. Oh and we have a pole",
+                    "description": "Open Mic style, bring your 3:33-minutes of dance, song, comedy, puppetry, striptease, burlesque, performance art - as long as it’s live! Time limit strictly enforced with spankings.",
                     "day": "Saturday",
                     "startTime": "14:00",
                     "endTime": "15:00",
@@ -4460,19 +4460,6 @@
                     "crossesMidnight": false,
                     "normalizationFlags": [],
                     "rawTimeText": "Sunday 12:00 - 15:00"
-                },
-                {
-                    "owner": "Electric Circus",
-                    "ownerType": "camp",
-                    "title": "Fusion Dance Intro and Jam",
-                    "description": "Fusion is partner dancing based on connection, lead-follow principles, consent, and a mix of styles. Short intro warmup followed by many amazing dances with amazing people. Come open-minded and willing to listen and move to the music and each other",
-                    "day": "Sunday",
-                    "startTime": "15:00",
-                    "endTime": "16:30",
-                    "durationHours": 1,
-                    "crossesMidnight": false,
-                    "normalizationFlags": [],
-                    "rawTimeText": "Sunday 15:00 - 16:30"
                 },
                 {
                     "owner": "Electric Circus",
@@ -6003,6 +5990,19 @@
                     "crossesMidnight": false,
                     "normalizationFlags": [],
                     "rawTimeText": "Sunday 13:00 - 14:30"
+                },
+                {
+                    "owner": "Garden Cósmico",
+                    "ownerType": "camp",
+                    "title": "Music for your Garden",
+                    "description": "Lay down, close your eyes, and travel inwards with an emotional musical journey featuring ambient, downtempo and melodic deep house.",
+                    "day": "Friday",
+                    "startTime": "20:00",
+                    "endTime": "21:30",
+                    "durationHours": 1.5,
+                    "crossesMidnight": false,
+                    "normalizationFlags": [],
+                    "rawTimeText": "Friday 20:00 - 21:30"
                 }
             ],
             "claimed": true,
