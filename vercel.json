@@ -4,6 +4,10 @@
     {
       "source": "/:slug(isaias|isaiiaas|mother-tree|mothertree|ripple|ripple-effect|sky|circus|thirrrst|thirst|spin|kink)",
       "destination": "/index.html"
+    },
+    {
+      "source": "/:slug(music|activities)",
+      "destination": "/index.html"
     }
   ],
   "headers": [

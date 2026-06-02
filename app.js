@@ -1,4 +1,12 @@
 (async () => {
+  // App release version, shown at the bottom of Settings under Dev tools.
+  // Bump this when cutting a new tagged release.
+  const APP_VERSION = "v2.0";
+  (function showAppVersion() {
+    const el = document.getElementById("settings-version");
+    if (el) el.textContent = APP_VERSION;
+  })();
+
   // iOS standalone PWAs do not always match CSS display-mode queries
   // consistently, so expose the launch mode as a root class for safe-area
   // fixes that must only apply outside regular Safari.
@@ -476,11 +484,70 @@
     data.entries = out;
   })(window.OTHERWORLD_DATA, _aliasData);
 
-  const DATA = window.OTHERWORLD_DATA;
+  // Type corrections for entries upstream mislabels. The activities data is
+  // mirrored verbatim from upstream, and upstream's sheet reconcile folds
+  // some sound stages into the camp they share a name with (e.g. "Electric
+  // Circus Lounge" → the "Electric Circus" camp via camp-aliases.json),
+  // keeping the camp's type. That collapses the stage's identity before it
+  // reaches us — there's no longer a sibling entry for a dedup-time type
+  // priority to recover from — so we correct it declaratively here instead.
+  // Keyed on canonical name (same normalisation as pins/favorites). This
+  // file isn't part of the upstream sync allowlist, so the override survives
+  // the hourly sync and self-heals on every load regardless of upstream's
+  // state. Applied to both the activities entries and the map pins so the
+  // list, type filter, and map marker all agree.
+  const TYPE_OVERRIDES = new Map([
+    [normalizeCampForKey("Electric Circus"), "sound_stage"],
+  ]);
+  (function applyTypeOverrides(data) {
+    if (!data || !Array.isArray(data.entries)) return;
+    for (const entry of data.entries) {
+      const t = TYPE_OVERRIDES.get(normalizeCampForKey(entry.name || ""));
+      if (!t || entry.type === t) continue;
+      entry.type = t;
+      // Cards and the type facet read ev.ownerType, not entry.type, so keep
+      // them in sync. Favorites key on name+day+title (not type) and are
+      // unaffected; a pinned camp keys on type+name, so an existing pin for
+      // a corrected entry resets once (re-pin to restore) — acceptable.
+      for (const ev of (entry.events || [])) ev.ownerType = t;
+    }
+  })(window.OTHERWORLD_DATA);
+
+  // `DATA` is reassignable: the Settings dataset switch re-points it
+  // between the activities schedule (events.json, loaded above) and the
+  // music lineup (music.json, lazy-loaded on first switch). See
+  // setDataset() below.
+  let DATA = window.OTHERWORLD_DATA;
   const MAP = window.OTHERWORLD_MAP || { pins: [] };
+  // Mirror the activities type overrides onto the map pins (map-locations.json
+  // is also synced from upstream with the same mislabel). Marker styling reads
+  // pin.type.
+  for (const pin of (MAP.pins || [])) {
+    if (!pin || !pin.name) continue;
+    const t = TYPE_OVERRIDES.get(normalizeCampForKey(pin.name));
+    if (t) pin.type = t;
+  }
   const PIN_BY_NAME = new Map(
     (MAP.pins || []).filter(p => p && p.name).map(p => [p.name, p])
   );
+
+  // Music-mode stage names don't all match the map-pin names 1:1.
+  // Register each music stage's display name as an alias to the existing
+  // pin so the modal map preview and "Open map" focus resolve correctly
+  // without touching map-locations.json. Harmless in activities mode —
+  // no activity entry shares these names.
+  const MUSIC_STAGE_PIN_ALIASES = {
+    "SKYBAR": "Skybar",
+    "Thirsty Bar": "Thirrrsty Barrr",
+    "Chaitrance": "Chai trance",
+    "CLuG deep n' Salty": "CLuG",
+    "Electric Circus Lounge": "Electric Circus",
+    "Under The Mother Tree": "Under the Mother Tree",
+  };
+  for (const [stage, pinName] of Object.entries(MUSIC_STAGE_PIN_ALIASES)) {
+    const pin = PIN_BY_NAME.get(pinName);
+    if (pin && !PIN_BY_NAME.has(stage)) PIN_BY_NAME.set(stage, pin);
+  }
 
   // Lazy-load + localStorage cache the map image. The WebP is ~2.4 MB;
   // we only fetch it the first time something requests it (map tab open
@@ -560,9 +627,197 @@
   const FESTIVAL_START_HOUR = 0;
   const HOURS_IN_DAY = 24;
 
-  const ALL_EVENTS = [];
-  for (const entry of DATA.entries) {
-    for (const ev of entry.events) ALL_EVENTS.push({ ...ev, _entry: entry });
+  // Flattened, _entry-tagged view of the active dataset. Reassigned by
+  // buildAllEvents() whenever DATA changes (initial load + dataset
+  // switch), so every closure that reads ALL_EVENTS at call time picks
+  // up the current dataset automatically.
+  let ALL_EVENTS = [];
+  function buildAllEvents() {
+    ALL_EVENTS = [];
+    for (const entry of DATA.entries) {
+      for (const ev of entry.events) ALL_EVENTS.push({ ...ev, _entry: entry });
+    }
+  }
+  buildAllEvents();
+
+  // ── Dataset switching (Activities / Music) ─────────────────
+  // The festival's DJ-set lineup (music.json, generated from the
+  // Dancing Decibels schedule by scripts/build-music.js) is normalized
+  // into the exact same event shape as events.json, so flipping the
+  // active dataset reuses all rendering, favorites, map, and filter
+  // code unchanged.
+  const DATASET_KEY = "otherworld:dataset:v1";
+  const DATASETS = { activities: window.OTHERWORLD_DATA, music: null };
+  let activeDataset = "activities";
+  // Per-dataset memory of the facet filters so switching schedules
+  // (activities <-> music) restores whatever the user last had selected in
+  // each. Persisted to localStorage so it also survives a reload; favorites
+  // persist under their own keys.
+  const FILTERS_KEY = "otherworld:filters:v1";
+  const datasetFilters = { activities: null, music: null };
+  function loadDatasetPref() {
+    try { return localStorage.getItem(DATASET_KEY) === "music" ? "music" : "activities"; }
+    catch { return "activities"; }
+  }
+
+  // Apply a remembered filter record to live state (or reset to a clean
+  // slate when there's nothing to restore). Used both on dataset switch
+  // and on first paint.
+  function applyDatasetFilterState(f) {
+    if (f) {
+      state.search = f.search || "";
+      state.type = f.type || "all";
+      state.day = f.day || initialDay();
+      state.tags = new Set(f.tags);
+      state.neighbourhoods = new Set(f.neighbourhoods);
+      state.quick = new Set(f.quick);
+      state.timesOfDay = new Set(f.timesOfDay);
+      state.durations = new Set(f.durations);
+    } else {
+      state.tags.clear();
+      state.neighbourhoods.clear();
+      state.type = "all";
+      state.quick.clear();
+      state.timesOfDay.clear();
+      state.durations.clear();
+      state.search = "";
+      state.day = initialDay();
+    }
+    const searchInput = document.getElementById("search");
+    if (searchInput) searchInput.value = state.search;
+  }
+
+  // Mirror the active dataset's live filters into the per-dataset memory
+  // and persist the whole map. Deduped on the serialized payload so the
+  // per-minute now-tick re-renders don't thrash localStorage.
+  let _filtersPersistCache = "";
+  function persistFilters() {
+    datasetFilters[activeDataset] = {
+      search: state.search,
+      type: state.type,
+      day: state.day,
+      tags: new Set(state.tags),
+      neighbourhoods: new Set(state.neighbourhoods),
+      quick: new Set(state.quick),
+      timesOfDay: new Set(state.timesOfDay),
+      durations: new Set(state.durations),
+    };
+    const out = {};
+    for (const k of ["activities", "music"]) {
+      const f = datasetFilters[k];
+      if (!f) continue;
+      out[k] = {
+        search: f.search,
+        type: f.type,
+        day: f.day,
+        tags: [...f.tags],
+        neighbourhoods: [...f.neighbourhoods],
+        quick: [...f.quick],
+        timesOfDay: [...f.timesOfDay],
+        durations: [...f.durations],
+      };
+    }
+    const payload = JSON.stringify(out);
+    if (payload === _filtersPersistCache) return;
+    _filtersPersistCache = payload;
+    try { localStorage.setItem(FILTERS_KEY, payload); } catch {}
+  }
+
+  // Rehydrate per-dataset filter memory from localStorage. Tolerant of a
+  // missing/garbage payload so a stale value can never break startup.
+  function loadDatasetFilters() {
+    let raw;
+    try { raw = localStorage.getItem(FILTERS_KEY); } catch { raw = null; }
+    if (!raw) return;
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { return; }
+    if (!parsed || typeof parsed !== "object") return;
+    const toSet = v => new Set(Array.isArray(v) ? v.filter(x => typeof x === "string") : []);
+    for (const k of ["activities", "music"]) {
+      const f = parsed[k];
+      if (!f || typeof f !== "object") continue;
+      datasetFilters[k] = {
+        search: typeof f.search === "string" ? f.search : "",
+        type: typeof f.type === "string" ? f.type : "all",
+        day: typeof f.day === "string" ? f.day : null,
+        tags: toSet(f.tags),
+        neighbourhoods: toSet(f.neighbourhoods),
+        quick: toSet(f.quick),
+        timesOfDay: toSet(f.timesOfDay),
+        durations: toSet(f.durations),
+      };
+    }
+  }
+
+  let _musicInflight = null;
+  async function loadMusicData() {
+    if (DATASETS.music) return DATASETS.music;
+    if (_musicInflight) return _musicInflight;
+    _musicInflight = fetch("./music.json")
+      .then(resp => {
+        if (!resp.ok) throw new Error("music.json " + resp.status);
+        return resp.json();
+      })
+      .then(data => { DATASETS.music = data; _musicInflight = null; return data; })
+      .catch(err => { _musicInflight = null; throw err; });
+    return _musicInflight;
+  }
+
+  // Swap the active dataset, rebuild everything derived from it, and
+  // re-render. Facet filters (tags/neighbourhoods/type/search/quick/
+  // time-of-day/duration) plus the selected day are remembered per
+  // dataset, so switching schedules restores whatever the user last had
+  // selected there (defaulting to a clean slate on first visit).
+  // Favorites are intentionally preserved — their keys (camp+day+title)
+  // coexist across datasets without collision.
+  async function setDataset(name, { rerender = true } = {}) {
+    const target = name === "music" ? "music" : "activities";
+    if (target === "music") {
+      try { await loadMusicData(); }
+      catch { return false; } // network/parse failure → stay on current
+    }
+
+    // The outgoing dataset's filters are already mirrored into
+    // datasetFilters by persistFilters() (runs on every render), so no
+    // snapshot is needed here — just restore the target's remembered set.
+    activeDataset = target;
+    state.dataset = target;
+    try { localStorage.setItem(DATASET_KEY, target); } catch {}
+
+    DATA = DATASETS[target];
+    buildAllEvents();
+    ALL_TAGS = computeAllTags();
+    ALL_NEIGHBOURHOODS = computeAllNeighbourhoods();
+
+    applyDatasetFilterState(datasetFilters[target]);
+
+    applyDatasetUi();
+    selfHealFavorites();
+    if (rerender) renderAll();
+    return true;
+  }
+
+  // Reflect the active dataset in the chrome: relabel the By Camp tab to
+  // By Stage, hide the camp-only Type filter, and rename the Tags filter
+  // to Genres for music. A body class lets CSS hook in if needed.
+  function applyDatasetUi() {
+    const isMusic = activeDataset === "music";
+    document.body.classList.toggle("dataset-music", isMusic);
+    const campTab = document.querySelector('#mode-tabs .tab[data-mode="camp"]');
+    if (campTab) campTab.textContent = isMusic ? "By Stage" : "By Camp";
+    const typeSection = document.getElementById("type-section");
+    if (typeSection) typeSection.style.display = isMusic ? "none" : "";
+    // All music entries are DJ sets, so the duration buckets aren't a
+    // meaningful filter there — hide the whole section for music.
+    const durationSection = document.getElementById("duration-section");
+    if (durationSection) durationSection.style.display = isMusic ? "none" : "";
+    const tagsTitle = document.getElementById("tags-section-title");
+    if (tagsTitle) tagsTitle.textContent = isMusic ? "Genres" : "Tags";
+    for (const btn of document.querySelectorAll("#dataset-switch .dataset-option")) {
+      const on = btn.dataset.dataset === activeDataset;
+      btn.classList.toggle("active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    }
   }
 
   // ── Favorites (localStorage-backed) ───────────────────
@@ -920,6 +1175,10 @@
 
   const state = {
     mode: "day",
+    // Active dataset: "activities" (events.json) or "music" (music.json).
+    // Restored from localStorage; the actual music data is lazy-loaded
+    // during init if the saved preference is "music".
+    dataset: loadDatasetPref(),
     // Placeholder — overwritten by initialDay() once devNowOverride
     // is initialized below. initialDay() depends on getNow() which
     // reads devNowOverride, so we can't call it here without a TDZ.
@@ -994,17 +1253,30 @@
   // Discovered from the data so the filter row stays in sync with whatever
   // the spreadsheet currently uses. Ordered by frequency (most-tagged first)
   // so the common categories are easiest to spot.
-  const ALL_TAGS = (() => {
+  function computeAllTags() {
     const counts = new Map();
     for (const ev of ALL_EVENTS) {
       for (const t of ev.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
     }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t);
-  })();
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([t]) => t);
+    // Editorial pin: surface "latin house" as the 5th genre regardless of
+    // its (low) frequency. Only affects datasets that actually carry it.
+    const PIN_TAG = "latin house";
+    const PIN_INDEX = 4;
+    const i = sorted.indexOf(PIN_TAG);
+    if (i !== -1) {
+      sorted.splice(i, 1);
+      sorted.splice(Math.min(PIN_INDEX, sorted.length), 0, PIN_TAG);
+    }
+    return sorted;
+  }
+  let ALL_TAGS = computeAllTags();
 
   // Neighbourhood lives on the entry (camp), not on events. Sort by
   // camp-count so the populated neighbourhoods float to the top.
-  const ALL_NEIGHBOURHOODS = (() => {
+  // (Music entries carry no neighbourhood, so this is empty in music
+  // mode and the filter section hides itself.)
+  function computeAllNeighbourhoods() {
     const counts = new Map();
     for (const entry of DATA.entries) {
       const n = entry.neighbourhood;
@@ -1012,7 +1284,8 @@
       counts.set(n, (counts.get(n) || 0) + 1);
     }
     return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([n]) => n);
-  })();
+  }
+  let ALL_NEIGHBOURHOODS = computeAllNeighbourhoods();
 
   // ── Happening Now / Up Next ────────────────────────────
   // "Today" is the festival day matching the current weekday WITHIN
@@ -1684,6 +1957,16 @@
     flushQuietRun();
   }
 
+  // Capitalize the first letter of each word for display only. Scoped to
+  // music genres; activities tags are already proper-cased and contain
+  // acronyms (LGBTQ+) that naive casing would mangle.
+  function titleCaseTag(s) {
+    return String(s).replace(/\b\w/g, c => c.toUpperCase());
+  }
+  function tagDisplay(t) {
+    return activeDataset === "music" ? titleCaseTag(t) : t;
+  }
+
   function eventCard(ev, ongoing) {
     const card = document.createElement("article");
     card.className = "event-card" + (ongoing ? " is-ongoing" : "");
@@ -1713,7 +1996,7 @@
     // this template.
     const tags = (ev.tags || []);
     const tagsHtml = tags.length
-      ? `<div class="tags">${tags.map(t => `<span class="tag-chip" data-tag="${t}">${t}</span>`).join("")}</div>`
+      ? `<div class="tags">${tags.map(t => `<span class="tag-chip" data-tag="${t}">${tagDisplay(t)}</span>`).join("")}</div>`
       : "";
 
     const isFav = eventIsFavorite(ev);
@@ -2107,10 +2390,28 @@
       const chip = document.createElement("span");
       chip.className = "tag-chip";
       chip.dataset.tag = t;
-      chip.textContent = t;
+      chip.textContent = tagDisplay(t);
       tagsEl.appendChild(chip);
     }
     tagsEl.style.display = (ev.tags || []).length ? "" : "none";
+
+    // Social links (music lineup only — activities carry none). Render
+    // as tappable chips with a friendly host label.
+    const socialEl = document.getElementById("m-social");
+    if (socialEl) {
+      socialEl.innerHTML = "";
+      const links = (ev.socialList || []).filter(Boolean);
+      for (const url of links) {
+        const a = document.createElement("a");
+        a.className = "social-link";
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = socialLabel(url);
+        socialEl.appendChild(a);
+      }
+      socialEl.style.display = links.length ? "" : "none";
+    }
 
     const flagsEl = document.getElementById("m-flags");
     if ((ev.normalizationFlags || []).length) {
@@ -2123,6 +2424,27 @@
     openDialog(document.getElementById("modal"));
   }
   function hideModal() { closeDialog(document.getElementById("modal")); }
+
+  // Friendly label for an artist social link, derived from the host
+  // (e.g. "SoundCloud", "Instagram"). Falls back to the bare hostname.
+  function socialLabel(url) {
+    let host = "";
+    try { host = new URL(url).hostname.replace(/^www\./, ""); }
+    catch { return "Link"; }
+    const known = {
+      "soundcloud.com": "SoundCloud",
+      "instagram.com": "Instagram",
+      "facebook.com": "Facebook",
+      "spotify.com": "Spotify",
+      "open.spotify.com": "Spotify",
+      "mixcloud.com": "Mixcloud",
+      "youtube.com": "YouTube",
+      "youtu.be": "YouTube",
+      "bandcamp.com": "Bandcamp",
+      "tiktok.com": "TikTok",
+    };
+    return known[host] || host;
+  }
 
   function renderModalMapPreview(entry) {
     const el = document.getElementById("m-map-preview");
@@ -2474,7 +2796,66 @@
     closeDialog(document.getElementById("settings-modal"));
   }
 
+  // Wire the Activities/Music segmented control. Switching is async
+  // (music.json lazy-loads on first use); we guard against double-taps
+  // while a switch is in flight.
+  function bindDataset() {
+    const sw = document.getElementById("dataset-switch");
+    if (!sw) return;
+    let switching = false;
+    sw.addEventListener("click", async e => {
+      const btn = e.target.closest(".dataset-option");
+      if (!btn || switching) return;
+      const target = btn.dataset.dataset === "music" ? "music" : "activities";
+      if (target === activeDataset) return;
+      switching = true;
+      sw.classList.add("loading");
+      const ok = await setDataset(target);
+      sw.classList.remove("loading");
+      switching = false;
+      if (!ok) applyDatasetUi(); // failed to load music → revert button state
+    });
+  }
+
+  // ── Double-click the logo → flip between Activities and Music ─────
+  // The logo is a normal "go home" link, so a single click still
+  // navigates to index.html. A quick double-click instead toggles the
+  // active dataset (the same thing the Settings → Schedule switch
+  // does), and the header logo image swaps itself via the
+  // `dataset-music` body class for instant feedback. We intercept the
+  // link's clicks and hold the navigation for DBL_MS so a second click
+  // can cancel it and toggle instead.
+  function bindLogoDatasetToggle() {
+    const link = document.querySelector(".logo-h1 a");
+    if (!link) return;
+    const DBL_MS = 280;
+    let timer = null;
+    let toggling = false;
+    link.addEventListener("click", async e => {
+      // The mobile Sandstorm long-press swallows its own trailing click
+      // by preventing the default; in that case the event is already
+      // handled, so don't treat it as part of a double-click.
+      if (e.defaultPrevented) return;
+      e.preventDefault();
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+        if (toggling) return; // ignore a 3rd+ click while a switch is in flight
+        toggling = true;
+        const next = activeDataset === "music" ? "activities" : "music";
+        await setDataset(next);
+        toggling = false;
+        return;
+      }
+      timer = setTimeout(() => {
+        timer = null;
+        window.location.href = link.getAttribute("href") || "index.html";
+      }, DBL_MS);
+    });
+  }
+
   function bindSettings() {
+    bindDataset();
     bindFavoritesBackup();
     bindDisplaySettings();
     bindDevNow();
@@ -4056,12 +4437,18 @@
   }
 
   function renderStats() {
-    const events = DATA.metadata.eventCount;
-    const entries = DATA.metadata.entryCount;
-    const updated = formatRelativeUpdated(DATA.metadata.lastReconciledAt);
-    const parts = [`${events} events`, `${entries} entries`];
+    const meta = DATA.metadata || {};
+    const isMusic = activeDataset === "music";
+    const events = meta.eventCount;
+    const entries = meta.entryCount;
+    // Activities track freshness via the upstream reconcile timestamp;
+    // music.json carries its own generatedAt from the build script.
+    const updated = formatRelativeUpdated(meta.lastReconciledAt || meta.generatedAt);
+    const parts = [`${events} ${isMusic ? "sets" : "events"}`, `${entries} ${isMusic ? "stages" : "entries"}`];
     if (updated) parts.push(updated);
     document.getElementById("stats").textContent = parts.join(" · ");
+    const credit = document.getElementById("about-music-credit");
+    if (credit) credit.hidden = !isMusic;
   }
   // Short relative time for the Settings modal stats line — must stay
   // compact ("3h ago", "2d ago") so the whole line fits on one row on
@@ -4092,7 +4479,7 @@
       btn.type = "button";
       btn.className = "chip" + (state.tags.has(t) ? " active" : "");
       btn.dataset.tag = t;
-      btn.textContent = t;
+      btn.textContent = tagDisplay(t);
       btn.addEventListener("click", () => {
         if (state.tags.has(t)) state.tags.delete(t); else state.tags.add(t);
         renderFiltersModalOnly();
@@ -4222,7 +4609,7 @@
       pills.push({ label: "📍 " + n, clear: () => state.neighbourhoods.delete(n) });
     }
     for (const t of state.tags) {
-      pills.push({ label: t, clear: () => state.tags.delete(t) });
+      pills.push({ label: tagDisplay(t), clear: () => state.tags.delete(t) });
     }
     if (state.search) {
       pills.push({ label: `“${state.search}”`, clear: () => {
@@ -4301,6 +4688,7 @@
     else if (state.mode === "map") renderMapView();
     updateNowCue();
     renderSettingsBadge();
+    persistFilters();
   }
 
   // Run self-heal once now that ALL_EVENTS and state.favorites are
@@ -4312,6 +4700,22 @@
   bindUi();
   bindHeaderAutoHide();
   bindSettings();
+  bindLogoDatasetToggle();
+
+  // Restore the saved dataset before the first paint. Activities is
+  // already loaded; if the user last left it on Music, lazy-load
+  // music.json now and let setDataset() re-point everything (without
+  // re-rendering — the renderAll() below is the single first paint).
+  loadDatasetFilters();
+  applyDatasetUi();
+  if (state.dataset === "music") {
+    await setDataset("music", { rerender: false });
+  } else {
+    // Activities is the already-loaded default (no setDataset call), so
+    // restore its remembered filters directly before the first paint.
+    applyDatasetFilterState(datasetFilters.activities);
+  }
+
   renderAll();
 
   // First-load snap to now. Instant scroll (no smooth) so we don't
@@ -4369,7 +4773,12 @@
         if (!resp || !resp.ok) return;
         const fresh = await resp.clone().json().catch(() => null);
         const freshAt = fresh && fresh.metadata && fresh.metadata.lastReconciledAt;
-        const currentAt = DATA && DATA.metadata && DATA.metadata.lastReconciledAt;
+        // Always compare against the activities dataset's timestamp —
+        // this resume check is about upstream events.json freshness, and
+        // `DATA` may currently point at music.json (which has no
+        // lastReconciledAt), which would otherwise trigger false reloads.
+        const activities = DATASETS.activities;
+        const currentAt = activities && activities.metadata && activities.metadata.lastReconciledAt;
         if (!freshAt || freshAt === currentAt) return; // nothing new
 
         // Guard against reload loops: if we already reloaded targeting

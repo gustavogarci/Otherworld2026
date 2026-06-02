@@ -232,11 +232,28 @@ h1.logo-h1 a {
 }
 
 .logo {
-  height: 30px;
+  height: 36px;
   width: auto;
   display: block;
   flex-shrink: 0;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+}
+
+/* In Music mode the wordmark swaps to its disco-ball variant. The two
+   source PNGs are cropped differently — the music art's letterforms fill
+   more of its (tighter) frame — so the music logo renders a touch shorter
+   to keep the on-screen "MOIST" optically the same size as Activities. */
+.logo-music {
+  display: none;
+}
+
+body.dataset-music .logo-activities {
+  display: none;
+}
+
+body.dataset-music .logo-music {
+  display: block;
+  height: 40px;
 }
 
 .settings-modal .sheet-body > .settings-panel {
@@ -320,6 +337,16 @@ h1.logo-h1 a {
 
 .settings-foldable-dev .settings-section-label {
   opacity: 0.82;
+}
+
+.settings-version {
+  margin: 14px 0 2px;
+  text-align: center;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--cream-dim);
+  opacity: 0.5;
 }
 
 .settings-stats {
@@ -602,6 +629,62 @@ h1.logo-h1 a {
 .setting-select:focus {
   outline: none;
   border-color: var(--lime);
+}
+
+/* Activities / Music segmented control. A pill track with two equal
+   options; the active one fills with the accent. Sits in a .setting-row
+   so it shares the label-left / control-right layout. */
+/* Music mode reuses each theme's existing "stage" color (--pink — the
+   same hue used for sound-stage cards and type labels, which is exactly
+   where the music lives) as the app-wide accent. Re-pointing the
+   --lime* accent tokens here flips everything that reads as "accent" in
+   one move: By Day selection, the now-line, active filter pills, the
+   favorites star, and the dataset toggle itself. No new colors, and it
+   works in every theme for free since each one defines a --pink set. */
+body.dataset-music {
+  --lime: var(--pink);
+  --lime-soft: var(--pink-soft);
+  --lime-deep: var(--pink-deep);
+  --lime-rgb: var(--pink-rgb);
+}
+
+.dataset-switch {
+  flex: 0 0 auto;
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: var(--night-4);
+  border: 1px solid var(--moss-1);
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+}
+.dataset-option {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--cream-dim);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.dataset-option:hover {
+  color: var(--cream);
+}
+.dataset-option.active {
+  color: var(--night-0);
+  background: var(--lime);
+}
+.dataset-option:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+.dataset-switch.loading {
+  opacity: 0.6;
+  pointer-events: none;
 }
 .setting-select:focus-visible {
   outline: 2px solid var(--lime);
@@ -973,7 +1056,11 @@ dialog.modal.restore-modal {
   }
 
   .logo {
-    height: 34px;
+    height: 40px;
+  }
+
+  body.dataset-music .logo-music {
+    height: 44px;
   }
 }
 
@@ -2558,6 +2645,34 @@ dialog.modal::backdrop {
 .modal .tags-block .tag-chip {
   font-size: 12px;
   padding: 4px 10px;
+}
+
+/* Artist social links in the event modal (music lineup). Rendered as
+   tappable outline chips that fill on hover/active. */
+.modal .social-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+.modal .social-link {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--lime);
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid var(--moss-1);
+  border-radius: 999px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.modal .social-link:hover,
+.modal .social-link:focus-visible {
+  color: var(--night-4);
+  background: var(--lime);
+  border-color: var(--lime);
+  outline: none;
 }
 
 .modal .close-row {

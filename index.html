@@ -90,6 +90,23 @@
       } catch (e) {}
     })();
   </script>
+  <!-- Shareable dataset URLs: visiting /music opens straight into the
+       Dancing Decibels music lineup; /activities forces the default camp
+       schedule. We just persist the choice into the same localStorage key
+       app.js reads at startup (loadDatasetPref → "otherworld:dataset:v1"),
+       so the first paint already shows the right schedule with no flash or
+       extra round-trip. Vercel rewrites (see vercel.json) map both slugs
+       to /index.html. -->
+  <script>
+    (function () {
+      try {
+        var slug = location.pathname.toLowerCase().replace(/^\/+|\/+$/g, "");
+        if (slug === "music" || slug === "activities") {
+          localStorage.setItem("otherworld:dataset:v1", slug);
+        }
+      } catch (e) {}
+    })();
+  </script>
   <!-- Mark Chromium-family browsers (Chrome, Edge, Brave, Arc, Opera) so
        the Ripple-theme ambient animation can fall back to a static ring
        pattern on those engines. Chrome's macOS compositor flashes
@@ -163,7 +180,8 @@
       <div class="header-row">
         <h1 class="logo-h1">
           <a href="index.html" aria-label="Otherworld 2026">
-            <img src="logo.png" alt="Otherworld 2026" class="logo">
+            <img src="logo.png" alt="Otherworld 2026" class="logo logo-activities">
+            <img src="logo_music.png" alt="Otherworld 2026 — Music" class="logo logo-music" aria-hidden="true">
           </a>
         </h1>
         <div class="header-ctas">
@@ -240,6 +258,7 @@
     <div class="map-preview" id="m-map-preview"></div>
     <p id="m-desc"></p>
     <div class="tags-block" id="m-tags"></div>
+    <div class="social-block" id="m-social"></div>
     <div class="flags-block" id="m-flags"></div>
     <div class="close-row"><button id="m-close">Close</button></div>
   </dialog>
@@ -251,7 +270,7 @@
     </div>
     <input id="search" type="search" placeholder="Search events, camps, descriptions…" autocomplete="off" />
     <div class="sheet-body">
-      <div class="modal-section">
+      <div class="modal-section" id="type-section">
         <h3>Type</h3>
         <div class="chip-group" id="type-chips">
           <button type="button" class="chip active" data-type="all">All</button>
@@ -290,7 +309,7 @@
           <button type="button" class="chip" data-tod="late">Late night</button>
         </div>
       </div>
-      <div class="modal-section">
+      <div class="modal-section" id="duration-section">
         <h3>Duration</h3>
         <div class="chip-group" id="duration-chips">
           <button type="button" class="chip" data-dur="short">Up to 2h</button>
@@ -298,8 +317,8 @@
           <button type="button" class="chip" data-dur="long">Over 6h</button>
         </div>
       </div>
-      <div class="modal-section">
-        <h3>Tags</h3>
+      <div class="modal-section" id="tags-section">
+        <h3 id="tags-section-title">Tags</h3>
         <div class="chip-group" id="tag-chips"></div>
       </div>
       <div class="modal-section" id="neighbourhoods-section">
@@ -327,6 +346,20 @@
       <div id="settings-notifications" hidden></div>
 
       <div class="settings-panel">
+        <!-- Dataset switch: flips the whole schedule between camp
+             activities (the default) and the Dancing Decibels music
+             lineup. Everything else (By Day / By Stage / Map / favorites
+             / filters) reuses the same UI on top of the active data. -->
+        <div class="setting-row dataset-row">
+          <span class="setting-toggle-text">
+            <span class="setting-toggle-title">Schedule</span>
+            <span class="setting-toggle-hint">Switch between camp activities and the music lineup.</span>
+          </span>
+          <div class="dataset-switch" id="dataset-switch" role="tablist" aria-label="Schedule type">
+            <button type="button" class="dataset-option active" data-dataset="activities" role="tab" aria-selected="true">Activities</button>
+            <button type="button" class="dataset-option" data-dataset="music" role="tab" aria-selected="false">Music</button>
+          </div>
+        </div>
         <!-- Theme picker. Options are populated from the THEMES list in
              app.js so adding a new theme means editing themes.css +
              that array; this <select> stays in sync automatically.
@@ -404,6 +437,10 @@
             <a href="https://docs.google.com/spreadsheets/d/1o9Ue218Yx8mMa9OGyPfd66NoofYI3O1ewkN8NB-qnVc/edit?gid=1785212198#gid=1785212198"
               target="_blank" rel="noopener">add them to the shared spreadsheet →</a>.
           </p>
+          <p class="settings-music-credit" id="about-music-credit" hidden>
+            Music lineup courtesy of
+            <a href="https://dancingdecibels.com" target="_blank" rel="noopener">Dancing Decibels →</a>.
+          </p>
           <p class="settings-disclaimer">
             This website is not affiliated with
             <strong>Kindle Arts Society</strong> or <strong>Otherworld</strong>.
@@ -427,6 +464,8 @@
           </div>
         </div>
       </details>
+
+      <div class="settings-version" id="settings-version">v2.0</div>
     </div>
 
     <div class="close-row"><button id="settings-close-btn">Close</button></div>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="activities">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MOIST · Activities ⇄ Music — toggle concepts</title>
+<style>
+  /* Brand tokens lifted from themes.css :root so this looks on-brand. */
+  :root{
+    --night-0:#04090c; --night-1:#0a1620; --night-2:#122332;
+    --night-3:#1a3045; --night-4:#244257;
+    --moss-rgb:120 180 200;
+    --moss-1:rgb(var(--moss-rgb)/.10);
+    --moss-2:rgb(var(--moss-rgb)/.22);
+    --moss-3:#6e8a9c;
+    --cream:#f2ead0; --cream-soft:#d4cea7; --cream-dim:#95a3a9;
+    --lime:#cce84e; --lime-soft:#e6f099; --lime-deep:#7ea529; --lime-rgb:204 232 78;
+    /* Music accent: a warmer disco magenta/gold to feel different from the lime activities world. */
+    --disco:#f4c150; --disco-pink:#ff7ae0; --disco-blue:#7ad7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(var(--lime-rgb)/.06), transparent 60%),
+      var(--night-1);
+    color:var(--cream);
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 80px;
+    transition:background .5s;
+  }
+  body[data-mode="music"]{
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,122,224,.10), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(122,215,255,.08), transparent 60%),
+      var(--night-1);
+  }
+  a{color:var(--lime)}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+
+  header.page{
+    padding:40px 20px 8px;text-align:center;max-width:780px;margin:0 auto;
+  }
+  header.page h1{font-size:26px;margin:0 0 6px;letter-spacing:.01em}
+  header.page p{color:var(--cream-soft);line-height:1.55;margin:6px 0}
+  .rec{
+    margin:18px auto 6px;max-width:760px;text-align:left;
+    background:rgba(var(--lime-rgb)/.08);
+    border:1px solid rgba(var(--lime-rgb)/.30);
+    border-radius:14px;padding:16px 18px;
+  }
+  .rec b{color:var(--lime-soft)}
+  .rec ul{margin:8px 0 0;padding-left:18px}
+  .rec li{margin:6px 0;color:var(--cream-soft);line-height:1.5}
+
+  /* Global mode banner so you always see the live state while scrolling. */
+  .globalbar{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    padding:10px;margin-bottom:8px;
+    background:rgba(10,22,32,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--moss-1);
+  }
+  .globalbar .now{color:var(--cream-dim);font-size:13px}
+  .globalbar .now b{color:var(--cream)}
+
+  section.block{margin:42px auto;max-width:1040px;padding:0 20px}
+  .block > h2{
+    font-size:13px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--lime);margin:0 0 4px;
+  }
+  .block > .lede{color:var(--cream-soft);margin:0 0 20px;line-height:1.5;max-width:720px}
+
+  .options{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .opt{
+    background:var(--night-2);border:1px solid var(--moss-1);
+    border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;
+  }
+  .opt h3{margin:0;font-size:15px;display:flex;align-items:center;gap:8px}
+  .opt .tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    background:rgba(var(--lime-rgb)/.16);color:var(--lime-soft);
+    padding:3px 8px;border-radius:999px;font-weight:700}
+  .opt .why{color:var(--cream-dim);font-size:13px;line-height:1.5;margin-top:auto}
+  .opt .stage{
+    background:var(--night-1);border:1px dashed var(--moss-2);border-radius:12px;
+    padding:16px;display:flex;align-items:center;justify-content:center;min-height:96px;
+  }
+
+  /* ─── MOIST wordmark with a swappable O ─────────────────────────── */
+  .moist{
+    display:inline-flex;align-items:center;gap:.04em;
+    font-weight:900;letter-spacing:.02em;line-height:1;
+    color:var(--cream);
+    font-size:var(--moist-size,34px);
+    user-select:none;
+  }
+  .moist .ltr{filter:drop-shadow(0 1px 0 rgba(0,0,0,.4))}
+  /* The O slot — a circle the same height as the caps. */
+  .o-slot{
+    position:relative;width:.92em;height:.92em;border-radius:50%;
+    display:inline-block;vertical-align:middle;margin:0 .02em;
+  }
+  /* Activities: a clean water-drop ring. */
+  [data-mode="activities"] .o-slot{
+    background:
+      radial-gradient(circle at 38% 32%, rgba(255,255,255,.5), transparent 42%),
+      var(--night-1);
+    border:.13em solid var(--lime);
+    box-shadow:0 0 0 .02em rgba(0,0,0,.4) inset;
+  }
+  /* tiny droplet glint */
+  [data-mode="activities"] .o-slot::after{
+    content:"";position:absolute;left:50%;top:-.2em;transform:translateX(-50%);
+    width:.18em;height:.26em;background:var(--lime);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+    opacity:.85;
+  }
+  /* Music: a spinning faceted disco ball. */
+  [data-mode="music"] .o-slot{
+    background:
+      radial-gradient(circle at 34% 28%, #fff 0 6%, rgba(255,255,255,0) 36%),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.32) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.30) 0 1px, transparent 1px 5px),
+      conic-gradient(from 200deg, var(--disco-pink), var(--disco-blue), var(--disco), var(--disco-pink));
+    box-shadow:0 0 .5em rgba(255,122,224,.55), inset 0 0 .3em rgba(0,0,0,.5);
+    animation:spin 6s linear infinite;
+  }
+  [data-mode="music"] .o-slot::before{
+    content:"";position:absolute;inset:-.5em;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,122,224,.25), transparent 70%);
+    pointer-events:none;
+  }
+  @keyframes spin{to{filter:hue-rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){ [data-mode="music"] .o-slot{animation:none} }
+
+  /* big hero version */
+  .hero-moist{--moist-size:64px}
+
+  /* ─── Phone frame for home-page mockups ─────────────────────────── */
+  .phone{
+    width:330px;margin:0 auto;border-radius:30px;background:var(--night-0);
+    border:1px solid var(--moss-2);padding:10px;box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .phone .screen{background:var(--night-1);border-radius:22px;overflow:hidden}
+  .ph-header{padding:12px 12px 10px;border-bottom:1px solid var(--moss-1)}
+  .ph-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .ph-ctas{display:flex;gap:8px;color:var(--cream-dim)}
+  .ph-ctas .dot{width:22px;height:22px;border-radius:7px;background:var(--night-3);
+    display:grid;place-items:center;font-size:12px}
+  .ph-tabs{display:flex;gap:6px;margin-top:12px}
+  .ph-tabs .t{font-size:11px;padding:6px 10px;border-radius:999px;background:var(--night-3);color:var(--cream-dim)}
+  .ph-tabs .t.on{background:var(--lime);color:var(--night-0);font-weight:700}
+  body[data-mode="music"] .ph-tabs .t.on{background:var(--disco);color:var(--night-0)}
+  .ph-body{padding:12px}
+  .ph-card{background:var(--night-2);border:1px solid var(--moss-1);border-radius:10px;padding:10px;margin-bottom:8px}
+  .ph-card .ttl{font-size:13px;font-weight:700}
+  .ph-card .sub{font-size:11px;color:var(--cream-dim);margin-top:2px}
+
+  /* segmented pill */
+  .seg{display:inline-flex;padding:3px;gap:2px;background:var(--night-4);
+    border:1px solid var(--moss-1);border-radius:999px}
+  .seg button{font:inherit;font-size:12px;font-weight:700;border:0;cursor:pointer;
+    color:var(--cream-dim);background:transparent;border-radius:999px;padding:6px 12px}
+  .seg button.on{color:var(--night-0);background:var(--lime)}
+  body[data-mode="music"] .seg button.on{background:var(--disco)}
+
+  /* mode caption under logo (discoverable affordance for the gesture) */
+  .mode-cap{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--cream-dim);
+    margin-top:4px;cursor:pointer}
+  .mode-cap .swap{width:13px;height:13px;border-radius:50%;border:1px solid var(--moss-2);
+    display:grid;place-items:center;font-size:9px;color:var(--cream-soft)}
+  .mode-cap b{color:var(--cream)}
+
+  /* compact icon toggle */
+  .icontog{width:34px;height:34px;border-radius:10px;border:1px solid var(--moss-2);
+    background:var(--night-3);cursor:pointer;display:grid;place-items:center;font-size:16px}
+  body[data-mode="music"] .icontog{border-color:rgba(255,122,224,.5);box-shadow:0 0 8px rgba(255,122,224,.3)}
+
+  /* ─── Settings hero toggle styles ──────────────────────────────── */
+  .sheet{max-width:360px;margin:0 auto;background:var(--night-2);border:1px solid var(--moss-1);
+    border-radius:18px;padding:16px}
+  .sheet .hd{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--cream-dim);margin-bottom:10px}
+
+  /* S-A: big full-width segmented hero */
+  .heroseg{display:flex;background:var(--night-4);border:1px solid var(--moss-1);
+    border-radius:14px;padding:5px;gap:5px}
+  .heroseg button{flex:1;font:inherit;font-size:15px;font-weight:800;border:0;cursor:pointer;
+    border-radius:11px;padding:14px 10px;color:var(--cream-dim);background:transparent;
+    display:flex;flex-direction:column;align-items:center;gap:6px;transition:.2s}
+  .heroseg button .ic{font-size:20px}
+  .heroseg button.on{color:var(--night-0);background:var(--lime)}
+  body[data-mode="music"] .heroseg button.on{background:var(--disco)}
+
+  /* S-B: two big selectable tiles */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--night-1);border:2px solid var(--moss-1);border-radius:16px;
+    padding:16px;cursor:pointer;text-align:center;transition:.2s}
+  .tile .ic{font-size:30px;display:block;margin-bottom:6px}
+  .tile .nm{font-weight:800;font-size:14px}
+  .tile .ds{font-size:11px;color:var(--cream-dim);margin-top:2px}
+  .tile.on{border-color:var(--lime);background:rgba(var(--lime-rgb)/.10)}
+  body[data-mode="music"] .tile.on{border-color:var(--disco-pink);background:rgba(255,122,224,.10)}
+
+  /* S-C: knob switch */
+  .knobwrap{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .knobwrap .lbls{font-size:13px;color:var(--cream-dim);display:flex;gap:10px}
+  .knobwrap .lbls b{color:var(--cream)}
+  .knob{width:96px;height:46px;border-radius:999px;background:var(--night-4);
+    border:1px solid var(--moss-2);position:relative;cursor:pointer;flex:0 0 auto}
+  .knob .ball{position:absolute;top:3px;left:3px;width:38px;height:38px;border-radius:50%;
+    background:var(--lime);transition:left .25s, background .25s;display:grid;place-items:center;font-size:16px}
+  body[data-mode="music"] .knob .ball{left:55px;background:var(--disco)}
+
+  .hint{font-size:12px;color:var(--moss-3);margin-top:10px;text-align:center}
+  .pickbar{position:fixed;bottom:0;left:0;right:0;background:rgba(4,9,12,.92);
+    border-top:1px solid var(--moss-2);padding:10px 16px;text-align:center;font-size:13px;color:var(--cream-soft);z-index:60}
+  .pickbar code{color:var(--lime)}
+</style>
+</head>
+<body data-mode="activities">
+
+  <div class="globalbar">
+    <span class="now">Live preview — currently in <b id="now-mode">Activities</b></span>
+    <span class="seg" role="group" aria-label="Quick switch">
+      <button type="button" data-set="activities" class="on">Activities</button>
+      <button type="button" data-set="music">Music</button>
+    </span>
+  </div>
+
+  <header class="page">
+    <h1>Switching between <em>Activities</em> and <em>Music</em></h1>
+    <p>A few concepts for the most-used control on the site. Flip the switch up top (or any control below) and watch the <b>O</b> in MOIST change everywhere.</p>
+    <div class="rec">
+      <b>My recommendation (the hybrid):</b>
+      <ul>
+        <li><b>The logo is the live indicator.</b> Water-drop O in Activities → disco-ball O in Music. You always know which world you're in.</li>
+        <li><b>Double-tap the logo to switch</b> (your account-switch idea) — fast and delightful for regulars.</li>
+        <li><b>Plus one always-visible affordance</b> so it's discoverable: a tiny mode caption under the logo (Home), and a big hero toggle pinned to the top of Settings.</li>
+      </ul>
+      <p style="margin:10px 0 0;color:var(--cream-dim)">Below: pick a <b>Home</b> placement (A/B/C) and a <b>Settings</b> style (1/2/3). Tell me the combo you like.</p>
+    </div>
+  </header>
+
+  <!-- THE LOGO IDEA -->
+  <section class="block">
+    <h2>1 · The logo idea</h2>
+    <p class="lede">Same playful MOIST wordmark; only the <b>O</b> changes. (These are CSS concepts — once you pick a direction I'll generate the real illustrated disco-ball asset to match your mushroom logo.)</p>
+    <div class="opt" style="align-items:center">
+      <div class="stage" style="gap:46px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <span class="moist hero-moist"><span class="ltr">M</span><span class="o-slot" data-force="activities"></span><span class="ltr">IST</span></span>
+          <div style="color:var(--cream-dim);font-size:12px;margin-top:8px">Activities — water drop</div>
+        </div>
+        <div style="text-align:center">
+          <span class="moist hero-moist"><span class="ltr">M</span><span class="o-slot" data-force="music"></span><span class="ltr">IST</span></span>
+          <div style="color:var(--cream-dim);font-size:12px;margin-top:8px">Music — disco ball</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOME PLACEMENT OPTIONS -->
+  <section class="block">
+    <h2>2 · Where it lives on the home screen</h2>
+    <p class="lede">Three ways to switch from the main page. Each phone is interactive.</p>
+    <div class="options">
+
+      <!-- A -->
+      <div class="opt">
+        <h3>A · Segmented pill beside the logo <span class="tag">most discoverable</span></h3>
+        <div class="stage">
+          <div class="phone"><div class="screen">
+            <div class="ph-header">
+              <div class="ph-row">
+                <span class="moist" style="--moist-size:22px"><span class="ltr">M</span><span class="o-slot"></span><span class="ltr">IST</span></span>
+                <span class="seg mini" role="group" aria-label="dataset">
+                  <button type="button" data-set="activities" class="on">Acts</button>
+                  <button type="button" data-set="music">Music</button>
+                </span>
+              </div>
+              <div class="ph-tabs"><span class="t on">By Day</span><span class="t" data-stage-tab>By Camp</span><span class="t">Map</span></div>
+            </div>
+            <div class="ph-body">
+              <div class="ph-card"><div class="ttl" data-sample-title>Yogalates With Khold</div><div class="sub" data-sample-sub>Boobs &amp; Berries · 10:30</div></div>
+              <div class="ph-card"><div class="ttl" data-sample-title2>Aquafit On Land</div><div class="sub" data-sample-sub2>Boobs &amp; Berries · 11:45</div></div>
+            </div>
+          </div></div>
+        </div>
+        <p class="why">One tap, always visible, zero learning curve. Costs a little header width — fine on the brand side since the logo is small.</p>
+      </div>
+
+      <!-- B -->
+      <div class="opt">
+        <h3>B · Logo switch + mode caption <span class="tag">recommended</span></h3>
+        <div class="stage">
+          <div class="phone"><div class="screen">
+            <div class="ph-header">
+              <div class="ph-row">
+                <span style="display:flex;flex-direction:column">
+                  <span class="moist logo-switch" style="--moist-size:24px;cursor:pointer" title="Double-tap to switch"><span class="ltr">M</span><span class="o-slot"></span><span class="ltr">IST</span></span>
+                  <span class="mode-cap" data-cap-toggle><span class="swap">⇄</span> <b data-cap>Activities</b> · tap to switch</span>
+                </span>
+                <span class="ph-ctas"><span class="dot">★</span><span class="dot">⚙</span></span>
+              </div>
+              <div class="ph-tabs"><span class="t on">By Day</span><span class="t" data-stage-tab>By Camp</span><span class="t">Map</span></div>
+            </div>
+            <div class="ph-body">
+              <div class="ph-card"><div class="ttl" data-sample-title>Yogalates With Khold</div><div class="sub" data-sample-sub>Boobs &amp; Berries · 10:30</div></div>
+              <div class="ph-card"><div class="ttl" data-sample-title2>Aquafit On Land</div><div class="sub" data-sample-sub2>Boobs &amp; Berries · 11:45</div></div>
+            </div>
+          </div></div>
+        </div>
+        <p class="why">Double-tap the wordmark to flip (try it!). The caption makes the gesture discoverable and labels the current mode. Most brand-forward, no extra header clutter.</p>
+      </div>
+
+      <!-- C -->
+      <div class="opt">
+        <h3>C · Disco-ball icon button <span class="tag">compact</span></h3>
+        <div class="stage">
+          <div class="phone"><div class="screen">
+            <div class="ph-header">
+              <div class="ph-row">
+                <span class="moist" style="--moist-size:22px"><span class="ltr">M</span><span class="o-slot"></span><span class="ltr">IST</span></span>
+                <span class="ph-ctas">
+                  <span class="icontog" data-icontog title="Switch Activities/Music" aria-label="Switch dataset">
+                    <span data-icon>💧</span>
+                  </span>
+                  <span class="dot">★</span><span class="dot">⚙</span>
+                </span>
+              </div>
+              <div class="ph-tabs"><span class="t on">By Day</span><span class="t" data-stage-tab>By Camp</span><span class="t">Map</span></div>
+            </div>
+            <div class="ph-body">
+              <div class="ph-card"><div class="ttl" data-sample-title>Yogalates With Khold</div><div class="sub" data-sample-sub>Boobs &amp; Berries · 10:30</div></div>
+              <div class="ph-card"><div class="ttl" data-sample-title2>Aquafit On Land</div><div class="sub" data-sample-sub2>Boobs &amp; Berries · 11:45</div></div>
+            </div>
+          </div></div>
+        </div>
+        <p class="why">A single icon button that flips droplet ⇄ disco ball. Smallest footprint; sits in the existing CTA row. Slightly less obvious what it does at first glance.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SETTINGS OPTIONS -->
+  <section class="block">
+    <h2>3 · The "big toggle" in Settings</h2>
+    <p class="lede">Pulled out of the Theme group into its own hero control, pinned to the very top of Settings. Three styles:</p>
+    <div class="options">
+
+      <!-- S-A -->
+      <div class="opt">
+        <h3>1 · Big segmented hero</h3>
+        <div class="stage">
+          <div class="sheet">
+            <div class="hd">Schedule</div>
+            <div class="heroseg" role="group" aria-label="dataset">
+              <button type="button" data-set="activities" class="on"><span class="ic">💧</span>Activities</button>
+              <button type="button" data-set="music"><span class="ic">🪩</span>Music</button>
+            </div>
+            <div class="hint">Full-width, unmissable. Reads as the page's top-level mode.</div>
+          </div>
+        </div>
+        <p class="why">Clear, big tap targets, obvious selected state. My pick for Settings.</p>
+      </div>
+
+      <!-- S-B -->
+      <div class="opt">
+        <h3>2 · Two big tiles</h3>
+        <div class="stage">
+          <div class="sheet">
+            <div class="hd">Schedule</div>
+            <div class="tiles" role="group" aria-label="dataset">
+              <div class="tile on" data-set="activities"><span class="ic">💧</span><div class="nm">Activities</div><div class="ds">Camps &amp; workshops</div></div>
+              <div class="tile" data-set="music"><span class="ic">🪩</span><div class="nm">Music</div><div class="ds">DJ sets &amp; stages</div></div>
+            </div>
+          </div>
+        </div>
+        <p class="why">Most expressive — room for an icon + one-line description. Feels like choosing a "world".</p>
+      </div>
+
+      <!-- S-C -->
+      <div class="opt">
+        <h3>3 · Knob switch</h3>
+        <div class="stage">
+          <div class="sheet">
+            <div class="hd">Schedule</div>
+            <div class="knobwrap">
+              <span class="lbls"><b data-knob-l>Activities</b> / Music</span>
+              <span class="knob" data-knob title="Toggle"><span class="ball"><span data-knob-ic>💧</span></span></span>
+            </div>
+            <div class="hint">Compact, familiar iOS-style. Less room for labels/explanation.</div>
+          </div>
+        </div>
+        <p class="why">Smallest and most "settingsy" — but a binary knob hides which side is which a bit.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="pickbar">
+    Tell me your combo, e.g. <code>Home B + Settings 1</code> — then I'll wire it into the real app and generate the disco-ball MOIST asset.
+  </div>
+
+<script>
+  const root = document.documentElement;
+  const body = document.body;
+  function setMode(m, announce){
+    const mode = m === "music" ? "music" : "activities";
+    root.setAttribute("data-mode", mode);
+    body.setAttribute("data-mode", mode);
+    document.getElementById("now-mode").textContent = mode === "music" ? "Music" : "Activities";
+    // sync all segmented/seg/heroseg buttons
+    document.querySelectorAll("[data-set]").forEach(el=>{
+      const on = el.dataset.set === mode;
+      el.classList.toggle("on", on);
+      if (el.tagName === "BUTTON") el.setAttribute("aria-pressed", on);
+    });
+    // captions
+    document.querySelectorAll("[data-cap]").forEach(el=> el.textContent = mode==="music"?"Music":"Activities");
+    document.querySelectorAll("[data-knob-l]").forEach(el=> el.textContent = mode==="music"?"Music":"Activities");
+    document.querySelectorAll("[data-icon]").forEach(el=> el.textContent = mode==="music"?"🪩":"💧");
+    document.querySelectorAll("[data-knob-ic]").forEach(el=> el.textContent = mode==="music"?"🪩":"💧");
+    // sample content + tab label flip so the preview feels real
+    document.querySelectorAll("[data-stage-tab]").forEach(el=> el.textContent = mode==="music"?"By Stage":"By Camp");
+    document.querySelectorAll("[data-sample-title]").forEach(el=> el.textContent = mode==="music"?"ellisdeejay":"Yogalates With Khold");
+    document.querySelectorAll("[data-sample-sub]").forEach(el=> el.textContent = mode==="music"?"Electric Circus Lounge · 12:00":"Boobs & Berries · 10:30");
+    document.querySelectorAll("[data-sample-title2]").forEach(el=> el.textContent = mode==="music"?"CRAIGISON (9000ears)":"Aquafit On Land");
+    document.querySelectorAll("[data-sample-sub2]").forEach(el=> el.textContent = mode==="music"?"Electric Circus Lounge · 18:00":"Boobs & Berries · 11:45");
+    // force-locked demo O's stay put
+    document.querySelectorAll(".o-slot[data-force]").forEach(el=>{
+      el.style.setProperty("--locked", el.dataset.force);
+    });
+  }
+  function toggle(){ setMode(root.getAttribute("data-mode")==="music"?"activities":"music"); }
+
+  document.querySelectorAll("[data-set]").forEach(el=>{
+    el.addEventListener("click", ()=> setMode(el.dataset.set));
+  });
+  document.querySelectorAll(".logo-switch").forEach(el=>{
+    el.addEventListener("dblclick", e=>{ e.preventDefault(); toggle(); });
+  });
+  document.querySelectorAll("[data-cap-toggle]").forEach(el=> el.addEventListener("click", toggle));
+  document.querySelectorAll("[data-icontog]").forEach(el=> el.addEventListener("click", toggle));
+  document.querySelectorAll("[data-knob]").forEach(el=> el.addEventListener("click", toggle));
+  document.querySelectorAll(".tile[data-set]").forEach(el=> el.addEventListener("click", ()=> setMode(el.dataset.set)));
+
+  // The two locked demo wordmarks in section 1 should ignore global mode.
+  // Re-apply their forced look on every mode change by scoping styles inline.
+  function applyForced(){
+    document.querySelectorAll('.o-slot[data-force="activities"]').forEach(el=>{
+      el.style.background="radial-gradient(circle at 38% 32%, rgba(255,255,255,.5), transparent 42%), var(--night-1)";
+      el.style.border=".13em solid var(--lime)";
+      el.style.animation="none";
+      el.style.boxShadow="0 0 0 .02em rgba(0,0,0,.4) inset";
+    });
+    document.querySelectorAll('.o-slot[data-force="music"]').forEach(el=>{
+      el.style.background="radial-gradient(circle at 34% 28%, #fff 0 6%, rgba(255,255,255,0) 36%), repeating-linear-gradient(0deg, rgba(0,0,0,.32) 0 1px, transparent 1px 5px), repeating-linear-gradient(90deg, rgba(0,0,0,.30) 0 1px, transparent 1px 5px), conic-gradient(from 200deg, var(--disco-pink), var(--disco-blue), var(--disco), var(--disco-pink))";
+      el.style.boxShadow="0 0 .5em rgba(255,122,224,.55), inset 0 0 .3em rgba(0,0,0,.5)";
+      el.style.animation="spin 6s linear infinite";
+    });
+  }
+  applyForced();
+  setMode("activities");
+</script>
+</body>
+</html>

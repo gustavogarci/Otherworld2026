@@ -20,7 +20,7 @@
 
 // Bump this string to invalidate the shell cache on the next visit.
 // Format is just for humans; any change triggers a refill.
-const SW_VERSION = "v36-2026-06-02-moist-drops-nofade";
+const SW_VERSION = "v41-2026-06-02-release-2.0";
 
 const SHELL_CACHE = "otherworld-shell-" + SW_VERSION;
 const DATA_CACHE = "otherworld-data";
@@ -43,6 +43,7 @@ const SHELL_ASSETS = [
   "/icon-192.png",
   "/icon-512.png",
   "/logo.png",
+  "/logo_music.png",
   "/sandstorm.mp3",
 ];
 
@@ -50,6 +51,7 @@ const SHELL_ASSETS = [
 // Everything else same-origin falls through to the network.
 const DATA_PATHS = new Set([
   "/events.json",
+  "/music.json",
   "/data.js",
   "/camp-aliases.json",
   "/map-data.js",

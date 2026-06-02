@@ -1,0 +1,4967 @@
+{
+  "metadata": {
+    "source": "Dancing Decibels — Otherworld Schedule CSV",
+    "attribution": "Schedule data courtesy of Dancing Decibels (dancingdecibels.com).",
+    "generatedAt": "2026-06-02T19:57:54.086Z",
+    "eventCount": 294,
+    "entryCount": 10,
+    "crossesMidnightCount": 30,
+    "countsByDay": {
+      "Thursday": 26,
+      "Friday": 91,
+      "Saturday": 92,
+      "Sunday": 76,
+      "Monday": 9
+    }
+  },
+  "entries": [
+    {
+      "name": "Boobs & Berries",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Yogalates With Khold",
+          "description": "",
+          "day": "Friday",
+          "startTime": "10:30",
+          "endTime": "11:45",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 10:30 - 11:45",
+          "performanceId": "PID-917a8382-1620-4c58-9b93-8e81ea5b9341"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Aquafit On Land With Adi",
+          "description": "",
+          "day": "Friday",
+          "startTime": "11:45",
+          "endTime": "13:00",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 11:45 - 13:00",
+          "performanceId": "PID-fecbed9d-278f-4d12-b324-72103b359a96"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Amethystra",
+          "description": "",
+          "day": "Friday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 13:00 - 14:00",
+          "performanceId": "PID-06a3e25b-c4d3-463c-aad2-18980e769dc6"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Clairevoyant B2B DJ Legal",
+          "description": "",
+          "day": "Friday",
+          "startTime": "14:00",
+          "endTime": "15:20",
+          "durationHours": 1.33,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 14:00 - 15:20",
+          "performanceId": "PID-dae6e2fc-6c89-435f-bfac-e1c506ad9fb7"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Sowa",
+          "description": "",
+          "day": "Friday",
+          "startTime": "15:20",
+          "endTime": "16:20",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 15:20 - 16:20",
+          "performanceId": "PID-b252db28-ed4a-42d7-805d-92ca8df85280"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Kit - Kat",
+          "description": "",
+          "day": "Friday",
+          "startTime": "16:20",
+          "endTime": "17:20",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 16:20 - 17:20",
+          "performanceId": "PID-18c2ef6a-85c3-4f30-9c5f-dd0a387b2ec1"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Diva-B",
+          "description": "",
+          "day": "Friday",
+          "startTime": "17:20",
+          "endTime": "18:00",
+          "durationHours": 0.67,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 17:20 - 18:00",
+          "performanceId": "PID-63d81820-0d57-4a61-8892-90f9e7a7d7e2"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Selayne",
+          "description": "",
+          "day": "Friday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 18:00 - 19:00",
+          "performanceId": "PID-fa29b70c-fd5b-47cc-bc9c-3302e0900388"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Indigoj",
+          "description": "",
+          "day": "Friday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 19:00 - 20:00",
+          "performanceId": "PID-b5fdf635-6351-4834-bfe6-66548f92d5d6"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Qi Gong With Ben David Wittock",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "10:30",
+          "endTime": "11:45",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 10:30 - 11:45",
+          "performanceId": "PID-d7a2fb1e-8712-492f-b94c-2baaddba55a2"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Gentle Yoga For Tired Bodies",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "11:45",
+          "endTime": "13:00",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 11:45 - 13:00",
+          "performanceId": "PID-79751d57-ba9d-4c23-8c91-17be94ebd330"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Matty Reed",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 13:00 - 14:00",
+          "performanceId": "PID-449b9096-1aa4-4748-b438-72bca3d0e2c5"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Gambler",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 14:00 - 15:00",
+          "performanceId": "PID-59f32564-7923-4b50-823b-6a9984089b16"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Revi",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 15:00 - 16:00",
+          "performanceId": "PID-6a0c0cb9-6c1f-4072-94be-86974432d24a"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Tassels",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 16:00 - 17:00",
+          "performanceId": "PID-36cdf4e4-9191-4c92-a204-537b96fc041b"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Boat Daddy",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 17:00 - 18:00",
+          "performanceId": "PID-f9441780-91d3-438a-81d0-a4ff3e36a755"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Guru",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 18:00 - 19:00",
+          "performanceId": "PID-4a818f5b-0956-42d7-b3f2-d3c1cbcc7966"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Chacha",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:00 - 20:00",
+          "performanceId": "PID-18fa9a60-9f38-47fe-85a1-63882d8e1184"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Stretch, Sway and Slay with Jenni",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "11:45",
+          "endTime": "13:00",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 11:45 - 13:00",
+          "performanceId": "PID-46a1c3b8-30ff-41cf-a3c6-e3b2edb51a54"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Nathan Randall",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 13:00 - 14:00",
+          "performanceId": "PID-5324d567-95a8-45c3-ab36-f9a41ffa7fcf"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Red Dragon",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 14:00 - 15:00",
+          "performanceId": "PID-1a7a0784-1b22-419a-8543-940870cee79c"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Milf Maid",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 15:00 - 16:00",
+          "performanceId": "PID-9520c4b2-12da-4187-b28f-f4c31f948775"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Mozya",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-ec29d986-d3e4-42d5-8c2a-0613d44f5102"
+        },
+        {
+          "owner": "Boobs & Berries",
+          "ownerType": "sound_stage",
+          "title": "Vital Signs",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:00 - 18:00",
+          "performanceId": "PID-cfa0b72b-0be6-47c8-93d8-aa882cd97bc1"
+        }
+      ]
+    },
+    {
+      "name": "Chaitrance",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Spruce Lee",
+          "description": "",
+          "day": "Friday",
+          "startTime": "12:00",
+          "endTime": "13:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "bush prog"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 12:00 - 13:30",
+          "performanceId": "PID-fd67f1f9-260a-47a4-9d7b-a5a7c14d53a7"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Löblová",
+          "description": "",
+          "day": "Friday",
+          "startTime": "13:30",
+          "endTime": "15:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "psytech",
+            "progpsy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 13:30 - 15:00",
+          "performanceId": "PID-dec26e93-a7e7-4f90-99ef-af66153b15ba"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Space Mantra",
+          "description": "",
+          "day": "Friday",
+          "startTime": "15:00",
+          "endTime": "16:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "progressive"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 15:00 - 16:30",
+          "performanceId": "PID-cb8c5310-5021-4a67-a7a9-7685d2dede86"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Stargirl",
+          "description": "",
+          "day": "Friday",
+          "startTime": "16:30",
+          "endTime": "18:30",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "morning psy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 16:30 - 18:30",
+          "performanceId": "PID-617f33bf-a3c2-463a-a21f-4887bd553d41"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Sunkid",
+          "description": "",
+          "day": "Friday",
+          "startTime": "18:30",
+          "endTime": "20:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "goatrance"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 18:30 - 20:00",
+          "performanceId": "PID-c84ae902-618d-4215-9b0b-14f9215d783d"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "NYX",
+          "description": "",
+          "day": "Friday",
+          "startTime": "20:00",
+          "endTime": "21:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "nightpsy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 20:00 - 21:30",
+          "performanceId": "PID-b61e5cf5-33e8-41b5-a213-1e416928f423"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Duendo Matka",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:30",
+          "endTime": "23:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "live",
+            "masala psy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 21:30 - 23:00",
+          "performanceId": "PID-e5660170-7190-4cad-88b6-0f610432ca37"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "KachaMacha",
+          "description": "",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "00:30",
+          "durationHours": 1.5,
+          "crossesMidnight": true,
+          "tags": [
+            "west coast psy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 23:00 - 00:30",
+          "performanceId": "PID-d6b9e7ac-bd13-48b1-b0a7-7c74028172c0"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Epinoia",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "00:30",
+          "endTime": "02:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "live",
+            "darkpsy",
+            "hitech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 00:30 - 02:00",
+          "performanceId": "PID-3f1d3e68-4786-4ee9-b1a4-45c411296f50"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Aspa Syava",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "02:00",
+          "endTime": "03:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "darkpsy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 02:00 - 03:30",
+          "performanceId": "PID-0662a5a9-338d-41fa-b692-60a5c1f07162"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Dmana",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "12:00",
+          "endTime": "13:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "psytech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 12:00 - 13:30",
+          "performanceId": "PID-4247312b-c0b9-47d5-a84b-d4b724452523"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Wookie",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "13:30",
+          "endTime": "15:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "dark prog"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 13:30 - 15:00",
+          "performanceId": "PID-c63cdb26-862b-4412-9791-e838fa38833c"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Zu",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "15:00",
+          "endTime": "16:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "psyfunk"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 15:00 - 16:30",
+          "performanceId": "PID-93be8336-66fc-4007-8b24-7a5619659e85"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Johnny",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "16:30",
+          "endTime": "18:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "progressive"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 16:30 - 18:00",
+          "performanceId": "PID-6fa5d4c6-5121-402b-8f7b-0886143bab0d"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Space Mantra",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "18:00",
+          "endTime": "19:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "psytrance"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 18:00 - 19:30",
+          "performanceId": "PID-d45aed35-9357-4894-a312-0ff4a0f547e8"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Sunkid",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "19:30",
+          "endTime": "21:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "full-on"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:30 - 21:00",
+          "performanceId": "PID-6c6004dc-e993-4298-aae9-3c4a2b5c3619"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Psyborgs",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "22:30",
+          "endTime": "23:40",
+          "durationHours": 1.17,
+          "crossesMidnight": false,
+          "tags": [
+            "live",
+            "debut set!"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 22:30 - 23:40",
+          "performanceId": "PID-e4649b7f-77c1-4f73-9f2c-6dc4620afe68"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Johnny",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "23:40",
+          "endTime": "01:30",
+          "durationHours": 1.83,
+          "crossesMidnight": true,
+          "tags": [
+            "nightpsy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 23:40 - 01:30",
+          "performanceId": "PID-0afa8369-ede3-4c8c-9f06-780ff8963332"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Mossy Roots",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "01:30",
+          "endTime": "03:30",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "forest"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 01:30 - 03:30",
+          "performanceId": "PID-cf3e9886-f418-45b3-a43c-c3d78c8e4704"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Simon Love",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "03:30",
+          "endTime": "05:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "psybreaks 150+"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 03:30 - 05:00",
+          "performanceId": "PID-01bdfbda-d60b-47fb-91b2-b792d25ecbc0"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "TrilKSTR",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "12:00",
+          "endTime": "13:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "psytech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 12:00 - 13:30",
+          "performanceId": "PID-396138e2-d833-40a8-9466-214cb973cae7"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Mossy Roots",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "13:30",
+          "endTime": "15:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "dark prog"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 13:30 - 15:00",
+          "performanceId": "PID-e57b01f9-ee9c-49dc-8232-9aa9a6ae6e62"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Khan",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "progressive"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 15:00 - 16:00",
+          "performanceId": "PID-592c609c-dfc6-4d88-90e7-c735759a54ce"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Similitude",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "progressive"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-5ce97811-2b6b-45a4-a124-27c17b989cf1"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Amethystra",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "17:00",
+          "endTime": "18:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "deep trance"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:00 - 18:30",
+          "performanceId": "PID-60659940-ca9a-46ad-abd5-538ebafb97df"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "NYX",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "18:30",
+          "endTime": "20:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "psytrance"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 18:30 - 20:00",
+          "performanceId": "PID-a471d39c-d0a2-462e-b51d-f364744ce567"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Brahma Shanti",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "20:00",
+          "endTime": "22:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "psychill",
+            "downtempo"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 20:00 - 22:00",
+          "performanceId": "PID-889607e6-94c4-42c5-ab2f-9e04771e6914"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "Archaic Records",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "23:00",
+          "endTime": "00:30",
+          "durationHours": 1.5,
+          "crossesMidnight": true,
+          "tags": [
+            "live",
+            "experimental"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:00 - 00:30",
+          "performanceId": "PID-f90f4b97-f77a-4a30-81db-c58918b222de"
+        },
+        {
+          "owner": "Chaitrance",
+          "ownerType": "sound_stage",
+          "title": "KachaMacha",
+          "description": "",
+          "day": "Monday",
+          "startTime": "00:30",
+          "endTime": "02:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "hitech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Monday 00:30 - 02:00",
+          "performanceId": "PID-d6575c09-8bb3-4cd7-90b2-e0767d692a08"
+        }
+      ]
+    },
+    {
+      "name": "CLuG deep n' Salty",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "NITRO MATE LOUNGE + CLuG Sound check",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "14:00",
+          "endTime": "17:00",
+          "durationHours": 3,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 14:00 - 17:00",
+          "performanceId": "PID-afd3f64c-fa24-404a-ad8c-04062283eb48"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Nudlz",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 19:00 - 20:00",
+          "performanceId": "PID-06c35678-e40b-4715-b21b-8e79b1c4ca81"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "BPMBabe",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 20:00 - 21:00",
+          "performanceId": "PID-4a729d8a-9f20-452f-86d6-eeeecb0e44c1"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Boomtown",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 21:00 - 22:00",
+          "performanceId": "PID-d567cf63-3c05-459f-831d-df33d0842701"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Chunky Chornz",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 22:00 - 23:00",
+          "performanceId": "PID-3afdbd88-2dc0-4b39-a581-e3f9b78e231d"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "D'Jule & B-Madi",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "23:00",
+          "endTime": "01:00",
+          "durationHours": 2,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 23:00 - 01:00",
+          "performanceId": "PID-d2eb6155-2ea1-4ecd-9804-a32f82a26202"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "DJ Sage",
+          "description": "",
+          "day": "Friday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 01:00 - 02:00",
+          "performanceId": "PID-6c9c8394-bc2e-4a4a-a1fb-1125d0f23c86"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Mykey Boom",
+          "description": "",
+          "day": "Friday",
+          "startTime": "02:00",
+          "endTime": "03:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 02:00 - 03:00",
+          "performanceId": "PID-23c26028-0462-46c1-9fc0-bb8fb1599940"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "NITRO MATE LOUNGE + Hip Hop DJ Jam",
+          "description": "",
+          "day": "Friday",
+          "startTime": "14:00",
+          "endTime": "17:00",
+          "durationHours": 3,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 14:00 - 17:00",
+          "performanceId": "PID-875c2369-ca3a-4e67-8240-4df1c6d4ae99"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Wookie",
+          "description": "",
+          "day": "Friday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 20:00 - 21:00",
+          "performanceId": "PID-f95bfe64-8709-4f45-a7ac-5d6f79e04af8"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Selayne",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 21:00 - 22:00",
+          "performanceId": "PID-2a0eb9e8-b7c6-4426-bfea-47448748c507"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Mis Mar",
+          "description": "",
+          "day": "Friday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 22:00 - 23:00",
+          "performanceId": "PID-3f180489-f43b-4b78-8f96-37cf1cef079d"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Matt Hatter",
+          "description": "",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 23:00 - 00:00",
+          "performanceId": "PID-f51f6cb7-f73e-4f9f-889c-9fb1af55f770"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "BPMBabe",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 00:00 - 01:00",
+          "performanceId": "PID-62e821b1-d6bb-4049-903b-0af3cccf3f47"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Boomtown",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 01:00 - 02:00",
+          "performanceId": "PID-8ae67e3a-a19b-44d6-8ad4-52ebf706168b"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Nautika",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "02:00",
+          "endTime": "03:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 02:00 - 03:00",
+          "performanceId": "PID-5bce228f-8ad6-454e-959e-aef34d8b19ec"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "NITRO MATE LOUNGE + Samu & ???",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "14:00",
+          "endTime": "16:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 14:00 - 16:00",
+          "performanceId": "PID-9f85ec08-782b-4473-ae4c-31700795f746"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Booty Crocker’s Cake Sit",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "16:00",
+          "endTime": "19:00",
+          "durationHours": 3,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 16:00 - 19:00",
+          "performanceId": "PID-939892de-203f-4056-9f02-0b9ecff03448"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Arcomere (Live set)",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "19:00",
+          "endTime": "21:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "live"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:00 - 21:00",
+          "performanceId": "PID-91a9d0c6-9a36-4bd6-ac54-cfa8b01f7b8d"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Arcomere (Live set)",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 23:00 - 00:00",
+          "performanceId": "PID-64b05be0-176d-48d4-a099-68903d146585"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "D'Jule & B-Madi",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "00:00",
+          "endTime": "02:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 00:00 - 02:00",
+          "performanceId": "PID-d50124a3-3b78-4079-8c92-7b113ac05bb1"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Beatrix the White",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "02:00",
+          "endTime": "03:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 02:00 - 03:00",
+          "performanceId": "PID-82470663-db90-4915-94c3-8bd24091bffa"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Nudlz",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "03:00",
+          "endTime": "04:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 03:00 - 04:00",
+          "performanceId": "PID-90e696f2-1030-4b3a-a97a-102ce4c125a6"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Chunky Chornz & Mykey Boom",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "14:00",
+          "endTime": "15:45",
+          "durationHours": 1.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 14:00 - 15:45",
+          "performanceId": "PID-f840d735-1078-4c6c-b667-035214862dc6"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "Sleepy & Jojo Dancer",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "15:45",
+          "endTime": "17:15",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 15:45 - 17:15",
+          "performanceId": "PID-306b285c-de85-4ad6-8bb1-5aec215869ce"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "B-Madi & D’jule",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "17:15",
+          "endTime": "18:30",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:15 - 18:30",
+          "performanceId": "PID-4b18b0a1-cb0e-41bd-9bf0-c9be2d09044a"
+        },
+        {
+          "owner": "CLuG deep n' Salty",
+          "ownerType": "sound_stage",
+          "title": "DJ Sage's & Friends Dirty Rave House Night",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "23:00",
+          "endTime": "04:00",
+          "durationHours": 5,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:00 - 04:00",
+          "performanceId": "PID-d8831cbb-6818-45b0-ad4c-1f6ab2523c1d"
+        }
+      ]
+    },
+    {
+      "name": "Electric Circus Lounge",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "ellisdeejay",
+          "description": "Somewhere between a dance and a daydream. Kick off your Otherworld with a soulful Balearic brunch set.",
+          "day": "Friday",
+          "startTime": "12:00",
+          "endTime": "14:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "Balearic Brunch"
+          ],
+          "socialList": [
+            "https://soundcloud.com/ellisdeejay"
+          ],
+          "rawTimeText": "Friday 12:00 - 14:00",
+          "performanceId": "PID-c36221f0-c2dc-4757-a977-0aa4f9bbbf82"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Rave Scouts of the Salish Sea Jamboree",
+          "description": "Come join the Rave Scouts of the Salish Sea for hippie watching, sporbs, and fuckery.",
+          "day": "Friday",
+          "startTime": "14:00",
+          "endTime": "17:00",
+          "durationHours": 3,
+          "crossesMidnight": false,
+          "tags": [
+            "Sporbs & Fuckery"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 14:00 - 17:00",
+          "performanceId": "PID-6a977d45-ef02-42e0-b1d4-02ada8f45e2d"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Flying Fuck",
+          "description": "",
+          "day": "Friday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Slomo Nu Disco"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 17:00 - 18:00",
+          "performanceId": "PID-e0f85f55-1702-4f84-be51-89e82c9ebd33"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "CRAIGISON (9000ears)",
+          "description": "Bring your armbands, floaties, swimsuits and Speedos for a strictly moist, upfront, poolside disco experience.",
+          "day": "Friday",
+          "startTime": "18:00",
+          "endTime": "19:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "Poolside Dad Bod Speedo Disco"
+          ],
+          "socialList": [
+            "https://soundcloud.com/death-wish-disco"
+          ],
+          "rawTimeText": "Friday 18:00 - 19:30",
+          "performanceId": "PID-26084d75-7d59-4961-a1a8-eb8936e9fe24"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Electric Circus Cabaret",
+          "description": "An assortment of various performances celebrating different art forms",
+          "day": "Friday",
+          "startTime": "19:30",
+          "endTime": "20:30",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Cabaret"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 19:30 - 20:30",
+          "performanceId": "PID-bd35d0d7-531b-4cbd-b913-0feb7cd1be32"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Jetane",
+          "description": "Electric Circus Lounge's Vision Director & Chief Builder steps up to provide a soundtrack as we enjoy the last rays of sunlight and head towards the night.",
+          "day": "Friday",
+          "startTime": "20:30",
+          "endTime": "22:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "Uplifting House"
+          ],
+          "socialList": [
+            "https://soundcloud.com/jetane"
+          ],
+          "rawTimeText": "Friday 20:30 - 22:00",
+          "performanceId": "PID-890b6d24-b6ac-499d-9268-6d05f7574647"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Moonbean",
+          "description": "Rock stars from both the past and future — Moonbean are a live hardware duo bringing psychedelic synth-punk electronica.",
+          "day": "Friday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Psychedelic Synth-Punk Electronica"
+          ],
+          "socialList": [
+            "https://www.moonbeanmusic.ca/"
+          ],
+          "rawTimeText": "Friday 22:00 - 23:00",
+          "performanceId": "PID-00ee081c-f2b8-46e1-92d5-6e2b742bd09a"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Andfriends",
+          "description": "Cosmic house music that sounds touched by human hands — live basslines, guitars, warm percussion, and desert disco energy.",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "Cosmic Cowboy House"
+          ],
+          "socialList": [
+            "https://soundcloud.com/andfriendsmusicevents"
+          ],
+          "rawTimeText": "Friday 23:00 - 00:00",
+          "performanceId": "PID-a10fef1f-ba02-4412-9dde-a9aec80dfe38"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Fruit Stand",
+          "description": "She'll bring the Fruity Beats, you bring the Booty Sweets!",
+          "day": "Saturday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Booty House"
+          ],
+          "socialList": [
+            "https://soundcloud.com/thefruitstand"
+          ],
+          "rawTimeText": "Saturday 00:00 - 01:00",
+          "performanceId": "PID-be2e946c-0b23-4091-b098-eff369e69854"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Daddy Dylan",
+          "description": "Daddy Dylan is out on the town tonight and he's gonna give it to you Deep",
+          "day": "Saturday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Deep House"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 01:00 - 02:00",
+          "performanceId": "PID-2ed2a9a7-d683-4086-82b5-7e418bfc3f98"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Michael McCaffery",
+          "description": "Emerging from the depths of moistness, this legendary ancient Jellyfish DJ is here to bring house and deep tech.",
+          "day": "Saturday",
+          "startTime": "02:00",
+          "endTime": "03:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "House",
+            "Deep Tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 02:00 - 03:30",
+          "performanceId": "PID-6df1f9d2-3d90-4d20-b8d9-5106f1069984"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Jetane",
+          "description": "Beautiful Balearic downtempo, warm sunrise grooves and emotional coastal rhythms.",
+          "day": "Saturday",
+          "startTime": "12:00",
+          "endTime": "14:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "Balearic"
+          ],
+          "socialList": [
+            "https://soundcloud.com/jetane"
+          ],
+          "rawTimeText": "Saturday 12:00 - 14:00",
+          "performanceId": "PID-d16f0e74-b06f-4fd0-8b1f-c0e1c0d952b7"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Open Mic 3:33min",
+          "description": "Open Mic style. Bring your 3:33-minutes of dance, song, comedy, puppetry, strange ritual, or whatever else you have.",
+          "day": "Saturday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Performance Hour"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 14:00 - 15:00",
+          "performanceId": "PID-b6ecabb5-402c-46ea-91e7-388b8230384b"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Electric Circus DJ Power Hour",
+          "description": "Anything goes with the stable of Electric Circus DJs jockeying on the 1's and 2's - make a request and see what happens!",
+          "day": "Saturday",
+          "startTime": "15:00",
+          "endTime": "17:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "DJ Power Hour"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 15:00 - 17:00",
+          "performanceId": "PID-c80e2543-7c8a-4bf8-88bf-74fdc5c94783"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Matty Reed",
+          "description": "Host of B-Side Radio's Funkin' Brunch People is bringing Funky House to the Electric Circus Lounge!",
+          "day": "Saturday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Funky House"
+          ],
+          "socialList": [
+            "https://soundcloud.com/mattytude"
+          ],
+          "rawTimeText": "Saturday 17:00 - 18:00",
+          "performanceId": "PID-4bdc8b0b-a813-456e-a583-3ca261af33eb"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Curated Live Jam Session",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Curated Live Jam Session"
+          ],
+          "socialList": [
+            "https://gatormusic.bandcamp.com/"
+          ],
+          "rawTimeText": "Saturday 18:00 - 19:00",
+          "performanceId": "PID-1ad8866b-4d37-4a2f-9d17-65745078ee6a"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Nix",
+          "description": "Whatever that means....",
+          "day": "Saturday",
+          "startTime": "19:00",
+          "endTime": "19:30",
+          "durationHours": 0.5,
+          "crossesMidnight": false,
+          "tags": [
+            "Heavy Curated Funk"
+          ],
+          "socialList": [
+            "https://soundcloud.com/nix_dj"
+          ],
+          "rawTimeText": "Saturday 19:00 - 19:30",
+          "performanceId": "PID-a77fff06-63f2-4541-87d1-8bcd95338fc4"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Moonbean",
+          "description": "Rock stars from both the past and future — Moonbean are a live hardware duo bringing psychedelic synth-punk electronica.",
+          "day": "Saturday",
+          "startTime": "19:30",
+          "endTime": "20:30",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Psychedelic Synth-Punk Electronica"
+          ],
+          "socialList": [
+            "https://www.moonbeanmusic.ca/"
+          ],
+          "rawTimeText": "Saturday 19:30 - 20:30",
+          "performanceId": "PID-28307cc5-1d14-4707-b8db-2ced5d45ce70"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Marc Gerrard",
+          "description": "Marc Gerrard is the guy sneaking warm, wobbly dance music into your bloodstream one track at a time. Originally from England and now based on Vancouver Island, he’s spent years building dancefloors, late-night parties, and immersive music spaces through Abstract Audio, DE Radio, and curating the electronic music stage at the Woodstove Festival. His sets lean deep, playful, and patiently hypnotic — the kind that start with head nods and somehow end with strangers becoming best friends at 4am. Come for the groove, stay for the accidental spiritual experience.",
+          "day": "Saturday",
+          "startTime": "23:00",
+          "endTime": "00:30",
+          "durationHours": 1.5,
+          "crossesMidnight": true,
+          "tags": [
+            "Deep House/Techno"
+          ],
+          "socialList": [
+            "https://soundcloud.com/marcgerrard"
+          ],
+          "rawTimeText": "Saturday 23:00 - 00:30",
+          "performanceId": "PID-1788a5f8-12f8-49d9-a766-5886265b9968"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Jetane",
+          "description": "Electric Circus Lounge's Vision Director & Chief Builder - Both DJ & VJ for Electric Circus, join Jetane as he carrys us through the night with a cosmic soundtrack to dance underside the tent with curated visuals.",
+          "day": "Sunday",
+          "startTime": "00:30",
+          "endTime": "02:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "Techno"
+          ],
+          "socialList": [
+            "https://soundcloud.com/jetane"
+          ],
+          "rawTimeText": "Sunday 00:30 - 02:00",
+          "performanceId": "PID-66e7143d-d85a-4003-95dd-ede9c772c8f5"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "ellisdeejay",
+          "description": "Sink into the small hours as psychedelic visuals bloom overhead and the music settles into the comedown.",
+          "day": "Sunday",
+          "startTime": "02:00",
+          "endTime": "03:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Psychedelic"
+          ],
+          "socialList": [
+            "https://soundcloud.com/ellisdeejay"
+          ],
+          "rawTimeText": "Sunday 02:00 - 03:00",
+          "performanceId": "PID-2483faee-2d6b-46ec-9c05-f78f34540c0b"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "AndFriends: Low Tide Recovery Club",
+          "description": "Join Andfriends drifting through yacht-rock-esque Balearic disco, synthy piano chords, coastal slow-burn grooves, sunrise soul and slow-motion Sunday recovery energy.",
+          "day": "Sunday",
+          "startTime": "12:00",
+          "endTime": "15:00",
+          "durationHours": 3,
+          "crossesMidnight": false,
+          "tags": [
+            "Balearic"
+          ],
+          "socialList": [
+            "https://soundcloud.com/andfriendsmusicevents"
+          ],
+          "rawTimeText": "Sunday 12:00 - 15:00",
+          "performanceId": "PID-fb0b761e-5127-44a5-9fa8-7e9b8f598524"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "How to Trainwreck a DJ Set",
+          "description": "A guide to being a sh*t DJ: a guided exploration of terrible transitions, performer faux pas, and improper use of air horns.",
+          "day": "Sunday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Workshop"
+          ],
+          "socialList": [
+            "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+          ],
+          "rawTimeText": "Sunday 15:00 - 16:00",
+          "performanceId": "PID-630ad0e5-301b-4c1d-a8db-7d3f74ec9592"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Flying Fuck",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "BalkanBeats"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-e8f4ebc4-a8a5-4420-a9f5-20cd9b6d2a72"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Gator",
+          "description": "A real life band of humans playing musical instruments live!",
+          "day": "Sunday",
+          "startTime": "17:30",
+          "endTime": "19:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "Psychedelic Dub-Funk Trip-Hop"
+          ],
+          "socialList": [
+            "https://gatormusic.bandcamp.com/"
+          ],
+          "rawTimeText": "Sunday 17:30 - 19:00",
+          "performanceId": "PID-24488776-2ae2-46b7-a787-8b4848d9bdcf"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Curated Live Jam Session",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "19:00",
+          "endTime": "20:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "Curated Live Jam Session"
+          ],
+          "socialList": [
+            "https://gatormusic.bandcamp.com/"
+          ],
+          "rawTimeText": "Sunday 19:00 - 20:30",
+          "performanceId": "PID-65e20695-4b22-4aed-b149-b8c854617523"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Earthninja",
+          "description": "An Ancient DJ of lore, decade+ long veteran radio host of Bigger than Bass on CHLY 101.7FM, comes out from the depths to share some deep DnB & Jungle for a Moody start to your Sunday night.",
+          "day": "Sunday",
+          "startTime": "23:30",
+          "endTime": "00:30",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "drum & bass"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:30 - 00:30",
+          "performanceId": "PID-30f2bce3-c688-4306-a19b-908716ca1135"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "Onlychild",
+          "description": "OnlyChild moves through silky garage rhythms, urban soul and sleek midnight club energy.",
+          "day": "Monday",
+          "startTime": "00:30",
+          "endTime": "02:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "Garage"
+          ],
+          "socialList": [],
+          "rawTimeText": "Monday 00:30 - 02:00",
+          "performanceId": "PID-d4af9fa6-e708-4e80-938a-a52aab7dd903"
+        },
+        {
+          "owner": "Electric Circus Lounge",
+          "ownerType": "sound_stage",
+          "title": "R|V^H Closing Set @ Electric Circus",
+          "description": "Expect deep and delicious Dub Techno and associated soundscapes as R|V^H provides a closing set to our weekend experience.",
+          "day": "Monday",
+          "startTime": "02:00",
+          "endTime": "03:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "Dub Techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Monday 02:00 - 03:00",
+          "performanceId": "PID-0d31bd50-29ae-4b84-b73a-557e872ea235"
+        }
+      ]
+    },
+    {
+      "name": "Ironic Spin",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Skipping School / is this on",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "deep house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 18:00 - 19:00",
+          "performanceId": "PID-fe54b9cb-cebe-4336-b42e-19405659f463"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Boomtown",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 19:00 - 20:00",
+          "performanceId": "PID-34ef6fe1-e8fd-41d4-9cc9-5ce198a91ef8"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "DJ Sage",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 20:00 - 21:00",
+          "performanceId": "PID-22de223e-0468-4cab-a773-506fa7f5877e"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "BEATFARMER",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "world beats"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 21:00 - 22:00",
+          "performanceId": "PID-1e2c55a2-fe70-4433-93ea-f4ac774a5bb4"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Guru",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "garridge"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 22:00 - 23:00",
+          "performanceId": "PID-a2ce0044-03b8-47d7-ba05-858a5273653a"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Cha Cha",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "tech house",
+            "indie dance"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 23:00 - 00:00",
+          "performanceId": "PID-367c946a-635f-401d-a974-2b2e7b7de776"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "FM Radio Gods",
+          "description": "",
+          "day": "Friday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "tech",
+            "prog"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 00:00 - 01:00",
+          "performanceId": "PID-288b8fb3-6fe4-41a4-9b6c-8228552a9b64"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "TRiiKSTR",
+          "description": "",
+          "day": "Friday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "deep techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 01:00 - 02:00",
+          "performanceId": "PID-a56a953a-6d1c-439d-81d5-8bb407b2ee4b"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Bubbles, Beats, and Babies (DJ Psybernetix aka Tired Daddy)",
+          "description": "",
+          "day": "Friday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 13:00 - 14:00",
+          "performanceId": "PID-f35d5d72-92dc-46c7-aaf2-28945d8f65e5"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Bubbles and Bubbles",
+          "description": "",
+          "day": "Friday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "bubble house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 15:00 - 16:00",
+          "performanceId": "PID-689f6268-4f0e-4a13-bbd9-650c6d9db732"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Yours Truly",
+          "description": "",
+          "day": "Friday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "vibey house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 16:00 - 17:00",
+          "performanceId": "PID-6be0cede-cf7c-4ee3-ab81-f463004ced15"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Mikey B",
+          "description": "",
+          "day": "Friday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 17:00 - 18:00",
+          "performanceId": "PID-28723d78-e140-4ef2-98a3-b0f7fc1502aa"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Mojo Jojo",
+          "description": "",
+          "day": "Friday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 18:00 - 19:00",
+          "performanceId": "PID-cc9b12ed-5ab2-410c-bc12-078fbf66a355"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Dodd",
+          "description": "",
+          "day": "Friday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "proggy vibes"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 19:00 - 20:00",
+          "performanceId": "PID-eabb7731-4ab8-4ca5-96ad-8f3d2c80fd3b"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Skipping School",
+          "description": "",
+          "day": "Friday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "deep house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 20:00 - 21:00",
+          "performanceId": "PID-9260eee4-ae23-4cf6-a057-08ec7f5ca153"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Balencia",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "sexy sunset saus"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 21:00 - 22:00",
+          "performanceId": "PID-6e05830b-537b-40ba-8ddb-62ae70ab77ba"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Marza",
+          "description": "",
+          "day": "Friday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 22:00 - 23:00",
+          "performanceId": "PID-127419cd-8dbf-4306-bd03-eafa43ee5947"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Caçadora",
+          "description": "",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "garridge"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 23:00 - 00:00",
+          "performanceId": "PID-f405f84f-bb3d-48ac-8946-960691af5629"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Entelechy",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 00:00 - 01:00",
+          "performanceId": "PID-97b81ad4-de00-45a9-a2d5-2a45c7a32c34"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "R|V^H",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "deep techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 01:00 - 02:00",
+          "performanceId": "PID-a68f9a18-5e7a-429f-8f58-cd6b0e74671b"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Transient",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "02:00",
+          "endTime": "03:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "vibey late night house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 02:00 - 03:00",
+          "performanceId": "PID-bf3d6ad5-067e-423f-91f5-0bd6fc483b76"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Francine Thai Massage Stretch",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "10:30",
+          "endTime": "12:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 10:30 - 12:00",
+          "performanceId": "PID-3e26a5b5-bf96-447f-a295-df7ec0486b67"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Jane Dawnda / Brooks",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "disco house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 12:00 - 13:00",
+          "performanceId": "PID-8b377533-c40f-4ca4-ad62-75d3792fd9f4"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Akela",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "80s dnb remixes"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 13:00 - 14:00",
+          "performanceId": "PID-738328ba-73be-40ce-8b88-be274e164096"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Andfriends",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "disco",
+            "italo house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 14:00 - 15:00",
+          "performanceId": "PID-183a38ab-84e9-4491-97f0-18504ad11c39"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "ukg jam - Entelechy & Caçadora",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ukg daytime"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 15:00 - 16:00",
+          "performanceId": "PID-fd88c750-3ece-480e-942c-07bdf90313b2"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "ukg jam - Rhythmicon & Space Tiger",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ukg daytime"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 16:00 - 17:00",
+          "performanceId": "PID-416996a5-beca-4c3c-b87e-b8c8ad5896f7"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "ukg jam - S.O.S",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ukg daytime"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 17:00 - 18:00",
+          "performanceId": "PID-3a916f87-946f-4a69-a377-f3bb5563969c"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "ukg -> wubz Sprdk",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ukg to wubz"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 18:00 - 19:00",
+          "performanceId": "PID-5441e816-c308-4aa6-85d2-dbb6b015ac75"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "wubz takeover / NYKTRN",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "wubz"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:00 - 20:00",
+          "performanceId": "PID-b756989d-df17-46f9-86fd-f826f160efd3"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "wubz takeover / Khan",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "wubz"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 20:00 - 21:00",
+          "performanceId": "PID-7b31e5a0-603d-4c3a-afe5-ed4b05a930b7"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Sassbot",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "23:30",
+          "endTime": "01:00",
+          "durationHours": 1.5,
+          "crossesMidnight": true,
+          "tags": [
+            "funky house",
+            "breaks"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 23:30 - 01:00",
+          "performanceId": "PID-8dd33efe-691a-4e10-a730-147c60bc1db1"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Sleepy",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 01:00 - 02:00",
+          "performanceId": "PID-27250a04-b9bc-49a5-b303-7dcf22a02026"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Balencia - late night trance",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "02:00",
+          "endTime": "03:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "prog trance"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 02:00 - 03:00",
+          "performanceId": "PID-fee281c5-0472-40af-83c0-09f7f87ad576"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Ambient Waffles with Echo Pilot",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ambient"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 12:00 - 13:00",
+          "performanceId": "PID-9c56b536-d203-4fb6-bc74-2dde001a02f1"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Reggae w Space Tiger",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "reggae"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 13:00 - 14:00",
+          "performanceId": "PID-02f4f1e7-6d86-43e0-833b-61efe63e173d"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Reggae/Dancehall w Space Tiger",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ska",
+            "reggae",
+            "dancehall"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 14:00 - 15:00",
+          "performanceId": "PID-c88bcaed-ad70-4f00-a588-1a64a8f2988e"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Jo-Jo Dancer",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ska",
+            "reggae",
+            "dancehall"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 15:00 - 16:00",
+          "performanceId": "PID-672b7987-94d4-4cd9-8bfd-6f5c80d36554"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Lucy Ford",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "breaks",
+            "ukg"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-2f0cbc4a-93a2-4ba3-a3c1-173af3147b93"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Barnes & Barnes",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:00 - 18:00",
+          "performanceId": "PID-989ce0d4-5dec-4262-a10c-3e3df7014f66"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Sarah-Hannah",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 18:00 - 19:00",
+          "performanceId": "PID-f0bb2f65-7e4f-466c-9599-c91a6f3e03da"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Push-Play",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "deep world beats"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 19:00 - 20:00",
+          "performanceId": "PID-7bae54ee-bd7f-4109-a203-987b83c95c6b"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Loblova",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "deep prog house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 20:00 - 21:00",
+          "performanceId": "PID-58eaba13-a3e3-4d1c-948f-b72535aa217b"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Dave Dirk",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "23:00",
+          "endTime": "01:00",
+          "durationHours": 2,
+          "crossesMidnight": true,
+          "tags": [
+            "cvs bangers"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:00 - 01:00",
+          "performanceId": "PID-683c7128-64ae-4574-8566-ed2d7eb8fc80"
+        },
+        {
+          "owner": "Ironic Spin",
+          "ownerType": "sound_stage",
+          "title": "Galaxy Spaceout w/ Space Tiger",
+          "description": "",
+          "day": "Monday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "dub"
+          ],
+          "socialList": [],
+          "rawTimeText": "Monday 01:00 - 02:00",
+          "performanceId": "PID-53a78555-385b-426f-a148-9d4669ec2e5d"
+        }
+      ]
+    },
+    {
+      "name": "Jellyfish Lounge",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Jelly DJs",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "15:00",
+          "endTime": "19:00",
+          "durationHours": 4,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 15:00 - 19:00",
+          "performanceId": "PID-2eb32d95-6077-4f1e-9634-3005784552ba"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Mikey B",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 19:00 - 20:00",
+          "performanceId": "PID-2790bda5-8bd0-48b7-848f-dc815b04d951"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "MyLove",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 20:00 - 21:00",
+          "performanceId": "PID-08d028d9-c877-4e4f-b1db-db67d9ec054c"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Jellyfish Jam",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "21:00",
+          "endTime": "00:00",
+          "durationHours": 3,
+          "crossesMidnight": true,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 21:00 - 00:00",
+          "performanceId": "PID-d1168644-5fad-4451-b341-1544188a6e1a"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Immersion: Yoga & Sound Experience",
+          "description": "",
+          "day": "Friday",
+          "startTime": "11:30",
+          "endTime": "13:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 11:30 - 13:00",
+          "performanceId": "PID-ce6aa391-9365-44e0-99de-77e1dcca2c0b"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Chillsun",
+          "description": "",
+          "day": "Friday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "afro house",
+            "minimal deep",
+            "tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 13:00 - 14:00",
+          "performanceId": "PID-fbb8cee9-89f5-4d76-a09a-5c03c9034b72"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Lapse",
+          "description": "",
+          "day": "Friday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "afro house",
+            "minimal deep",
+            "tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 14:00 - 15:00",
+          "performanceId": "PID-0a144263-59e4-4e56-813f-a05558cf3b97"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Gano",
+          "description": "",
+          "day": "Friday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "stuff"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 15:00 - 16:00",
+          "performanceId": "PID-277db7be-e0a6-4271-b122-4dbd6f137af0"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Big Data",
+          "description": "",
+          "day": "Friday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 16:00 - 17:00",
+          "performanceId": "PID-52b324f5-109d-4cc5-a934-9bcef35c22ad"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Matterson",
+          "description": "",
+          "day": "Friday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 17:00 - 18:00",
+          "performanceId": "PID-f4555ebf-cf25-4c96-8345-e26f5a8b2c7c"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Sarah-Hannah",
+          "description": "",
+          "day": "Friday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 18:00 - 19:00",
+          "performanceId": "PID-488a9aec-23f7-4064-a90c-c8cdf3f189c6"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Leanne",
+          "description": "",
+          "day": "Friday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 19:00 - 20:00",
+          "performanceId": "PID-b225d814-5d18-4125-9746-2693c45b2197"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "DJdafoe",
+          "description": "",
+          "day": "Friday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 20:00 - 21:00",
+          "performanceId": "PID-35805ce4-0d0f-4e8f-a760-b77b415dbb95"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Skez",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "minimal deep",
+            "tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 21:00 - 22:00",
+          "performanceId": "PID-33c07a7a-0bf4-451d-9a96-e8a672ec8c19"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Sylvain",
+          "description": "",
+          "day": "Friday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "tech",
+            "funky"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 22:00 - 23:00",
+          "performanceId": "PID-4f4ba5d9-68cb-4b9c-b725-2e52e2bd989f"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "McCaffery",
+          "description": "",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "house",
+            "minimal deep",
+            "tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 23:00 - 00:00",
+          "performanceId": "PID-0521094d-de74-4002-b763-a835cb79c3eb"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "5D Yoga – Rachelle & Gano",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 12:00 - 13:00",
+          "performanceId": "PID-a8ce232c-ee41-42ac-b913-550b1fc1cf6a"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Khan",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 13:00 - 14:00",
+          "performanceId": "PID-ee037a95-b2ae-48d3-8ec6-c295c913a615"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Late Night Guest",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 14:00 - 15:00",
+          "performanceId": "PID-c40ef46c-21e8-46fe-ad84-10a2ec8d3beb"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Thirrrsty Takeover",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "15:00",
+          "endTime": "17:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 15:00 - 17:00",
+          "performanceId": "PID-db113c5d-d194-4f57-8ad3-0ed98652340f"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "AndFriends",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 17:00 - 18:00",
+          "performanceId": "PID-20945248-247d-4fd9-8b9b-3b981f916542"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Vic Drip Takeover",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "18:00",
+          "endTime": "20:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 18:00 - 20:00",
+          "performanceId": "PID-ba939800-5b12-402a-9d03-4bddf7387b27"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "R|V^H",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "minimal deep",
+            "tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 20:00 - 21:00",
+          "performanceId": "PID-1f2b62a3-1968-4a4e-83ec-8afc5531bba7"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Gano & Matterson",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "22:30",
+          "endTime": "00:00",
+          "durationHours": 1.5,
+          "crossesMidnight": true,
+          "tags": [
+            "house",
+            "tech",
+            "minimal deep"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 22:30 - 00:00",
+          "performanceId": "PID-d9c7687d-e7fe-4e98-858f-fa7a212dac03"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Jerk Church",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "musical spoken word shenangians"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 12:00 - 13:00",
+          "performanceId": "PID-2602d617-d969-4858-83f6-b4ef0060af87"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Poppa Champagne",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 13:00 - 14:00",
+          "performanceId": "PID-ad48f5ea-7d12-4a08-8cb9-a702a0b3a1eb"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Lucy Ford",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "ukg"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 14:00 - 15:00",
+          "performanceId": "PID-6a9d5c8b-b519-45ad-8e8a-c1e3dab88cc8"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Chris Bigelow",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 15:00 - 16:00",
+          "performanceId": "PID-7c16180b-90ef-4da3-8431-ada100efdb13"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Loblova",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-661a3df7-114e-46d2-a4cd-d10e5951b482"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Big Data",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:00 - 18:00",
+          "performanceId": "PID-3ca1b395-f16e-42e1-bb0f-304f3a6a1f5c"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Skez",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "minimal deep",
+            "tech"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 18:00 - 19:00",
+          "performanceId": "PID-37c1e682-17ce-46e0-a1c9-c12e98e636a5"
+        },
+        {
+          "owner": "Jellyfish Lounge",
+          "ownerType": "sound_stage",
+          "title": "Jellyfish Jam",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:00 - 00:00",
+          "performanceId": "PID-38decbd1-8b09-4e23-ba03-1c4b4f8b5501"
+        }
+      ]
+    },
+    {
+      "name": "Ripple Effect",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Flounciful",
+          "description": "Funky. Floaty. Fuzzy. Floof.",
+          "day": "Friday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "funk",
+            "deep house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 16:00 - 17:00",
+          "performanceId": "PID-f79eee04-8128-4f20-a022-f2bd4180109b"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "JTDub",
+          "description": "Succulent selects satisfy the senses.",
+          "day": "Friday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "breaks",
+            "bass"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 17:00 - 18:00",
+          "performanceId": "PID-ca574a1b-e225-4728-961f-8128930cd7b8"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Alpine Alchemy",
+          "description": "Bassy vocals that will get you right in the feels.",
+          "day": "Friday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "dubstep",
+            "drum & bass",
+            "singalongs"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 18:00 - 19:00",
+          "performanceId": "PID-0266804d-43fc-41ae-bcfc-c11907549478"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "DJDadddy (not mucsluck)",
+          "description": "The roof is not my son but I will raise it - poorly",
+          "day": "Friday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "disco",
+            "country",
+            "top 40",
+            "techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 19:00 - 20:00",
+          "performanceId": "PID-8f591b63-e4b0-435f-95d2-bb5e0709e2b7"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Rogue Wave",
+          "description": "A bouncy, bumpin', bassy time",
+          "day": "Friday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "bass house",
+            "bass",
+            "drum & bass"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 20:00 - 21:00",
+          "performanceId": "PID-920a2baf-f672-44cf-8879-f11b5d450001"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Robbie",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 21:00 - 22:00",
+          "performanceId": "PID-d27a3515-b594-44cc-8867-7608d7b7e07c"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Rowly",
+          "description": "",
+          "day": "Friday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 22:00 - 23:00",
+          "performanceId": "PID-007d8208-9f54-4912-a53e-3013ba86af62"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Space Cadet",
+          "description": "Seductive, sultry, sapphic songs for sexy schemes of state overthrow.",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "bass house",
+            "tech house",
+            "ukg"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 23:00 - 00:00",
+          "performanceId": "PID-01d29a5b-c782-4e37-8436-61827769d7e9"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Raine",
+          "description": "Come for the bass. Stay for the revolution.",
+          "day": "Saturday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ukg",
+            "bubstep",
+            "drum & bass"
+          ],
+          "socialList": [
+            "https://www.instagram.com/gabrielrainemusic/"
+          ],
+          "rawTimeText": "Saturday 00:00 - 01:00",
+          "performanceId": "PID-62673511-aa82-44ec-bb04-9a5ef970d0c2"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "A-bot",
+          "description": "Head bang bass face ass throw",
+          "day": "Saturday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "dubstep",
+            "trap",
+            "bass"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 01:00 - 02:00",
+          "performanceId": "PID-d6fcc197-e573-444a-9a74-87906cc365aa"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "LooksGood",
+          "description": "Come to ripple for some fishy tunes and maybe some snails",
+          "day": "Saturday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "funk",
+            "disco",
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 15:00 - 16:00",
+          "performanceId": "PID-27987cd0-6478-4d8e-a2b9-72bde03efc43"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "AAron b2b Just Jared",
+          "description": "An Orcar & Ripple Effect collab! The pod brings the car, we bring the bass.",
+          "day": "Saturday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "garage"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 16:00 - 17:00",
+          "performanceId": "PID-0b6d9ebc-cd83-4faa-bc07-5d411e741171"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "PrayTell",
+          "description": "Wind your way through worldly wavelengths",
+          "day": "Saturday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "organic",
+            "fusion edm"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 17:00 - 18:00",
+          "performanceId": "PID-df454a16-4f40-45ca-a62b-68181280ebcb"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Queer FamJam babe2babe",
+          "description": "A feel-good collaboration in celebration of chosen family, dance music, and queerness!",
+          "day": "Saturday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "disco",
+            "synthpop",
+            "love"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 18:00 - 19:00",
+          "performanceId": "PID-fe531256-4d5c-4294-96ae-0aaab51590ea"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Feminem",
+          "description": "The bastard child of Joan Rivers and Weird AL Yankovic who uses humor as activism to make haters feel as ridiculous as they sound",
+          "day": "Saturday",
+          "startTime": "19:00",
+          "endTime": "19:15",
+          "durationHours": 0.25,
+          "crossesMidnight": false,
+          "tags": [
+            "rap",
+            "comedy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:00 - 19:15",
+          "performanceId": "PID-78ef1ca9-f2ca-414b-8c57-0aff4297389c"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Queer Happy Hour",
+          "description": "Meet other sweet queers in a chill space over snacks and mimosas!",
+          "day": "Saturday",
+          "startTime": "19:15",
+          "endTime": "20:00",
+          "durationHours": 0.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:15 - 20:00",
+          "performanceId": "PID-83490597-bb31-43bf-aba2-c16839c5f4d0"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Rowly",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-2b2abda7-e6b3-4bef-b7da-80fc25dc1df7"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Fretwell",
+          "description": "Warm, spacious and worldly, mid-tempo house and funky grooves",
+          "day": "Sunday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:00 - 18:00",
+          "performanceId": "PID-9923b484-a26f-4ea3-a96e-3e428fed248d"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Silly Goose",
+          "description": "Feel the current pull your hips. Spicy Tech Latin House from the heart of Ripple Effect.",
+          "day": "Sunday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "latin house",
+            "tech house",
+            "funk"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 18:00 - 19:00",
+          "performanceId": "PID-bd0ad12e-a381-4f7b-a594-121f3684137b"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "Rory Hayz",
+          "description": "Upbeat bouncy basslines for energy on the last night",
+          "day": "Sunday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "nukg",
+            "house",
+            "bass"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 19:00 - 20:00",
+          "performanceId": "PID-a82518a4-21e8-4b81-a9c2-338d153417ed"
+        },
+        {
+          "owner": "Ripple Effect",
+          "ownerType": "sound_stage",
+          "title": "BLOOP-lanet featuring Flounciful, Raine, and Space Cadet",
+          "description": "Dive beneath the waves in our cosy cuddle puddle, journeying through stunning underwater ecosystems with projected nature documentaries scored by our moist DJs!",
+          "day": "Sunday",
+          "startTime": "22:30",
+          "endTime": "02:00",
+          "durationHours": 3.5,
+          "crossesMidnight": true,
+          "tags": [
+            "downtempo",
+            "bass",
+            "experimental"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 22:30 - 02:00",
+          "performanceId": "PID-91dd8fba-c314-4898-8150-abe08ec09b9d"
+        }
+      ]
+    },
+    {
+      "name": "SKYBAR",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "Torsheedeh",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "20:30",
+          "endTime": "22:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "tropical",
+            "disco house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 20:30 - 22:00",
+          "performanceId": "PID-9509c1ac-4fde-4627-9f1e-378b63a12cf2"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "icedtang",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "22:00",
+          "endTime": "23:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "spicy latin",
+            "bouncy house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 22:00 - 23:30",
+          "performanceId": "PID-6774f83b-a9eb-42f0-b33b-f62dd16c77d7"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "pushplay",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "23:30",
+          "endTime": "01:00",
+          "durationHours": 1.5,
+          "crossesMidnight": true,
+          "tags": [
+            "funky house",
+            "bangers"
+          ],
+          "socialList": [],
+          "rawTimeText": "Thursday 23:30 - 01:00",
+          "performanceId": "PID-0d865b2e-176b-48b6-8a36-8c59e71c9c0b"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "MilfMaid",
+          "description": "",
+          "day": "Friday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "high energy",
+            "house",
+            "techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 01:00 - 02:00",
+          "performanceId": "PID-2060762c-8eeb-4754-a742-9c286eddb50c"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "dodd",
+          "description": "",
+          "day": "Friday",
+          "startTime": "02:00",
+          "endTime": "03:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "progressive house (all sorts)",
+            "techno",
+            "breaks"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 02:00 - 03:30",
+          "performanceId": "PID-9188567e-03cd-40c4-b69d-aaaccf8427dd"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "firefox",
+          "description": "",
+          "day": "Friday",
+          "startTime": "03:30",
+          "endTime": "05:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "house",
+            "breaks",
+            "who knows"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 03:30 - 05:00",
+          "performanceId": "PID-55ca11e7-1238-4995-9171-b4a656b69ca3"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "luxuryus",
+          "description": "",
+          "day": "Friday",
+          "startTime": "19:00",
+          "endTime": "19:45",
+          "durationHours": 0.75,
+          "crossesMidnight": false,
+          "tags": [
+            "eclectic groovy beats",
+            "rhythms",
+            "vibes"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 19:00 - 19:45",
+          "performanceId": "PID-d1b4c636-7e9f-48cc-9e77-427bd9e4b5c6"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "matt hatter",
+          "description": "",
+          "day": "Friday",
+          "startTime": "19:45",
+          "endTime": "20:30",
+          "durationHours": 0.75,
+          "crossesMidnight": false,
+          "tags": [
+            "house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 19:45 - 20:30",
+          "performanceId": "PID-b27f98ab-68c9-460d-b802-86b4b600274a"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "thefunkyslab",
+          "description": "",
+          "day": "Friday",
+          "startTime": "20:30",
+          "endTime": "21:30",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "funky jams"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 20:30 - 21:30",
+          "performanceId": "PID-b43e27f0-377e-45bf-a20d-1d639bd02fdd"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "sassbot",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:30",
+          "endTime": "23:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "funky",
+            "bassy",
+            "breaksy bangers"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 21:30 - 23:00",
+          "performanceId": "PID-7b31fef5-3f1e-46da-b825-64ea1ce7ae51"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "grantus maximus",
+          "description": "",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "23:59",
+          "durationHours": 0.98,
+          "crossesMidnight": false,
+          "tags": [
+            "bass house",
+            "acid house?",
+            "bangers"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 23:00 - 23:59",
+          "performanceId": "PID-e7b768dd-0722-4730-a1fb-7e98aa8de0d8"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "barnes & barnes",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "00:00",
+          "endTime": "01:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "ukg"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 00:00 - 01:30",
+          "performanceId": "PID-396a713f-2932-406c-8363-50de26b4b3ee"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "Löblová",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "01:30",
+          "endTime": "02:30",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "ukg",
+            "breaks"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 01:30 - 02:30",
+          "performanceId": "PID-1f7554f6-0f1f-4b23-ae5e-e7ee72476f2f"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "High Pivot",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "02:30",
+          "endTime": "03:30",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "breaks",
+            "techno"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 02:30 - 03:30",
+          "performanceId": "PID-44b31158-7c4b-4a1d-871e-690e765dd30e"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "KHAN",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "03:30",
+          "endTime": "05:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "deep house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 03:30 - 05:00",
+          "performanceId": "PID-b46f8158-44b9-45c4-ac50-2bb30ddc2729"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "SKEZ",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "19:00",
+          "endTime": "20:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "throwback vibes",
+            "bass heavy grooves",
+            "tribal rhythms"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:00 - 20:30",
+          "performanceId": "PID-acd60cd3-6487-4f4b-be1b-8adec122e67c"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "DJ #1 Dad",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "20:30",
+          "endTime": "21:30",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "boppy bouncy vocal house",
+            "a little mashups"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 20:30 - 21:30",
+          "performanceId": "PID-b4af92ec-2827-4aca-97f8-9cfb460a49e3"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "NaN00$3",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "21:30",
+          "endTime": "23:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "playatech tunes",
+            "video set"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 21:30 - 23:00",
+          "performanceId": "PID-335768d0-9e34-478d-81ff-9c59dbc686cd"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "skyboiz: mkybrzy, skydaddy, don't bleed on my vortex",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "23:00",
+          "endTime": "02:15",
+          "durationHours": 3.25,
+          "crossesMidnight": true,
+          "tags": [
+            "fun"
+          ],
+          "socialList": [],
+          "rawTimeText": "Saturday 23:00 - 02:15",
+          "performanceId": "PID-0070230e-6c07-49c0-b4e7-7a8cd9f5af08"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "Talking Trees",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "02:15",
+          "endTime": "03:30",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [
+            "techy",
+            "bassy",
+            "filthy"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 02:15 - 03:30",
+          "performanceId": "PID-2495fb10-e82e-4ef6-9e09-9e9f18a56c9d"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "R | V ^ H",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "03:30",
+          "endTime": "05:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "deep hypnotic techno bangers"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 03:30 - 05:00",
+          "performanceId": "PID-8aa8df19-74fe-40bb-943f-107967c39542"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "Skye Phoenix",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "19:30",
+          "endTime": "20:30",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "world beat"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 19:30 - 20:30",
+          "performanceId": "PID-7580aef7-88fd-4398-9808-a3c301954cad"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "Selayne",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "20:30",
+          "endTime": "22:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [
+            "sunset",
+            "disco house"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 20:30 - 22:00",
+          "performanceId": "PID-17e7647e-97bd-47b7-acb4-8d10d409eb9d"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "Audacity",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "23:00",
+          "endTime": "23:59",
+          "durationHours": 0.98,
+          "crossesMidnight": false,
+          "tags": [
+            "dirty sexy bass"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:00 - 23:59",
+          "performanceId": "PID-9ef0ec23-d69d-4b13-999b-a1f7cb60f029"
+        },
+        {
+          "owner": "SKYBAR",
+          "ownerType": "sound_stage",
+          "title": "Big Top",
+          "description": "",
+          "day": "Monday",
+          "startTime": "00:00",
+          "endTime": "02:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "late night groooooves"
+          ],
+          "socialList": [],
+          "rawTimeText": "Monday 00:00 - 02:00",
+          "performanceId": "PID-b5e33f78-e5a5-49e0-a7f6-e5d2fb19a3ab"
+        }
+      ]
+    },
+    {
+      "name": "Thirsty Bar",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Pirate Warming",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 18:00 - 19:00",
+          "performanceId": "PID-13f4a33c-0747-4566-a67e-cba62fa2de64"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "shawnessy",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 19:00 - 20:00",
+          "performanceId": "PID-695311ce-52dd-43f2-bb92-445c9ab8b9e7"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Sassbot",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 20:00 - 21:00",
+          "performanceId": "PID-a9cd085d-8e6f-4331-abf0-f871a37854cb"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "SoS",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "21:00",
+          "endTime": "00:00",
+          "durationHours": 3,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 21:00 - 00:00",
+          "performanceId": "PID-c57ae4d5-bf85-4cb6-a5f4-0a91a0bf7784"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Prrsephone",
+          "description": "",
+          "day": "Friday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 00:00 - 01:00",
+          "performanceId": "PID-37db2a2b-f8a6-4399-8ab8-cc287b68d132"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Rythmicon",
+          "description": "",
+          "day": "Friday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 01:00 - 02:00",
+          "performanceId": "PID-71f8104d-1144-4aed-a19e-538e9d4ed2e5"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Grippy",
+          "description": "",
+          "day": "Friday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 13:00 - 14:00",
+          "performanceId": "PID-51224eff-5440-4b5b-a975-d689093cea3e"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Guru",
+          "description": "",
+          "day": "Friday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 14:00 - 15:00",
+          "performanceId": "PID-09db9a0d-6cb9-48ce-bcd3-df4a589a99ab"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "SoS",
+          "description": "",
+          "day": "Friday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 15:00 - 16:00",
+          "performanceId": "PID-4e9c7af5-1ce7-4cfc-80e2-57dc7ca431b5"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "DRTSQRL/Akela",
+          "description": "",
+          "day": "Friday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 16:00 - 17:00",
+          "performanceId": "PID-a847ac30-ab50-4753-b8ff-aa46e8cdcfee"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Space Tiger",
+          "description": "",
+          "day": "Friday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 17:00 - 18:00",
+          "performanceId": "PID-570c9a67-c55a-4006-b817-3fefb93fdeee"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Milf Maid",
+          "description": "",
+          "day": "Friday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 18:00 - 19:00",
+          "performanceId": "PID-bbecf64b-f540-4d52-8851-67e649d7cbd8"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "DJ Angers Guilty Pleasure",
+          "description": "",
+          "day": "Friday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 19:00 - 20:00",
+          "performanceId": "PID-3ab510d8-98fe-46d0-b6aa-67d9ecb7fa3a"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Fram3s",
+          "description": "",
+          "day": "Friday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 20:00 - 21:00",
+          "performanceId": "PID-32443602-fe62-4601-b8ff-0d5022e0dbb3"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Boat Daddy",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:00",
+          "endTime": "22:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 21:00 - 22:00",
+          "performanceId": "PID-96312797-cc29-4633-9c45-460a857b558d"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Jojo Dancer",
+          "description": "",
+          "day": "Friday",
+          "startTime": "22:00",
+          "endTime": "23:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 22:00 - 23:00",
+          "performanceId": "PID-248b0505-0607-46c1-a359-fc54edaa0946"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Lucy Ford",
+          "description": "",
+          "day": "Friday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [
+            "ukg"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 23:00 - 00:00",
+          "performanceId": "PID-603217a6-ad34-45c0-bf76-46341fbdcc0b"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Wookie",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 00:00 - 01:00",
+          "performanceId": "PID-13b3b2de-6f1c-4008-8ed5-4e44cd194cf9"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Guru",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 01:00 - 02:00",
+          "performanceId": "PID-e169c5b0-bc78-42e1-856e-1381147486d7"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Reggae Wake & Bake",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 12:00 - 13:00",
+          "performanceId": "PID-3327390b-8ddc-4fe3-a40b-89aadb49f9c4"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Beats n Teats",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 13:00 - 14:00",
+          "performanceId": "PID-10481e46-3795-4234-a740-e8e21d9f7b3c"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Skullyboy/Skatie",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 14:00 - 15:00",
+          "performanceId": "PID-8910ffd3-3ba3-4dc1-9886-e485c239eb6b"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "OhmBass",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 15:00 - 16:00",
+          "performanceId": "PID-cff16a74-769d-4ec1-9fa7-77ccc54305f1"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Random Citizen/Norasea",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 16:00 - 17:00",
+          "performanceId": "PID-33306611-2a33-47bf-9918-58a537dadd68"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Spyne",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 17:00 - 18:00",
+          "performanceId": "PID-870e311e-60d6-4163-9b0b-3d88bdce3309"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Akela",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 18:00 - 19:00",
+          "performanceId": "PID-d533a0c0-8e05-4731-813f-d8fb8efcd756"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "DJ All Good",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 19:00 - 20:00",
+          "performanceId": "PID-37940193-7f2e-4d12-aaa1-5047e6c20743"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Sarah Hannah",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 23:00 - 00:00",
+          "performanceId": "PID-f0e40d99-5172-41aa-9a01-67dc208f4a7f"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Logik",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 00:00 - 01:00",
+          "performanceId": "PID-b2e40bfc-7b3f-48a6-bc54-56fc2fdaa418"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "DylPrickle",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 01:00 - 02:00",
+          "performanceId": "PID-afdc133c-3794-4bb0-a5df-03c9d66772cb"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Luxuryus",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "13:00",
+          "endTime": "14:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 13:00 - 14:00",
+          "performanceId": "PID-8713a533-da79-467e-88be-57d3fd7ead97"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Nix",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "14:00",
+          "endTime": "15:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 14:00 - 15:00",
+          "performanceId": "PID-a96c758b-cc53-4182-9650-bf132efc5e8e"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Cheesler",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 15:00 - 16:00",
+          "performanceId": "PID-5b256277-7dd3-4278-aae7-4ec2c5400e9c"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Matty Reed",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-f4754662-6c25-42d5-a5a0-019269f4391a"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Big Top",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:00 - 18:00",
+          "performanceId": "PID-44c5e145-90ee-4c74-a442-8ee70bb4f845"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "TheFunkySlab",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "18:00",
+          "endTime": "19:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 18:00 - 19:00",
+          "performanceId": "PID-3e8ffb77-8604-49c3-a72b-b10c8d317902"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Bpm Babe",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "19:00",
+          "endTime": "20:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 19:00 - 20:00",
+          "performanceId": "PID-1386e27a-dfcc-432f-b885-9d1b03da8d89"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "DJ Leanne",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "23:00",
+          "endTime": "00:00",
+          "durationHours": 1,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:00 - 00:00",
+          "performanceId": "PID-2589b33e-714d-4376-a949-efd0769cefc8"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Trust",
+          "description": "",
+          "day": "Monday",
+          "startTime": "00:00",
+          "endTime": "01:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Monday 00:00 - 01:00",
+          "performanceId": "PID-b3646332-3b6f-4eb6-86c0-b00a245f373c"
+        },
+        {
+          "owner": "Thirsty Bar",
+          "ownerType": "sound_stage",
+          "title": "Sleepy",
+          "description": "",
+          "day": "Monday",
+          "startTime": "01:00",
+          "endTime": "02:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Monday 01:00 - 02:00",
+          "performanceId": "PID-1153ad77-fa8c-4fed-b82a-f5adc43161bd"
+        }
+      ]
+    },
+    {
+      "name": "Under The Mother Tree",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Cosmic Druid - Martin Crawford",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 20:00 - 21:00",
+          "performanceId": "PID-c02b804a-dc26-4e94-91dd-4753e21b300a"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Leave No Trace - Tracy",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "21:00",
+          "endTime": "22:45",
+          "durationHours": 1.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 21:00 - 22:45",
+          "performanceId": "PID-f28eb382-bfb2-48de-8aa9-1f8f05d7cf43"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Eon Dusk - Ian MacKenzie",
+          "description": "",
+          "day": "Thursday",
+          "startTime": "22:45",
+          "endTime": "00:30",
+          "durationHours": 1.75,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Thursday 22:45 - 00:30",
+          "performanceId": "PID-94b67dee-69bc-4a5c-a460-9451d8dd7b59"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Bohealo - Kayle",
+          "description": "",
+          "day": "Friday",
+          "startTime": "00:30",
+          "endTime": "02:15",
+          "durationHours": 1.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 00:30 - 02:15",
+          "performanceId": "PID-f8fa7171-25ab-4ea9-856b-9a739d555541"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Sound Bath - Sylvia",
+          "description": "",
+          "day": "Friday",
+          "startTime": "02:15",
+          "endTime": "03:00",
+          "durationHours": 0.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 02:15 - 03:00",
+          "performanceId": "PID-9b7ad738-76c1-4655-b2f2-851363476c06"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Dream Fish / Tali",
+          "description": "",
+          "day": "Friday",
+          "startTime": "18:30",
+          "endTime": "20:00",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 18:30 - 20:00",
+          "performanceId": "PID-89d39a05-3ccb-42fa-8553-ba89afd5d8a9"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Trus@migo - Amit",
+          "description": "",
+          "day": "Friday",
+          "startTime": "20:00",
+          "endTime": "21:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 20:00 - 21:00",
+          "performanceId": "PID-5bab1f4d-186d-465e-b626-3273d1f37454"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Amber Wolf Moon",
+          "description": "",
+          "day": "Friday",
+          "startTime": "21:00",
+          "endTime": "22:45",
+          "durationHours": 1.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 21:00 - 22:45",
+          "performanceId": "PID-57530169-13d7-4387-bece-fd1037c76965"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Mossy Tree (Felix)",
+          "description": "",
+          "day": "Friday",
+          "startTime": "22:45",
+          "endTime": "00:30",
+          "durationHours": 1.75,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Friday 22:45 - 00:30",
+          "performanceId": "PID-2e6b7c8d-114b-45d8-a143-df5a4199930f"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Syd Deerwalker",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "00:30",
+          "endTime": "02:15",
+          "durationHours": 1.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 00:30 - 02:15",
+          "performanceId": "PID-b8f19c8a-86e2-4ff3-bf63-5717c5a0901c"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Arctic Fox - Tove ending with soundbath",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "02:15",
+          "endTime": "03:30",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 02:15 - 03:30",
+          "performanceId": "PID-bd89973d-4231-41c0-8ea8-8eedf5136af9"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Spruce Lee (Ecstatic Dance)",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "11:00",
+          "endTime": "12:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 11:00 - 12:30",
+          "performanceId": "PID-54a031aa-7751-4dd0-8f29-82c3820c2131"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Asha Marie (World Tree Alchemy Dance)",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "16:30",
+          "endTime": "18:30",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 16:30 - 18:30",
+          "performanceId": "PID-7f9eea23-4ca1-445b-9170-333efc4c4ad8"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Dream Fish / Tali",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "18:30",
+          "endTime": "21:00",
+          "durationHours": 2.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 18:30 - 21:00",
+          "performanceId": "PID-84e7cef2-5f10-496b-a6b1-126e121fe117"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Aaron/ DJ DRIEM",
+          "description": "",
+          "day": "Saturday",
+          "startTime": "23:00",
+          "endTime": "00:45",
+          "durationHours": 1.75,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Saturday 23:00 - 00:45",
+          "performanceId": "PID-b7c2878c-0a84-4f7c-bda2-946211ec9384"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Spruce Lee - Andrew Lee",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "00:45",
+          "endTime": "02:15",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 00:45 - 02:15",
+          "performanceId": "PID-aa1b7c69-7ecd-40b8-8c62-85b54156d7cd"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Willow & Safiya ending with soundbath",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "02:15",
+          "endTime": "03:30",
+          "durationHours": 1.25,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 02:15 - 03:30",
+          "performanceId": "PID-b1302731-1254-4169-8e4d-c804168e396a"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Mossy Tree & Amber Wolf Moon (Ecstatic Dance)",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "11:00",
+          "endTime": "12:30",
+          "durationHours": 1.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 11:00 - 12:30",
+          "performanceId": "PID-3fce4650-cec4-4ab6-97cd-25f3733c77d1"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Mossy Tree - Felix (ambient or downtempo mix)",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "18:00",
+          "endTime": "20:30",
+          "durationHours": 2.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 18:00 - 20:30",
+          "performanceId": "PID-aaf5d21c-c88f-42fd-8338-0b1da371660a"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Prima Materia (Marty Mellway)",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "23:00",
+          "endTime": "00:45",
+          "durationHours": 1.75,
+          "crossesMidnight": true,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 23:00 - 00:45",
+          "performanceId": "PID-379beeff-2632-40f8-8289-2cf5532de2a2"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Miss Mar (Marna)",
+          "description": "",
+          "day": "Monday",
+          "startTime": "00:45",
+          "endTime": "02:30",
+          "durationHours": 1.75,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Monday 00:45 - 02:30",
+          "performanceId": "PID-12301150-ef90-4dce-8921-e09b098f1a90"
+        },
+        {
+          "owner": "Under The Mother Tree",
+          "ownerType": "sound_stage",
+          "title": "Soundbath with Ember Jade",
+          "description": "",
+          "day": "Monday",
+          "startTime": "02:30",
+          "endTime": "03:00",
+          "durationHours": 0.5,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Monday 02:30 - 03:00",
+          "performanceId": "PID-5e0a840f-2723-4e92-a82c-5a5fc0cfd79c"
+        }
+      ]
+    }
+  ]
+}

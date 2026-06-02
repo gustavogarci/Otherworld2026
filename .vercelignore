@@ -1,10 +1,12 @@
 admin/
 scripts/
 screenshots/
+mockups/
 docs/
 .github/
 *.php
 *.pdf
+music.csv
 node_modules/
 package*.json
 README.md
