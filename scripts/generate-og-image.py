@@ -9,6 +9,7 @@ cropped square icon.
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -24,8 +25,8 @@ SIZE = (1200, 630)
 LOGO_WIDTH_FRAC = 0.62
 
 
-def main() -> int:
-    logo = Image.open(ROOT / "logo.png").convert("RGBA")
+def build(logo_path: Path, out_path: Path) -> None:
+    logo = Image.open(logo_path).convert("RGBA")
     banner = Image.new("RGB", SIZE, BG)
 
     target_w = int(SIZE[0] * LOGO_WIDTH_FRAC)
@@ -37,9 +38,26 @@ def main() -> int:
     y = (SIZE[1] - target_h) // 2
     banner.paste(logo_resized, (x, y), logo_resized)
 
-    out = ROOT / "og-image.png"
-    banner.save(out, format="PNG", compress_level=1)
-    print(f"wrote {out.name} ({SIZE[0]}x{SIZE[1]})")
+    banner.save(out_path, format="PNG", compress_level=1)
+    print(f"wrote {out_path.name} ({SIZE[0]}x{SIZE[1]})")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--logo",
+        type=Path,
+        default=ROOT / "logo.png",
+        help="Path to the transparent wordmark PNG (default: logo.png).",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "og-image.png",
+        help="Output banner path (default: og-image.png).",
+    )
+    args = parser.parse_args()
+    build(args.logo, args.out)
     return 0
 
 
