@@ -2,13 +2,13 @@
   "metadata": {
     "source": "Dancing Decibels — Otherworld live event JSON",
     "attribution": "Schedule data courtesy of Dancing Decibels (dancingdecibels.com).",
-    "generatedAt": "2026-06-03T21:29:21.313Z",
-    "eventCount": 358,
+    "generatedAt": "2026-06-03T23:17:50.209Z",
+    "eventCount": 359,
     "entryCount": 12,
     "crossesMidnightCount": 38,
     "countsByDay": {
       "Thursday": 33,
-      "Friday": 111,
+      "Friday": 112,
       "Saturday": 110,
       "Sunday": 93,
       "Monday": 11
@@ -16,8 +16,8 @@
     "upstream": {
       "eventId": "EID-b3d48645-068c-4a87-9f48-7bdc807b7f00",
       "eventYear": 2026,
-      "yearDataVersion": 73,
-      "artistVersion": 232
+      "yearDataVersion": 74,
+      "artistVersion": 234
     }
   },
   "entries": [
@@ -4033,13 +4033,15 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Open Decks",
-          "description": "",
+          "description": "Swing by and put your name on the list, first come, first served. No tech, no fuss. Bring your USB and spin some tunes on our CDJ's.",
           "day": "Thursday",
           "startTime": "17:00",
           "endTime": "21:00",
           "durationHours": 4,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "wild music"
+          ],
           "socialList": [],
           "rawTimeText": "Thursday 17:00 - 21:00",
           "performanceId": "PID-ccc20b18-d45c-48e2-8546-a740bf461233"
@@ -4048,14 +4050,18 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Sleepy Dan",
-          "description": "",
+          "description": "Does what he says on the tin, come by and chill.",
           "day": "Thursday",
           "startTime": "21:00",
           "endTime": "22:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "chill"
+          ],
+          "socialList": [
+            "https://www.instagram.com/sleepy.music.dj/"
+          ],
           "rawTimeText": "Thursday 21:00 - 22:00",
           "performanceId": "PID-e3f13001-185b-4897-9eaa-e0d9b0c4eae3"
         },
@@ -4063,13 +4069,15 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Cottage Welcome Party",
-          "description": "",
+          "description": "Enjoy a warm welcome to our burn from The Cottage resident DJ's.",
           "day": "Thursday",
           "startTime": "22:00",
           "endTime": "23:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "upbeat"
+          ],
           "socialList": [],
           "rawTimeText": "Thursday 22:00 - 23:00",
           "performanceId": "PID-acba9ba4-5e5d-415b-bc6f-dddb43175d28"
@@ -4078,14 +4086,20 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Vital Signs",
-          "description": "",
+          "description": "The pinnacle of BC DJ duo's, they're gonna rock your world.",
           "day": "Thursday",
           "startTime": "23:00",
           "endTime": "00:00",
           "durationHours": 1,
           "crossesMidnight": true,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "bouncy house",
+            "fun garage"
+          ],
+          "socialList": [
+            "https://soundcloud.com/ingridhakanson",
+            "https://soundcloud.com/dj-surgeon"
+          ],
           "rawTimeText": "Thursday 23:00 - 00:00",
           "performanceId": "PID-1b223789-5ce0-4cce-bd64-5838908ececc"
         },
@@ -4093,28 +4107,52 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Torsheedeh",
-          "description": "",
+          "description": "Sultry vocals, smooth rhythms, infectious grooves and dynamic energy.",
           "day": "Friday",
           "startTime": "00:00",
           "endTime": "01:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "groovy rhythms"
+          ],
+          "socialList": [
+            "https://soundcloud.com/user-706963903"
+          ],
           "rawTimeText": "Friday 00:00 - 01:00",
           "performanceId": "PID-4f28c779-012e-40ad-b6a6-28cb90d32486"
         },
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "90's + Indie Sleeze",
-          "description": "",
+          "title": "100,000 Watts of Allan Watts",
+          "description": "Download infinite wisdom from the foremost philosopher while your ears are treated to a music journey.",
+          "day": "Friday",
+          "startTime": "12:00",
+          "endTime": "13:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [
+            "philosophy",
+            "chill"
+          ],
+          "socialList": [],
+          "rawTimeText": "Friday 12:00 - 13:00",
+          "performanceId": "PID-771663ae-4ac3-4b05-ba2b-c263b9a5c112"
+        },
+        {
+          "owner": "The Cottage",
+          "ownerType": "sound_stage",
+          "title": "Indie Sleeze",
+          "description": "Remember why you love, and hate, this period in musical history.",
           "day": "Friday",
           "startTime": "13:00",
           "endTime": "14:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "90's"
+          ],
           "socialList": [],
           "rawTimeText": "Friday 13:00 - 14:00",
           "performanceId": "PID-060566e9-6e48-4504-8a74-5e81df557299"
@@ -4122,14 +4160,16 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "80's (Ski Lodge 86)",
-          "description": "",
+          "title": "Ski Lodge",
+          "description": "Jump in the hot tub and time travel with us (hot tubs not included)",
           "day": "Friday",
           "startTime": "14:00",
           "endTime": "15:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "80's"
+          ],
           "socialList": [],
           "rawTimeText": "Friday 14:00 - 15:00",
           "performanceId": "PID-5c8fd228-57db-49fc-a02e-3b7d6806609f"
@@ -4137,14 +4177,16 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "70's (Studio 54)",
-          "description": "",
+          "title": "Studio 54",
+          "description": "Bring your flared pants and dirtiest dancing!",
           "day": "Friday",
           "startTime": "15:00",
           "endTime": "16:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "70's"
+          ],
           "socialList": [],
           "rawTimeText": "Friday 15:00 - 16:00",
           "performanceId": "PID-d1b7d75a-ac7b-42a2-9949-a709ded9ee25"
@@ -4153,14 +4195,20 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Stellar Jay",
-          "description": "",
+          "description": "Come for the funky bass, stay for the silly grin.",
           "day": "Friday",
           "startTime": "16:00",
           "endTime": "17:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "funk",
+            "bass",
+            "dance"
+          ],
+          "socialList": [
+            "https://soundcloud.com/djstellarjay"
+          ],
           "rawTimeText": "Friday 16:00 - 17:00",
           "performanceId": "PID-8c6fa6c6-dc10-42df-a02d-4b7ba2358dbc"
         },
@@ -4168,14 +4216,19 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Red Dragon",
-          "description": "",
+          "description": "A DJ, producer, and self-proclaimed purveyor of party, Red Dragon blends nostalgic energy with raw, sexy house and techno to keep dancefloors moving from start to finish.",
           "day": "Friday",
           "startTime": "17:00",
           "endTime": "18:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "house",
+            "techno"
+          ],
+          "socialList": [
+            "https://www.mixcloud.com/_Red_Dragon_/"
+          ],
           "rawTimeText": "Friday 17:00 - 18:00",
           "performanceId": "PID-5e1c853f-5ff7-48cb-ab16-b5ae29b221de"
         },
@@ -4183,29 +4236,39 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "High Pivot",
-          "description": "",
+          "description": "This Vancouver based dj wear many (silly) hats! Come find out and pick from the mix of techno, break-beats, d&b and more!",
           "day": "Friday",
           "startTime": "18:00",
           "endTime": "19:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "techno",
+            "break beats",
+            "drum & bass"
+          ],
+          "socialList": [
+            "https://soundcloud.com/highpivot"
+          ],
           "rawTimeText": "Friday 18:00 - 19:00",
           "performanceId": "PID-a990303b-4493-4681-a929-b1e98627ff60"
         },
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "Jo Jo Dancer",
-          "description": "",
+          "title": "JoJo Dancer",
+          "description": "Inspired by Vancouver Island’s underground scene, Jo-Jo has developed a knack for driving tech-house sets that keep bodies moving and spirits high.",
           "day": "Friday",
           "startTime": "19:00",
           "endTime": "20:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "tech house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/jo-jodancer"
+          ],
           "rawTimeText": "Friday 19:00 - 20:00",
           "performanceId": "PID-690d841c-b722-4c31-89ab-8e5ff15ec151"
         },
@@ -4213,28 +4276,35 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Sowa",
-          "description": "",
+          "description": "At home on dance floors of every kind, Sowa (they/she) blends house music with subtle touches of ambient and techno.",
           "day": "Friday",
           "startTime": "20:00",
           "endTime": "21:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "techno",
+            "ambient"
+          ],
+          "socialList": [
+            "https://soundcloud.com/dj_sowa"
+          ],
           "rawTimeText": "Friday 20:00 - 21:00",
           "performanceId": "PID-b311216f-f6e1-4073-acc0-da1a1daf83fd"
         },
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "MYSTER DJ HOUR",
-          "description": "",
+          "title": "MYSTERY DJ HOUR",
+          "description": "Much like a box of chocolates, you never know which one you're gonna get.",
           "day": "Friday",
           "startTime": "21:00",
           "endTime": "22:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "surprise"
+          ],
           "socialList": [],
           "rawTimeText": "Friday 21:00 - 22:00",
           "performanceId": "PID-e453738f-6249-4b63-b600-deedb594e289"
@@ -4243,14 +4313,18 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Entrained",
-          "description": "",
+          "description": "A Vancouver native and recovering Goth, Entrained transforms his love of club culture and festival life into vibrant, hedonistic house sets.",
           "day": "Friday",
           "startTime": "22:00",
           "endTime": "23:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/entrained"
+          ],
           "rawTimeText": "Friday 22:00 - 23:00",
           "performanceId": "PID-5a771dce-04f1-4f5f-810c-d6b8f3fe2eb1"
         },
@@ -4258,28 +4332,36 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Mozya",
-          "description": "",
+          "description": "Founder of Ruffneck Sound, this Vancouver-based bass music devotee blends UKG, breaks, DnB, and jungle into high-energy sets built for the dancefloor",
           "day": "Friday",
           "startTime": "23:00",
           "endTime": "00:00",
           "durationHours": 1,
           "crossesMidnight": true,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "ukg",
+            "breaks",
+            "dnb"
+          ],
+          "socialList": [
+            "https://soundcloud.com/mozyachunes"
+          ],
           "rawTimeText": "Friday 23:00 - 00:00",
           "performanceId": "PID-65fc8e91-f907-49f8-bcbc-4cede2d6c657"
         },
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "Hypthenated",
-          "description": "",
+          "title": "Hyphenated",
+          "description": "Hyphenated is a 15-year DJ and yearly Burner known for soulful bass music and ecstatic dance journeys. Blending deep 140, world music and heart-opening energy, he creates sets that invite depth, freedom, and full-body expression.",
           "day": "Saturday",
           "startTime": "00:00",
           "endTime": "01:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "psychedlich electronica"
+          ],
           "socialList": [],
           "rawTimeText": "Saturday 00:00 - 01:00",
           "performanceId": "PID-b1be91a7-d0a4-4abe-8688-ee9feddf772b"
@@ -4288,32 +4370,37 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Lucy Ford",
-          "description": "",
+          "description": "Mixing since 2004, this Victoria-based breakbeat enthusiast crafts genre-spanning journeys rooted in rhythm, energy, and underground culture.",
           "day": "Saturday",
           "startTime": "01:00",
           "endTime": "02:00",
           "durationHours": 1,
           "crossesMidnight": false,
           "tags": [
-            "deep dubstep",
-            "140"
+            "breakbeat"
           ],
-          "socialList": [],
+          "socialList": [
+            "https://soundcloud.com/djlucyford"
+          ],
           "rawTimeText": "Saturday 01:00 - 02:00",
           "performanceId": "PID-25d12a17-d861-4666-b238-36eb6c762825"
         },
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "Into the MIstic ~ Ecstatic Dance ~ with Leave No Trace",
-          "description": "",
+          "title": "Into the Mistic – Ecstatic Dance ~ With Leave No Trace",
+          "description": "Come release trapped energy and freely move your body with the joyful beats of LNT",
           "day": "Saturday",
           "startTime": "11:30",
           "endTime": "13:00",
           "durationHours": 1.5,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "ecstatic dance"
+          ],
+          "socialList": [
+            "https://soundcloud.com/lntrace"
+          ],
           "rawTimeText": "Saturday 11:30 - 13:00",
           "performanceId": "PID-b839ff23-6080-4fc7-890a-bb7d4c026926"
         },
@@ -4321,13 +4408,15 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Partners Dance w/Nemo",
-          "description": "",
+          "description": "Come and dance away with Nemo! Bring a partner or find one here!",
           "day": "Saturday",
           "startTime": "13:00",
           "endTime": "14:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "workshop"
+          ],
           "socialList": [],
           "rawTimeText": "Saturday 13:00 - 14:00",
           "performanceId": "PID-67a22de5-0860-4640-8972-acf87621db87"
@@ -4335,14 +4424,16 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "Big Tom's Soul Patrol",
-          "description": "",
+          "title": "The Big Soul Patrol",
+          "description": "Work on that afro haircut and unapologetically dive straight into that Motown and 70s groove with Big Tom Patrol",
           "day": "Saturday",
           "startTime": "14:00",
           "endTime": "15:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "soul"
+          ],
           "socialList": [],
           "rawTimeText": "Saturday 14:00 - 15:00",
           "performanceId": "PID-04e472a6-fccd-4bce-ab76-4d8c0c3f988d"
@@ -4351,13 +4442,15 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Latin Heat",
-          "description": "",
+          "description": "Shake those maracas! It's time to get muy caliente and feel that latin heat with Esteban",
           "day": "Saturday",
           "startTime": "15:00",
           "endTime": "16:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "latin"
+          ],
           "socialList": [],
           "rawTimeText": "Saturday 15:00 - 16:00",
           "performanceId": "PID-a296bcf7-0ddd-418a-86f2-80408873f20b"
@@ -4366,13 +4459,15 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Italo Disco con Paolo",
-          "description": "",
+          "description": "It's 4pm and who doesn't need an espresso break and a little biscotti? Will pair that with some 100% Made in Italy Disco beats so you feel right on a Roman Holiday (in the 80s)",
           "day": "Saturday",
           "startTime": "16:00",
           "endTime": "17:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "italian classics"
+          ],
           "socialList": [],
           "rawTimeText": "Saturday 16:00 - 17:00",
           "performanceId": "PID-1e13609e-2858-4585-b429-0cfad7474fb3"
@@ -4381,14 +4476,21 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Poppa Champagne",
-          "description": "",
+          "description": "Poppa Champagne blends bass, tech, acid, disco, and funky house into effervescent sets that keep the dancefloor bubbling from start to finish.",
           "day": "Saturday",
           "startTime": "17:00",
           "endTime": "18:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "tech",
+            "acid",
+            "disco",
+            "funky house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/poppa-champagne"
+          ],
           "rawTimeText": "Saturday 17:00 - 18:00",
           "performanceId": "PID-4e0159d6-5269-42cb-85bd-cc524c1c9bea"
         },
@@ -4396,7 +4498,7 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "DJ TAKEOVER: Really Lost Penguins",
-          "description": "",
+          "description": "Ooops, they lost their way again and ended up at The Cottage.",
           "day": "Saturday",
           "startTime": "18:00",
           "endTime": "20:00",
@@ -4411,29 +4513,38 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Leave No Trace",
-          "description": "",
+          "description": "From bass and drum & bass to organic house, melodic techno, and psytrance, LNT genre-spanning sets ignite dancefloors and leave a spark in every dancing soul.",
           "day": "Saturday",
           "startTime": "20:00",
-          "endTime": "21:00",
-          "durationHours": 1,
+          "endTime": "21:30",
+          "durationHours": 1.5,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
-          "rawTimeText": "Saturday 20:00 - 21:00",
+          "tags": [
+            "drum & bass",
+            "organic house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/lntrace"
+          ],
+          "rawTimeText": "Saturday 20:00 - 21:30",
           "performanceId": "PID-355255aa-67cc-46a2-b22c-1e51128dd582"
         },
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Audacity",
-          "description": "",
+          "description": "A Vancouver underground favourite, Audacity has built a reputation for deep selections, seamless blends, and relentless grooves, combining diverse genres with a distinctive Latin touch.",
           "day": "Saturday",
           "startTime": "23:00",
           "endTime": "00:00",
           "durationHours": 1,
           "crossesMidnight": true,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "latin infused multi-genre electro"
+          ],
+          "socialList": [
+            "https://soundcloud.com/audacity604"
+          ],
           "rawTimeText": "Saturday 23:00 - 00:00",
           "performanceId": "PID-fea43a42-8f6d-49f0-a888-481529463475"
         },
@@ -4441,13 +4552,15 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "MYSTERY DJ HOUR",
-          "description": "",
+          "description": "Much like a box of chocolates, you never know which one you're gonna get.",
           "day": "Sunday",
           "startTime": "00:00",
           "endTime": "01:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "surprise"
+          ],
           "socialList": [],
           "rawTimeText": "Sunday 00:00 - 01:00",
           "performanceId": "PID-360344a5-93c3-497a-9afe-0c8bf9656ce5"
@@ -4456,14 +4569,18 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Peazy",
-          "description": "",
+          "description": "Vancouve based dubstep for y'all! Come and slay!",
           "day": "Sunday",
           "startTime": "01:00",
           "endTime": "02:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "dubstep"
+          ],
+          "socialList": [
+            "https://soundcloud.com/peazyinthemix"
+          ],
           "rawTimeText": "Sunday 01:00 - 02:00",
           "performanceId": "PID-213edb33-d9ce-4951-a59f-efe88b7e1c5c"
         },
@@ -4471,7 +4588,7 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Dad's Yacht Rock",
-          "description": "",
+          "description": "Kick back, wear your sunglasses and be ready to rock on! This yatch will cruise on familiar, nostalgic water!",
           "day": "Sunday",
           "startTime": "12:00",
           "endTime": "13:00",
@@ -4488,7 +4605,7 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "The Garden Grove",
-          "description": "",
+          "description": "Ska, just like rock and punk, is very much alive. You just need to come and find it ;)",
           "day": "Sunday",
           "startTime": "13:00",
           "endTime": "14:00",
@@ -4505,15 +4622,14 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Dub Roots Science",
-          "description": "",
+          "description": "Come experience reggae, dub and rasta culture vibes! Peeeaceee!",
           "day": "Sunday",
           "startTime": "14:00",
           "endTime": "15:00",
           "durationHours": 1,
           "crossesMidnight": false,
           "tags": [
-            "reggae",
-            "dub"
+            "reggae dub"
           ],
           "socialList": [],
           "rawTimeText": "Sunday 14:00 - 15:00",
@@ -4523,7 +4639,7 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Straight Outta Cottage",
-          "description": "",
+          "description": "We too are from the ghetto, yo! Come and get a taste of The Cottage truth. [Parental Advisory]",
           "day": "Sunday",
           "startTime": "15:00",
           "endTime": "16:00",
@@ -4540,14 +4656,16 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "DJ TAKEOVER: Recovery HOuse",
-          "description": "",
+          "title": "DJ TAKEOVER: Recovery House",
+          "description": "Spinning beats and saving lives, one dance floor at a time.",
           "day": "Sunday",
           "startTime": "16:00",
           "endTime": "18:00",
           "durationHours": 2,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "takeover beats"
+          ],
           "socialList": [],
           "rawTimeText": "Sunday 16:00 - 18:00",
           "performanceId": "PID-e6d732c6-3a8b-4971-a45e-4f66e59b224d"
@@ -4555,15 +4673,20 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "Ebrico",
-          "description": "",
+          "title": "Ebirico",
+          "description": "Ebirico serves up a vibrant mix of Spanish, Latin, and Afro-house flavors, creating irresistible grooves and booty-shaking drops that hit hard and linger long after the music stops.",
           "day": "Sunday",
           "startTime": "18:00",
           "endTime": "19:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "latin",
+            "afro-house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/ebirico"
+          ],
           "rawTimeText": "Sunday 18:00 - 19:00",
           "performanceId": "PID-04897f1a-6d19-4296-92b3-ee457c3f1035"
         },
@@ -4571,14 +4694,21 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Barnes & Barnes",
-          "description": "",
+          "description": "With roots in classical music and 15 years behind the decks, B&B weaves house, techno, DnB, grime, and UKG into eclectic journeys that keep dancefloors moving and guessing.",
           "day": "Sunday",
           "startTime": "19:00",
           "endTime": "20:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "house",
+            "tech",
+            "dnb",
+            "grime"
+          ],
+          "socialList": [
+            "https://soundcloud.com/barnesandbarnes"
+          ],
           "rawTimeText": "Sunday 19:00 - 20:00",
           "performanceId": "PID-12aae562-5402-4130-875d-f76b78e9e54a"
         },
@@ -4586,14 +4716,18 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "Astro Child",
-          "description": "",
+          "description": "A true raver at heart, Astro Child keeps crowds moving through euphoric highs, deep grooves, and fearless genre-hopping.",
           "day": "Sunday",
           "startTime": "23:00",
           "endTime": "00:00",
           "durationHours": 1,
           "crossesMidnight": true,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "multi-genre electro"
+          ],
+          "socialList": [
+            "https://soundcloud.com/astrochildmusic"
+          ],
           "rawTimeText": "Sunday 23:00 - 00:00",
           "performanceId": "PID-daf66622-97f5-4103-b30f-fecba8ea4365"
         },
@@ -4601,13 +4735,15 @@
           "owner": "The Cottage",
           "ownerType": "sound_stage",
           "title": "MYSTERY DJ HOUR",
-          "description": "",
+          "description": "Much like a box of chocolates, you never know which one you're gonna get.",
           "day": "Monday",
           "startTime": "00:00",
           "endTime": "01:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
+          "tags": [
+            "surprise"
+          ],
           "socialList": [],
           "rawTimeText": "Monday 00:00 - 01:00",
           "performanceId": "PID-7378d991-8e4c-4515-abcf-37cb377b53ed"
@@ -4615,15 +4751,21 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "MATTYDraz",
-          "description": "",
+          "title": "MattyDraz",
+          "description": "This Bay area dj turned Vancouverite is an island first timer and ready to dish out a selection of house, bounce and funk-house for y'all!",
           "day": "Monday",
           "startTime": "01:00",
           "endTime": "02:00",
           "durationHours": 1,
           "crossesMidnight": false,
-          "tags": [],
-          "socialList": [],
+          "tags": [
+            "house",
+            "bounce",
+            "funk-house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/mattydraz"
+          ],
           "rawTimeText": "Monday 01:00 - 02:00",
           "performanceId": "PID-e298d5fc-7a6c-4024-acdc-43ba2e0d2cc3"
         }
