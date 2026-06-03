@@ -649,10 +649,12 @@
   const DATASET_KEY = "otherworld:dataset:v1";
   const DATASETS = { activities: window.OTHERWORLD_DATA, music: null };
   let activeDataset = "activities";
-  // Per-dataset memory of the facet filters so switching schedules
+  // Per-dataset memory of the facet filters (including the favorites
+  // view: off / all favorites / can't-miss only) so switching schedules
   // (activities <-> music) restores whatever the user last had selected in
-  // each. Persisted to localStorage so it also survives a reload; favorites
-  // persist under their own keys.
+  // each. Persisted to localStorage so it also survives a reload. The
+  // favorites *set* itself (which events are starred / red) stays global
+  // and persists under its own keys.
   const FILTERS_KEY = "otherworld:filters:v1";
   const datasetFilters = { activities: null, music: null };
   function loadDatasetPref() {
@@ -673,6 +675,8 @@
       state.quick = new Set(f.quick);
       state.timesOfDay = new Set(f.timesOfDay);
       state.durations = new Set(f.durations);
+      state.favoritesOnly = !!f.favoritesOnly;
+      state.favoritesRedOnly = !!f.favoritesRedOnly;
     } else {
       state.tags.clear();
       state.neighbourhoods.clear();
@@ -682,6 +686,8 @@
       state.durations.clear();
       state.search = "";
       state.day = initialDay();
+      state.favoritesOnly = false;
+      state.favoritesRedOnly = false;
     }
     const searchInput = document.getElementById("search");
     if (searchInput) searchInput.value = state.search;
@@ -701,6 +707,8 @@
       quick: new Set(state.quick),
       timesOfDay: new Set(state.timesOfDay),
       durations: new Set(state.durations),
+      favoritesOnly: state.favoritesOnly,
+      favoritesRedOnly: state.favoritesRedOnly,
     };
     const out = {};
     for (const k of ["activities", "music"]) {
@@ -715,6 +723,8 @@
         quick: [...f.quick],
         timesOfDay: [...f.timesOfDay],
         durations: [...f.durations],
+        favoritesOnly: !!f.favoritesOnly,
+        favoritesRedOnly: !!f.favoritesRedOnly,
       };
     }
     const payload = JSON.stringify(out);
@@ -745,6 +755,8 @@
         quick: toSet(f.quick),
         timesOfDay: toSet(f.timesOfDay),
         durations: toSet(f.durations),
+        favoritesOnly: f.favoritesOnly === true,
+        favoritesRedOnly: f.favoritesRedOnly === true,
       };
     }
   }
@@ -765,11 +777,12 @@
 
   // Swap the active dataset, rebuild everything derived from it, and
   // re-render. Facet filters (tags/neighbourhoods/type/search/quick/
-  // time-of-day/duration) plus the selected day are remembered per
-  // dataset, so switching schedules restores whatever the user last had
-  // selected there (defaulting to a clean slate on first visit).
-  // Favorites are intentionally preserved — their keys (camp+day+title)
-  // coexist across datasets without collision.
+  // time-of-day/duration), the selected day, and the favorites view
+  // (off / all favorites / can't-miss only) are remembered per dataset,
+  // so switching schedules restores whatever the user last had selected
+  // there (defaulting to a clean slate on first visit). The favorites
+  // *set* itself is intentionally preserved across datasets — its keys
+  // (camp+day+title) coexist without collision.
   async function setDataset(name, { rerender = true } = {}) {
     const target = name === "music" ? "music" : "activities";
     if (target === "music") {
