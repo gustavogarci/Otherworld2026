@@ -24,6 +24,12 @@ A static, mobile-first take on the same data, deployed on Vercel. The data pipel
 
 If upstream goes down, this mirror's data gets stale but nothing breaks. If this mirror goes down, the canonical site is unaffected.
 
+### Music lineup (DJ sets)
+
+The "By Stage" music dataset is a fork-specific addition with its own source. Its source of truth is the **live Dancing Decibels event feed** (`https://eventdata.dancingdecibels.com/EID-...json`), which updates continuously. A second GitHub Action (`.github/workflows/sync-music-data.yml`) fetches that feed every ~15 minutes, runs `scripts/build-music.js` to normalise its `artistPerformanceList` into the same event shape `events.json` uses, and commits the result to `music.json` — Vercel then auto-deploys.
+
+The legacy `music.csv` is no longer the source of truth (it was a one-off manual export); the live feed is. `build-music.js` still accepts either a CSV or the JSON feed, so the CSV path remains for ad-hoc local rebuilds. The committed `music.json` doubles as the offline/failure fallback: if the feed is unreachable or returns too few performances, the sync aborts and the last-good `music.json` stays in place.
+
 ---
 
 ## Philosophy / what's different
@@ -56,11 +62,12 @@ flowchart LR
   Sheet[Google Sheet] -->|hourly cron| UpstreamSite["Isaiiaas/OtherworldWWW<br/>(canonical site, runs the dashboard)"]
   UpstreamSite -->|git push| UpstreamRepo[upstream/master]
   UpstreamRepo -->|hourly GitHub Action| ForkRepo[this repo]
+  DDFeed["Dancing Decibels<br/>live event JSON"] -->|"~15 min GitHub Action (build-music.js)"| ForkRepo
   ForkRepo -->|auto-deploy on push| Vercel[Vercel]
   Vercel -->|static CDN| Reader[mobile reader]
 ```
 
-The cron + hourly reconcile happens upstream. We just pull data files (never source) and serve them.
+Activities data is pulled hourly from upstream (never source); the music lineup is rebuilt ~every 15 minutes from the live Dancing Decibels feed. Both just commit data files and let Vercel redeploy.
 
 ---
 
@@ -70,7 +77,9 @@ The cron + hourly reconcile happens upstream. We just pull data files (never sou
 index.html              # Page shell
 styles.css              # All styles
 app.js                  # All client-side logic
-events.json             # Schedule data (mirrored hourly from upstream)
+events.json             # Activities schedule (mirrored hourly from upstream)
+music.json              # DJ-set lineup (rebuilt ~every 15 min from the live Dancing Decibels feed)
+music.csv               # Legacy manual export; no longer the source of truth (not deployed)
 data.js                 # Legacy artifact, also mirrored
 map.webp                # Festival map image (fork-maintained, ~1.6 MB WebP)
 map-data.js             # Pin overlays for the map view
@@ -78,7 +87,7 @@ map-locations.json      # Pin source data
 map-labels.json         # Label clusters
 camp-aliases.json       # Camp-name typo fixes
 
-.github/workflows/      # GitHub Action that mirrors data from upstream
+.github/workflows/      # GitHub Actions: mirror activities from upstream + sync music from the live feed
 vercel.json             # Cache-Control headers
 .vercelignore           # Excludes PHP / admin / scripts from deploy
 
@@ -108,7 +117,7 @@ This repo is set up to deploy on Vercel out of the box:
 
 1. Fork it.
 2. Import the fork on [vercel.com/new](https://vercel.com/new) — framework preset "Other", no build command.
-3. (Optional but recommended) Enable the **Sync data files from upstream** GitHub Action so your fork auto-pulls fresh schedule data every hour. It's already in `.github/workflows/sync-upstream-data.yml`; you may need to manually trigger it once from the Actions tab to grant permissions.
+3. (Optional but recommended) Enable the two data-sync GitHub Actions so your fork auto-pulls fresh data: **Sync data files from upstream** (`sync-upstream-data.yml`, hourly, activities) and **Sync music data from Dancing Decibels** (`sync-music-data.yml`, ~every 15 min, DJ sets). You may need to manually trigger each once from the Actions tab to grant permissions.
 
 That's it. Every push (yours + the hourly sync) auto-deploys.
 

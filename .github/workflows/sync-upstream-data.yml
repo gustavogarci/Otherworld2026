@@ -21,8 +21,9 @@ permissions:
   contents: write
 
 concurrency:
-  # Never let two sync runs race each other.
-  group: sync-upstream
+  # Shared with sync-music-data.yml so the two data syncs serialize and
+  # never race each other's push to master.
+  group: sync-data
   cancel-in-progress: false
 
 jobs:

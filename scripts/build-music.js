@@ -193,9 +193,22 @@ function main() {
 
   const raw = fs.readFileSync(inPath, "utf8");
   let records;
-  if (inPath.toLowerCase().endsWith(".json")) {
+  // Captures the live feed's identifying fields (when the input is the
+  // Dancing Decibels event JSON) so the changelog can show which upstream
+  // version a given music.json was built from. Stays null for CSV input.
+  let sourceMeta = null;
+  const isJson = inPath.toLowerCase().endsWith(".json");
+  if (isJson) {
     const data = JSON.parse(raw);
     const list = Array.isArray(data) ? data : (data.artistPerformanceList || []);
+    if (!Array.isArray(data)) {
+      sourceMeta = {
+        eventId: data.eventId || null,
+        eventYear: data.eventYear || null,
+        yearDataVersion: data.yearDataVersion || null,
+        artistVersion: data.artistVersion || null,
+      };
+    }
     records = list.map(p => ({
       performanceId: p.performanceId || "",
       name: p.name || "",
@@ -243,13 +256,16 @@ function main() {
 
   const out = {
     metadata: {
-      source: "Dancing Decibels — Otherworld Schedule CSV",
+      source: isJson
+        ? "Dancing Decibels — Otherworld live event JSON"
+        : "Dancing Decibels — Otherworld Schedule CSV",
       attribution: "Schedule data courtesy of Dancing Decibels (dancingdecibels.com).",
       generatedAt: new Date().toISOString(),
       eventCount,
       entryCount: entries.length,
       crossesMidnightCount: crossCount,
       countsByDay: dayCounts,
+      ...(sourceMeta ? { upstream: sourceMeta } : {}),
     },
     entries,
   };
