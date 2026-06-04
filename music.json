@@ -2,25 +2,88 @@
   "metadata": {
     "source": "Dancing Decibels — Otherworld live event JSON",
     "attribution": "Schedule data courtesy of Dancing Decibels (dancingdecibels.com).",
-    "generatedAt": "2026-06-04T16:42:04.340Z",
-    "eventCount": 392,
-    "entryCount": 14,
+    "generatedAt": "2026-06-04T19:05:23.312Z",
+    "eventCount": 395,
+    "entryCount": 15,
     "crossesMidnightCount": 41,
     "countsByDay": {
       "Thursday": 33,
-      "Friday": 127,
-      "Saturday": 117,
-      "Sunday": 104,
+      "Friday": 128,
+      "Saturday": 118,
+      "Sunday": 105,
       "Monday": 11
     },
     "upstream": {
       "eventId": "EID-b3d48645-068c-4a87-9f48-7bdc807b7f00",
       "eventYear": 2026,
-      "yearDataVersion": 77,
-      "artistVersion": 286
+      "yearDataVersion": 79,
+      "artistVersion": 289
     }
   },
   "entries": [
+    {
+      "name": "Bass House Brunch Bunch",
+      "type": "sound_stage",
+      "events": [
+        {
+          "owner": "Bass House Brunch Bunch",
+          "ownerType": "sound_stage",
+          "title": "Funk out with the \"Hardy Boys\"",
+          "description": "This duo from Port Hardy, BC throw down some of the best wall to wall bangers and funky goodness.",
+          "day": "Friday",
+          "startTime": "21:00",
+          "endTime": "23:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "tech house",
+            "bass house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/muffbutter/hardy-boys-2025-tickle-trunk"
+          ],
+          "rawTimeText": "Friday 21:00 - 23:00",
+          "performanceId": "PID-552fefb8-1d0f-4556-bf14-e3a0b39b4071"
+        },
+        {
+          "owner": "Bass House Brunch Bunch",
+          "ownerType": "sound_stage",
+          "title": "Brunch and Funk out with the \"Hardy Boys\"",
+          "description": "The brunch bunch are returning with more tasty beats and delicious eats. We'll be serving the scrumptious sounds of the Hardy Boys with a delectable brunch and mimosas to start your day off right. Saturday and Sunday!\n\nAbout \n\nThis duo from Port Hardy, BC throw down some of the best wall to wall bangers and funky goodness.",
+          "day": "Saturday",
+          "startTime": "11:00",
+          "endTime": "13:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "bass house",
+            "tech house"
+          ],
+          "socialList": [
+            "https://soundcloud.com/muffbutter/hardy-boys-2025-tickle-trunk"
+          ],
+          "rawTimeText": "Saturday 11:00 - 13:00",
+          "performanceId": "PID-189e8852-f6f9-46d5-8eb0-55224ff4ee96"
+        },
+        {
+          "owner": "Bass House Brunch Bunch",
+          "ownerType": "sound_stage",
+          "title": "Brunch and Funk out with the \"Hardy Boys\"",
+          "description": "The brunch bunch are returning with more tasty beats and delicious eats. We'll be serving the scrumptious sounds of the Hardy Boys with a delectable brunch and mimosas to start your day off right. Saturday and Sunday!\n\nAbout\n\nThis duo from Port Hardy, BC throw down some of the best wall to wall bangers and funky goodness.",
+          "day": "Sunday",
+          "startTime": "11:00",
+          "endTime": "13:00",
+          "durationHours": 2,
+          "crossesMidnight": false,
+          "tags": [
+            "bassy house with a brunch punch twist"
+          ],
+          "socialList": [],
+          "rawTimeText": "Sunday 11:00 - 13:00",
+          "performanceId": "PID-296c467d-168f-4897-a547-48dcfb98ecc1"
+        }
+      ]
+    },
     {
       "name": "Boobs & Berries",
       "type": "sound_stage",
