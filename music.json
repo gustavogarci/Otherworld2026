@@ -2,7 +2,7 @@
   "metadata": {
     "source": "Dancing Decibels — Otherworld live event JSON",
     "attribution": "Schedule data courtesy of Dancing Decibels (dancingdecibels.com).",
-    "generatedAt": "2026-06-03T23:17:50.209Z",
+    "generatedAt": "2026-06-04T02:02:19.835Z",
     "eventCount": 359,
     "entryCount": 12,
     "crossesMidnightCount": 38,
@@ -16,7 +16,7 @@
     "upstream": {
       "eventId": "EID-b3d48645-068c-4a87-9f48-7bdc807b7f00",
       "eventYear": 2026,
-      "yearDataVersion": 74,
+      "yearDataVersion": 75,
       "artistVersion": 234
     }
   },
