@@ -529,13 +529,15 @@
     </div>
   </dialog>
 
-  <script src="./map-data.js?v=ecc635dd102f"></script>
-  <script src="./app.js?v=20260604-sw-auto-update"></script>
-
-  <!-- Vercel Web Analytics (no-framework / plain HTML). Counts page views. -->
+  <!-- Vercel Web Analytics (no-framework / plain HTML). Counts page views and
+       custom events. The queue stub must load BEFORE app.js so startup-time
+       custom events (e.g. the favourites backfill) are queued, not dropped. -->
   <script>
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   </script>
+  <script src="./map-data.js?v=ecc635dd102f"></script>
+  <script src="./app.js?v=20260604-sw-auto-update"></script>
+
   <script defer src="/_vercel/insights/script.js"></script>
 </body>
 

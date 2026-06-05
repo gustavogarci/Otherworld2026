@@ -1,7 +1,7 @@
 (async () => {
   // App release version, shown at the bottom of Settings under Dev tools.
   // Bump this when cutting a new tagged release.
-  const APP_VERSION = "v2.1";
+  const APP_VERSION = "v2.3";
   (function showAppVersion() {
     const el = document.getElementById("settings-version");
     if (el) el.textContent = APP_VERSION;
@@ -919,6 +919,46 @@
       (ev.day || "").trim().toLowerCase(),
       normalizeTitleForKey(ev.title || ""),
     ].join("|");
+  }
+
+  // ── Analytics (Vercel Web Analytics custom events) ───────────
+  // track() never throws into app code and no-ops when the analytics
+  // queue is absent (localhost, Hobby plan, ad-blockers).
+  function track(name, data) {
+    try { window.va && window.va("event", data ? { name, data } : { name }); }
+    catch {}
+  }
+  // Ripple Effect is the only stage we track favourites for. Reuse the
+  // existing camp normaliser so live tracking and backfill match.
+  function isRippleEffectFav(camp) {
+    return normalizeCampForKey(camp || "") === normalizeCampForKey("Ripple Effect");
+  }
+  // Per-browser memory of which favourite keys we've already emitted a
+  // `favorite` event for, so repeat toggles and the one-time backfill
+  // never double-count.
+  const FAV_TRACK_KEY = "otherworld:analytics:favSent:v1";
+  let favTrackSent = (() => {
+    try { return new Set(JSON.parse(localStorage.getItem(FAV_TRACK_KEY) || "[]")); }
+    catch { return new Set(); }
+  })();
+  function saveFavTrackSent() {
+    try { localStorage.setItem(FAV_TRACK_KEY, JSON.stringify([...favTrackSent])); } catch {}
+  }
+  // One-time backfill: emit a `favorite` for every Ripple Effect set the
+  // user already has favourited (from before analytics shipped). Guarded
+  // by a flag so it runs once per browser; the call site is also wrapped
+  // so this can never interrupt startup.
+  function backfillRippleFavorites() {
+    const FLAG = "otherworld:analytics:favBackfilled:v1";
+    try { if (localStorage.getItem(FLAG) === "1") return; } catch {}
+    for (const [k, meta] of state.favorites) {
+      if (favTrackSent.has(k)) continue;
+      if (!meta || !isRippleEffectFav(meta.camp)) continue;
+      favTrackSent.add(k);
+      track("favorite", { title: meta.title || "" });
+    }
+    saveFavTrackSent();
+    try { localStorage.setItem(FLAG, "1"); } catch {}
   }
   // Stash a corrupt JSON blob into otherworld:favorites:corrupt:<ts>
   // so the next toggle can't silently overwrite it. Bounded to the
@@ -1857,8 +1897,7 @@
       quietRun = null;
     }
 
-    function maybeAppendNowLine(h) {
-      if (!showNow || nowHour !== h || nowLinePlaced) return;
+    function appendNowLine() {
       const line = document.createElement("div");
       line.className = "now-line";
       view.appendChild(line);
@@ -1877,7 +1916,6 @@
         return;
       }
       flushQuietRun();
-      maybeAppendNowLine(h);
       const row = document.createElement("div");
       row.className = "hour-row";
       // Lit-up time label for the current hour — calmer than a pulse,
@@ -1978,19 +2016,24 @@
         continue;
       }
       if (pastHours) flushPastRun();
+      // Anchor the "now" line to the current time slot by position, not
+      // by whether nowHour happens to contain an event. The first hour
+      // index at/after nowPos gets the line. Flush any pending quiet run
+      // first so NOW sits above the upcoming "Quiet …" pill rather than
+      // being swallowed into a run that spans the now boundary.
+      if (showNow && !nowLinePlaced && i >= nowPos) {
+        flushQuietRun();
+        appendNowLine();
+      }
       renderHourRow(h);
     }
     if (pastHours) flushPastRun();
-    // Edge case: current hour (and possibly the rest of the day)
-    // has no events. The main loop's maybeAppendNowLine never fires
-    // in that case, so drop a now-line marker here BEFORE flushing
-    // any trailing quiet run — that way the "you are here" signal
-    // appears above the "Quiet …" pill rather than below it.
+    // Safety net: the loop above places the now-line by position for any
+    // hour index >= nowPos, so this normally never fires. Kept in case
+    // nowPos somehow falls past every rendered hour — drop the marker
+    // BEFORE flushing the trailing quiet run so it stays above the pill.
     if (showNow && !nowLinePlaced) {
-      const line = document.createElement("div");
-      line.className = "now-line";
-      view.appendChild(line);
-      nowLinePlaced = true;
+      appendNowLine();
     }
     flushQuietRun();
   }
@@ -2393,6 +2436,7 @@
     // Opening a detail view ends the undo window so the toast doesn't
     // float over the dialog; the removal is already committed.
     favUndo.commit();
+    track("card_open", { title: ev.title || "", dataset: activeDataset });
     _modalEvent = ev;
     document.getElementById("m-title").textContent = ev.title || "(untitled)";
     document.getElementById("m-owner").textContent = `${ev._entry.name} · ${typeLabel(ev.ownerType)}`;
@@ -2900,6 +2944,7 @@
     const PID = "PID-bd0ad12e-a381-4f7b-a594-121f3684137b";
     link.addEventListener("click", async (e) => {
       e.preventDefault();
+      track("about_goose_set_click");
       hideSettingsModal();
       if (activeDataset !== "music") {
         const ok = await setDataset("music");
@@ -3816,6 +3861,19 @@
     else state.favoritesRed.delete(k);
     saveFavorites(state.favorites);
     saveRedFavorites(state.favoritesRed);
+
+    // Analytics: count favourites of Ripple Effect sets only, on real
+    // off<->on transitions (not the red-tier bump), deduped per browser.
+    const favCamp = (ev._entry && ev._entry.name) || ev.owner || "";
+    if (isRippleEffectFav(favCamp)) {
+      if (nextFav && !wasFav && !favTrackSent.has(k)) {
+        favTrackSent.add(k); saveFavTrackSent();
+        track("favorite", { title: ev.title || "" });
+      } else if (!nextFav && wasFav && favTrackSent.has(k)) {
+        favTrackSent.delete(k); saveFavTrackSent();
+        track("unfavorite", { title: ev.title || "" });
+      }
+    }
 
     // First-ever favorite milestone — track when we crossed zero
     // so the backup nag (Tier 2.2) gets a sane "wait 24h before
@@ -4761,6 +4819,9 @@
   bindSettings();
   bindLogoDatasetToggle();
   bindAboutGooseLink();
+  // One-time analytics backfill of pre-existing Ripple Effect favourites.
+  // Wrapped so an unexpected error can never interrupt startup.
+  try { backfillRippleFavorites(); } catch {}
 
   // Restore the saved dataset before the first paint. Activities is
   // already loaded; if the user last left it on Music, lazy-load
