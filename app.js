@@ -1,7 +1,7 @@
 (async () => {
   // App release version, shown at the bottom of Settings under Dev tools.
   // Bump this when cutting a new tagged release.
-  const APP_VERSION = "v2.0";
+  const APP_VERSION = "v2.1";
   (function showAppVersion() {
     const el = document.getElementById("settings-version");
     if (el) el.textContent = APP_VERSION;
@@ -355,6 +355,31 @@
           .catch(() => {});
       }
     } else {
+      // When a freshly-deployed SW takes control of this page, reload
+      // once so the running tab picks up the new shell (app.js/styles
+      // /index.html) instead of executing the code it booted with. The
+      // SW already skip-waits + claims clients (see sw.js), and the
+      // resume handler nudges reg.update() on every foreground, so this
+      // is what closes the loop for installed PWAs that resume from
+      // memory and would otherwise need a full app-kill to update.
+      //
+      // Only arm when the page is ALREADY controlled: a brand-new
+      // install fires controllerchange too, and we must not reload on a
+      // user's very first visit. A short sessionStorage time-guard makes
+      // a reload loop impossible even if `refreshing` ever regressed.
+      if (navigator.serviceWorker.controller) {
+        const SW_RELOAD_GUARD = "ow_sw_reload_at";
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (refreshing) return;
+          refreshing = true;
+          let last = 0;
+          try { last = parseInt(sessionStorage.getItem(SW_RELOAD_GUARD) || "0", 10); } catch {}
+          if (Date.now() - last < 10_000) return; // just reloaded — don't loop
+          try { sessionStorage.setItem(SW_RELOAD_GUARD, String(Date.now())); } catch {}
+          location.reload();
+        });
+      }
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/sw.js").catch(() => {});
       });
