@@ -2867,6 +2867,30 @@
     });
   }
 
+  // ── About panel: "say thanks" deep-link ──────────────────
+  // The link in the About section jumps straight to the Silly Goose set
+  // card: close Settings, switch to the music dataset (lazy-loading
+  // music.json if needed), find the set by its stable performanceId, and
+  // open its detail modal.
+  function bindAboutGooseLink() {
+    const link = document.getElementById("about-goose-set");
+    if (!link) return;
+    const PID = "PID-bd0ad12e-a381-4f7b-a594-121f3684137b";
+    link.addEventListener("click", async (e) => {
+      e.preventDefault();
+      hideSettingsModal();
+      if (activeDataset !== "music") {
+        const ok = await setDataset("music");
+        if (!ok) return;
+      }
+      const ev = ALL_EVENTS.find(x => x.performanceId === PID);
+      if (!ev) return;
+      state.day = ev.day;
+      renderAll();
+      showModal(ev);
+    });
+  }
+
   function bindSettings() {
     bindDataset();
     bindFavoritesBackup();
@@ -4714,6 +4738,7 @@
   bindHeaderAutoHide();
   bindSettings();
   bindLogoDatasetToggle();
+  bindAboutGooseLink();
 
   // Restore the saved dataset before the first paint. Activities is
   // already loaded; if the user last left it on Music, lazy-load

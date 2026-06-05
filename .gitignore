@@ -38,3 +38,4 @@ admin/logs/
 
 # Local-only screenshot output from scripts/mobile-screenshots.js
 screenshots/
+.vercel
