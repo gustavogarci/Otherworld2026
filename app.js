@@ -2234,15 +2234,12 @@
     wrap.innerHTML = "";
     const counts = Object.fromEntries(DAY_ORDER.map(d => [d, 0]));
     for (const e of ALL_EVENTS) if (eventMatchesFilters(e) && counts[e.day] !== undefined) counts[e.day]++;
-    const present = DAY_ORDER.filter(d => counts[d] > 0);
-    if (!present.length) {
-      wrap.innerHTML = `<div style="color:var(--moss-3);padding:12px 0;font-size:13px;">No days match filters.</div>`;
-      return;
-    }
-    if (!present.includes(state.day)) state.day = present[0];
-    for (const d of present) {
+    // Always show every day so toggling a filter never silently jumps the
+    // user to a different day. Days with no matches keep their tab (count 0)
+    // and the day view shows its own "no matches" empty state.
+    for (const d of DAY_ORDER) {
       const btn = document.createElement("button");
-      btn.className = "tab" + (d === state.day ? " active" : "");
+      btn.className = "tab" + (d === state.day ? " active" : "") + (counts[d] === 0 ? " empty" : "");
       btn.innerHTML = `${d}<span class="count">${counts[d]}</span>`;
       btn.addEventListener("click", () => {
         state.day = d;

@@ -1458,6 +1458,12 @@ dialog.modal.restore-modal {
   border-bottom-color: var(--lime);
 }
 
+/* Days with no events matching the current filters stay clickable but
+   read as dimmed so it's clear where the matches are. */
+.tab.empty:not(.active) {
+  opacity: 0.45;
+}
+
 .tab .count {
   color: var(--moss-3);
   font-family: var(--font-mono);
