@@ -2,7 +2,7 @@
   "metadata": {
     "source": "Dancing Decibels — Otherworld live event JSON",
     "attribution": "Schedule data courtesy of Dancing Decibels (dancingdecibels.com).",
-    "generatedAt": "2026-06-04T23:49:55.806Z",
+    "generatedAt": "2026-06-05T02:08:06.184Z",
     "eventCount": 420,
     "entryCount": 16,
     "crossesMidnightCount": 45,
@@ -16,8 +16,8 @@
     "upstream": {
       "eventId": "EID-b3d48645-068c-4a87-9f48-7bdc807b7f00",
       "eventYear": 2026,
-      "yearDataVersion": 80,
-      "artistVersion": 323
+      "yearDataVersion": 83,
+      "artistVersion": 324
     }
   },
   "entries": [
@@ -932,16 +932,16 @@
         {
           "owner": "Campocalypse",
           "ownerType": "sound_stage",
-          "title": "Scout Shorefox",
+          "title": "Shorefox",
           "description": "",
           "day": "Friday",
           "startTime": "22:30",
-          "endTime": "23:30",
-          "durationHours": 1,
+          "endTime": "23:15",
+          "durationHours": 0.75,
           "crossesMidnight": false,
           "tags": [],
           "socialList": [],
-          "rawTimeText": "Friday 22:30 - 23:30",
+          "rawTimeText": "Friday 22:30 - 23:15",
           "performanceId": "PID-86ef841d-db2b-4463-97ab-b75b6317c63c"
         },
         {
