@@ -2,22 +2,22 @@
   "metadata": {
     "source": "Dancing Decibels — Otherworld live event JSON",
     "attribution": "Schedule data courtesy of Dancing Decibels (dancingdecibels.com).",
-    "generatedAt": "2026-06-07T01:54:36.037Z",
-    "eventCount": 420,
+    "generatedAt": "2026-06-07T06:12:35.806Z",
+    "eventCount": 422,
     "entryCount": 16,
     "crossesMidnightCount": 45,
     "countsByDay": {
       "Thursday": 37,
       "Friday": 136,
       "Saturday": 124,
-      "Sunday": 111,
+      "Sunday": 113,
       "Monday": 12
     },
     "upstream": {
       "eventId": "EID-b3d48645-068c-4a87-9f48-7bdc807b7f00",
       "eventYear": 2026,
       "yearDataVersion": 84,
-      "artistVersion": 324
+      "artistVersion": 333
     }
   },
   "entries": [
@@ -5191,6 +5191,21 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
+          "title": "Power Pilates with Krista",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "11:00",
+          "endTime": "12:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 11:00 - 12:00",
+          "performanceId": "PID-28aa46a7-72da-45a4-9864-360c068ef951"
+        },
+        {
+          "owner": "The Cottage",
+          "ownerType": "sound_stage",
           "title": "Dad's Yacht Rock",
           "description": "Kick back, wear your sunglasses and be ready to rock on! This yatch will cruise on familiar, nostalgic water!",
           "day": "Sunday",
@@ -5208,35 +5223,18 @@
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "The Garden Grove",
-          "description": "Ska, just like rock and punk, is very much alive. You just need to come and find it ;)",
+          "title": "Dub Roots Science",
+          "description": "Come experience reggae, dub and rasta culture vibes! Peeeaceee!",
           "day": "Sunday",
           "startTime": "13:00",
           "endTime": "14:00",
           "durationHours": 1,
           "crossesMidnight": false,
           "tags": [
-            "ska"
-          ],
-          "socialList": [],
-          "rawTimeText": "Sunday 13:00 - 14:00",
-          "performanceId": "PID-0da770c3-0a41-4516-91d5-3555537d9bb6"
-        },
-        {
-          "owner": "The Cottage",
-          "ownerType": "sound_stage",
-          "title": "Dub Roots Science",
-          "description": "Come experience reggae, dub and rasta culture vibes! Peeeaceee!",
-          "day": "Sunday",
-          "startTime": "14:00",
-          "endTime": "15:00",
-          "durationHours": 1,
-          "crossesMidnight": false,
-          "tags": [
             "reggae dub"
           ],
           "socialList": [],
-          "rawTimeText": "Sunday 14:00 - 15:00",
+          "rawTimeText": "Sunday 13:00 - 14:00",
           "performanceId": "PID-8be61cb7-05b9-4a5a-8684-34dd96061042"
         },
         {
@@ -5245,8 +5243,8 @@
           "title": "Straight Outta Cottage",
           "description": "We too are from the ghetto, yo! Come and get a taste of The Cottage truth. [Parental Advisory]",
           "day": "Sunday",
-          "startTime": "15:00",
-          "endTime": "16:00",
+          "startTime": "14:00",
+          "endTime": "15:00",
           "durationHours": 1,
           "crossesMidnight": false,
           "tags": [
@@ -5254,25 +5252,55 @@
             "rap"
           ],
           "socialList": [],
-          "rawTimeText": "Sunday 15:00 - 16:00",
+          "rawTimeText": "Sunday 14:00 - 15:00",
           "performanceId": "PID-9a076254-35fb-4873-9a7c-a4fc40b4ab14"
         },
         {
           "owner": "The Cottage",
           "ownerType": "sound_stage",
-          "title": "DJ TAKEOVER: Recovery House",
-          "description": "Spinning beats and saving lives, one dance floor at a time.",
+          "title": "Italian Disco con Paolo",
+          "description": "",
           "day": "Sunday",
-          "startTime": "16:00",
-          "endTime": "18:00",
-          "durationHours": 2,
+          "startTime": "15:00",
+          "endTime": "16:00",
+          "durationHours": 1,
           "crossesMidnight": false,
           "tags": [
-            "takeover beats"
+            "paolo"
           ],
           "socialList": [],
-          "rawTimeText": "Sunday 16:00 - 18:00",
-          "performanceId": "PID-e6d732c6-3a8b-4971-a45e-4f66e59b224d"
+          "rawTimeText": "Sunday 15:00 - 16:00",
+          "performanceId": "PID-6e3e71e2-b038-40b0-a7d0-670115fdc775"
+        },
+        {
+          "owner": "The Cottage",
+          "ownerType": "sound_stage",
+          "title": "?????????",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "16:00",
+          "endTime": "17:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 16:00 - 17:00",
+          "performanceId": "PID-fb70f86b-3b35-4308-a2d4-9aa8ce874f97"
+        },
+        {
+          "owner": "The Cottage",
+          "ownerType": "sound_stage",
+          "title": "Poppa Champaign",
+          "description": "",
+          "day": "Sunday",
+          "startTime": "17:00",
+          "endTime": "18:00",
+          "durationHours": 1,
+          "crossesMidnight": false,
+          "tags": [],
+          "socialList": [],
+          "rawTimeText": "Sunday 17:00 - 18:00",
+          "performanceId": "PID-48c96200-0f8d-4ede-8447-a4fcc75f9929"
         },
         {
           "owner": "The Cottage",
